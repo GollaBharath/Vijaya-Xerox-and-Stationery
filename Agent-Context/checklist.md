@@ -2,6 +2,11 @@
 
 **Target**: Production-ready MVP with Auth, Catalog, Cart, Orders, and Admin CRUD.
 
+**NEW REQUIREMENTS**:
+
+- **Product Media**: Stationery products have IMAGE uploads, Books have PDF uploads (preview)
+- **Development Order**: Backend with media support → Admin App → Customer App
+
 **Principles**:
 
 - Follow the Architecture.md, Folder-structure.md, and Backend-Endpoints.md exactly
@@ -329,34 +334,113 @@
 
 ---
 
-## SECTION L: FLUTTER SHARED PACKAGE
+## SECTION L: BACKEND - FILE UPLOAD SUPPORT (IMAGES & PDFs)
 
-### L1. Create shared package structure
+### L1. Set up file storage infrastructure
+
+- [✅] Install dependencies: `multer` or Next.js built-in file handling, `sharp` for image processing
+- [✅] Create `/uploads` directory in project root with subdirectories:
+  - `/uploads/images/products/` - for stationery product images
+  - `/uploads/pdfs/books/` - for book preview PDFs
+- [✅] Add `/uploads` to `.gitignore`
+- [✅] Create `src/lib/file_storage.ts` with:
+  - `saveFile(file, directory, filename)` - save uploaded file
+  - `deleteFile(filepath)` - delete file
+  - `validateImage(file)` - validate image type, size (max 5MB)
+  - `validatePDF(file)` - validate PDF type, size (max 10MB)
+  - `generateFilename(originalName)` - unique filename generator
+
+### L2. Update Prisma schema for file fields
+
+- [✅] Add fields to `Product` model:
+  - `imageUrl` (String?) - for stationery products
+  - `pdfUrl` (String?) - for book products
+  - `fileType` (enum: IMAGE, PDF, NONE) - to distinguish product types
+- [✅] Create and run migration: `prisma migrate dev --name add_product_files`
+- [✅] Update seed.ts to include sample image/pdf URLs
+
+### L3. Update product repository for file operations
+
+- [✅] Update `product.repo.ts`:
+  - Modify `createProduct()` to accept `imageUrl`, `pdfUrl`, `fileType`
+  - Modify `updateProduct()` to handle file URL updates
+  - Add `deleteProductFiles(productId)` - delete associated files when product deleted
+
+### L4. Create file upload endpoints
+
+- [✅] Create `src/app/api/v1/catalog/products/upload-image/route.ts` (POST - admin only)
+  - Accept multipart/form-data with image file
+  - Validate image (type, size)
+  - Save to `/uploads/images/products/`
+  - Return file URL
+- [✅] Create `src/app/api/v1/catalog/products/upload-pdf/route.ts` (POST - admin only)
+  - Accept multipart/form-data with PDF file
+  - Validate PDF (type, size)
+  - Save to `/uploads/pdfs/books/`
+  - Return file URL
+- [✅] Create `src/app/api/v1/catalog/products/[id]/files/route.ts` (DELETE - admin only)
+  - Delete product files from filesystem
+  - Clear file URLs from database
+
+### L5. Update product endpoints to serve files
+
+- [✅] Update product GET endpoints to include file URLs in response
+- [✅] Create `src/app/api/v1/files/images/[...path]/route.ts` (GET - public)
+  - Serve images from `/uploads/images/`
+  - Add caching headers
+- [✅] Create `src/app/api/v1/files/pdfs/[...path]/route.ts` (GET - public)
+  - Serve PDFs from `/uploads/pdfs/`
+  - Add content-disposition for preview
+
+### L6. Update catalog validators and types
+
+- [✅] Update `catalog.types.ts`:
+  - Add `imageUrl`, `pdfUrl`, `fileType` to Product type
+  - Add `FileUploadRequest` type
+- [✅] Update `catalog.validator.ts`:
+  - Add `validateFileUpload(file, fileType)`
+  - Add file type validation rules
+
+### L7. Test file upload functionality
+
+- [ ] Test image upload for stationery products
+- [ ] Test PDF upload for book products
+- [ ] Test file retrieval endpoints
+- [ ] Test file deletion on product delete
+- [ ] Test file size/type validation
+- [ ] Test duplicate filename handling
+
+---
+
+## SECTION M: FLUTTER SHARED PACKAGE
+
+### M1. Create shared package structure
 
 - [ ] Create `/packages/flutter_shared` folder
 - [ ] Initialize Flutter package with `pubspec.yaml`
 
-### L2. Create models
+### M2. Create models
 
 - [ ] Create `lib/models/user.dart` (User model with role)
 - [ ] Create `lib/models/category.dart` (Category with parent_id)
 - [ ] Create `lib/models/subject.dart` (Subject with parent_subject_id)
-- [ ] Create `lib/models/product.dart` (Product model)
+- [ ] Create `lib/models/product.dart` (Product model with imageUrl, pdfUrl, fileType)
 - [ ] Create `lib/models/product_variant.dart` (ProductVariant model)
 - [ ] Create `lib/models/order.dart` (Order model)
 - [ ] Create `lib/models/cart_item.dart` (CartItem model)
 - [ ] All models should have: `toJson()`, `fromJson()`, `copyWith()`
 
-### L3. Create API client
+### M3. Create API client
 
 - [ ] Create `lib/api/api_client.dart` with:
   - `POST/GET/PATCH/DELETE` methods
   - Token management (access token from local storage)
   - Error handling
   - Request/response interceptors
+  - Multipart upload support for file uploads
 - [ ] Create `lib/api/endpoints.dart` with all API endpoint constants
 
-### L4. Create auth service
+### M4. Create auth service
 
 - [ ] Create `lib/auth/token_manager.dart` with:
   - Save/load tokens from local storage
@@ -368,15 +452,17 @@
   - `getCurrentUser()`
   - `refreshToken()`
 
-### L5. Create validators
+### M5. Create validators
 
 - [ ] Create `lib/utils/validators.dart` with:
   - `validateEmail(email)`
   - `validatePassword(password)`
   - `validatePhone(phone)`
   - `validateProductQuantity(qty)`
+  - `validateImageFile(file)` - check file type and size
+  - `validatePDFFile(file)` - check file type and size
 
-### L6. Create formatters
+### M6. Create formatters
 
 - [ ] Create `lib/utils/formatters.dart` with:
   - `formatPrice(price)`
@@ -385,40 +471,282 @@
 
 ---
 
-## SECTION M: CUSTOMER APP - SETUP & CORE
+## SECTION N: ADMIN APP - SETUP & CORE
 
-### M1. Initialize Flutter customer app
+### N1. Initialize Flutter admin app
 
-- [ ] Create `/apps/customer_app` folder
+- [ ] Create `/apps/admin_app` folder
 - [ ] Initialize Flutter app with `flutter create`
 - [ ] Configure `pubspec.yaml` with dependencies:
-  - `provider`, `http`, `intl`, `shared_preferences`, `razorpay_flutter`
+  - `provider`, `http`, `intl`, `shared_preferences`, `file_picker`, `image_picker`
   - Add `flutter_shared` as local package dependency
 
-### M2. Create core config
+### N2. Create core config
 
 - [ ] Create `lib/core/config/env.dart` (API base URL from env)
 - [ ] Create `lib/core/config/constants.dart` (app constants)
 - [ ] Create `lib/core/config/api_config.dart` (API configuration)
 
-### M3. Create core theme
+### N3. Create core theme
 
 - [ ] Create `lib/core/theme/app_theme.dart` (light/dark theme)
 - [ ] Create `lib/core/theme/colors.dart` (color palette)
 - [ ] Create `lib/core/theme/typography.dart` (text styles)
 
-### M4. Create error handling
+### N4. Create error handling
 
 - [ ] Create `lib/core/errors/app_exceptions.dart` (custom exceptions)
 - [ ] Create `lib/core/errors/error_mapper.dart` (map API errors to UI messages)
 
-### M5. Create extensions & utilities
+### N5. Create extensions & utilities
 
 - [ ] Create `lib/core/utils/extensions.dart` (String, DateTime extensions)
 - [ ] Create `lib/core/utils/formatters.dart` (copy from shared)
 - [ ] Create `lib/core/utils/validators.dart` (copy from shared)
 
-### M6. Create routing
+### N6. Create routing
+
+- [ ] Create `lib/routing/route_names.dart` (all route names)
+- [ ] Create `lib/routing/app_router.dart` (GoRouter or Navigator 2.0 setup)
+  - Routes: login, dashboard, categories, subjects, products, orders, users, settings
+
+---
+
+## SECTION O: ADMIN APP - AUTH FEATURE
+
+### O1. Create auth feature structure
+
+- [ ] Create `lib/features/auth/` folder with: models/, providers/, screens/, widgets/
+
+### O2. Create admin auth providers
+
+- [ ] Create `lib/features/auth/providers/auth_provider.dart` with:
+  - `login(email, password)`
+  - `logout()`
+  - `currentUser` getter
+  - `isAuthenticated` getter
+  - `isAdmin` getter - verify role is ADMIN
+
+### O3. Create admin login screen
+
+- [ ] Create `lib/features/auth/screens/login_screen.dart` with:
+  - Email & password text fields
+  - Login button
+  - Admin role verification after login
+  - Error display
+
+### O4. Create splash screen
+
+- [ ] Create `lib/features/auth/screens/splash_screen.dart` with:
+  - Check if user is logged in and is admin
+  - Redirect to dashboard or login
+
+---
+
+## SECTION P: ADMIN APP - DASHBOARD
+
+### P1. Create dashboard feature
+
+- [ ] Create `lib/features/dashboard/` folder with: providers/, screens/, widgets/
+- [ ] Create dashboard provider with:
+  - `fetchDashboardStats()`
+  - Stats: total users, total orders, total revenue, recent orders
+- [ ] Create dashboard screen showing key metrics and navigation cards
+
+---
+
+## SECTION Q: ADMIN APP - CATEGORY MANAGEMENT
+
+### Q1. Create category management feature
+
+- [ ] Create `lib/features/category_management/` folder with: models/, providers/, screens/, widgets/
+
+### Q2. Create category provider
+
+- [ ] `fetchCategories()`
+- [ ] `createCategory(name, parent_id, metadata)`
+- [ ] `updateCategory(id, name, parent_id, metadata)`
+- [ ] `deleteCategory(id)`
+- [ ] `categories` getter (hierarchical tree view)
+
+### Q3. Create category screens
+
+- [ ] `categories_list_screen.dart` - tree view with CRUD buttons
+- [ ] `category_form_screen.dart` - add/edit form
+- [ ] `category_detail_screen.dart` - view single category
+
+---
+
+## SECTION R: ADMIN APP - SUBJECT MANAGEMENT
+
+### R1. Create subject management feature
+
+- [ ] Create `lib/features/subject_management/` folder
+
+### R2. Create subject provider & screens
+
+- [ ] Same structure as category management
+- [ ] `fetchSubjects()`, `createSubject()`, `updateSubject()`, `deleteSubject()`
+- [ ] Tree view display, add/edit forms
+
+---
+
+## SECTION S: ADMIN APP - PRODUCT MANAGEMENT (WITH FILE UPLOADS)
+
+### S1. Create product management feature
+
+- [ ] Create `lib/features/product_management/` folder
+
+### S2. Create product provider
+
+- [ ] `fetchProducts(pagination, filters)`
+- [ ] `createProduct(title, description, isbn, base_price, subject_id, fileType)`
+- [ ] `updateProduct(id, data)`
+- [ ] `deleteProduct(id)`
+- [ ] `uploadProductImage(productId, imageFile)` - upload stationery image
+- [ ] `uploadProductPDF(productId, pdfFile)` - upload book preview PDF
+- [ ] `deleteProductFiles(productId)` - remove files
+- [ ] `products` getter with pagination
+
+### S3. Create product variant provider
+
+- [ ] `createVariant(product_id, variant_type, price, stock, sku)`
+- [ ] `updateVariant(id, price, stock)`
+- [ ] `deleteVariant(id)`
+
+### S4. Create product screens
+
+- [ ] `products_list_screen.dart` - paginated list with CRUD buttons, show file type badges
+- [ ] `product_form_screen.dart` - add/edit product with:
+  - File type selector (Image for Stationery, PDF for Books, None)
+  - Image picker for stationery products
+  - PDF picker for book products
+  - Image/PDF preview display
+  - Upload button with progress indicator
+- [ ] `product_detail_screen.dart` - view with variants and file preview
+- [ ] `variant_form_screen.dart` - add/edit variant
+
+### S5. Create file upload widgets
+
+- [ ] Create `lib/features/product_management/widgets/image_picker_widget.dart`
+  - File picker integration for images
+  - Image preview
+  - Upload button
+- [ ] Create `lib/features/product_management/widgets/pdf_picker_widget.dart`
+  - File picker integration for PDFs
+  - PDF name display
+  - Upload button
+
+---
+
+## SECTION T: ADMIN APP - ORDER MANAGEMENT
+
+### T1. Create order management feature
+
+- [ ] Create `lib/features/order_management/` folder
+
+### T2. Create order provider
+
+- [ ] `fetchAllOrders(pagination, filters)`
+- [ ] `fetchOrderDetails(id)`
+- [ ] `updateOrderStatus(id, status)`
+- [ ] `cancelOrder(id)`
+
+### T3. Create order screens
+
+- [ ] `orders_list_screen.dart` - table/list with filters (status, date)
+- [ ] `order_detail_screen.dart` - full order info with status update button
+
+---
+
+## SECTION U: ADMIN APP - USER MANAGEMENT
+
+### U1. Create user management feature
+
+- [ ] Create `lib/features/user_management/` folder
+
+### U2. Create user provider
+
+- [ ] `fetchAllUsers(pagination)`
+- [ ] `fetchUserDetails(id)`
+- [ ] `updateUser(id, data)`
+- [ ] `deleteUser(id)`
+
+### U3. Create user screens
+
+- [ ] `users_list_screen.dart` - paginated user list
+- [ ] `user_detail_screen.dart` - view/edit user
+
+---
+
+## SECTION V: ADMIN APP - SETTINGS
+
+### V1. Create settings feature
+
+- [ ] Create `lib/features/settings/` folder
+
+### V2. Create settings provider
+
+- [ ] `fetchSettings()`
+- [ ] `updateSetting(key, value)`
+- [ ] `settings` getter
+
+### V3. Create settings screen
+
+- [ ] `settings_screen.dart` with:
+  - allow_cod toggle
+  - max_order_quantity input
+  - show_out_of_stock toggle
+  - Save button
+
+---
+
+## SECTION W: ADMIN APP - MAIN & ROUTING
+
+### W1. Create main.dart & routing
+
+- [ ] Admin app main.dart with routing
+- [ ] Role-based navigation (admin check)
+- [ ] Protected routes
+- [ ] Bottom navigation or drawer navigation
+
+---
+
+## SECTION X: CUSTOMER APP - SETUP & CORE
+
+### X1. Initialize Flutter customer app
+
+- [ ] Create `/apps/customer_app` folder
+- [ ] Initialize Flutter app with `flutter create`
+- [ ] Configure `pubspec.yaml` with dependencies:
+  - `provider`, `http`, `intl`, `shared_preferences`, `razorpay_flutter`, `cached_network_image`
+  - Add `flutter_shared` as local package dependency
+
+### X2. Create core config
+
+- [ ] Create `lib/core/config/env.dart` (API base URL from env)
+- [ ] Create `lib/core/config/env.dart` (API base URL from env)
+- [ ] Create `lib/core/config/constants.dart` (app constants)
+- [ ] Create `lib/core/config/api_config.dart` (API configuration)
+
+### X3. Create core theme
+
+- [ ] Create `lib/core/theme/app_theme.dart` (light/dark theme)
+- [ ] Create `lib/core/theme/colors.dart` (color palette)
+- [ ] Create `lib/core/theme/typography.dart` (text styles)
+
+### X4. Create error handling
+
+- [ ] Create `lib/core/errors/app_exceptions.dart` (custom exceptions)
+- [ ] Create `lib/core/errors/error_mapper.dart` (map API errors to UI messages)
+
+### X5. Create extensions & utilities
+
+- [ ] Create `lib/core/utils/extensions.dart` (String, DateTime extensions)
+- [ ] Create `lib/core/utils/formatters.dart` (copy from shared)
+- [ ] Create `lib/core/utils/validators.dart` (copy from shared)
+
+### X6. Create routing
 
 - [ ] Create `lib/routing/route_names.dart` (all route names)
 - [ ] Create `lib/routing/app_router.dart` (GoRouter or Navigator 2.0 setup)
@@ -426,13 +754,13 @@
 
 ---
 
-## SECTION N: CUSTOMER APP - AUTH FEATURE
+## SECTION Y: CUSTOMER APP - AUTH FEATURE
 
-### N1. Create auth feature structure
+### Y1. Create auth feature structure
 
 - [ ] Create `lib/features/auth/` folder with: models/, providers/, screens/, widgets/
 
-### N2. Create auth providers
+### Y2. Create auth providers
 
 - [ ] Create `lib/features/auth/providers/auth_provider.dart` with:
   - `login(email, password)`
@@ -441,7 +769,7 @@
   - `currentUser` getter
   - `isAuthenticated` getter
 
-### N3. Create login screen
+### Y3. Create login screen
 
 - [ ] Create `lib/features/auth/screens/login_screen.dart` with:
   - Email & password text fields
@@ -449,7 +777,7 @@
   - Register link
   - Error display
 
-### N4. Create register screen
+### Y4. Create register screen
 
 - [ ] Create `lib/features/auth/screens/register_screen.dart` with:
   - Name, email, phone, password fields
@@ -457,7 +785,7 @@
   - Login link
   - Validation feedback
 
-### N5. Create splash screen
+### Y5. Create splash screen
 
 - [ ] Create `lib/features/auth/screens/splash_screen.dart` with:
   - Check if user is logged in
@@ -465,13 +793,13 @@
 
 ---
 
-## SECTION O: CUSTOMER APP - CATALOG FEATURE
+## SECTION Z: CUSTOMER APP - CATALOG FEATURE (WITH FILE DISPLAY)
 
-### O1. Create catalog feature structure
+### Z1. Create catalog feature structure
 
 - [ ] Create `lib/features/catalog/` folder with: models/, providers/, screens/, widgets/
 
-### O2. Create catalog providers
+### Z2. Create catalog providers
 
 - [ ] Create `lib/features/catalog/providers/category_provider.dart` with:
   - `fetchCategories()`
@@ -486,34 +814,38 @@
   - `searchProducts(query)`
   - `products` getter with pagination
 
-### O3. Create catalog screens
+### Z3. Create catalog screens
 
 - [ ] Create `lib/features/catalog/screens/catalog_screen.dart` with:
   - Category/Subject filter chips
-  - Product grid list
+  - Product grid list with images (for stationery)
+  - PDF badge indicator (for books)
   - Pull-to-refresh
 - [ ] Create `lib/features/catalog/screens/product_detail_screen.dart` with:
-  - Product image, title, description
+  - Product image display (for stationery) with zoom
+  - PDF viewer/download button (for books)
+  - Product title, description
   - Variant selector (color/B&W)
   - Price display
   - Stock status
   - Add to cart button
 
-### O4. Create catalog widgets
+### Z4. Create catalog widgets
 
-- [ ] Create `lib/features/catalog/widgets/product_card.dart`
+- [ ] Create `lib/features/catalog/widgets/product_card.dart` - with image or PDF badge
 - [ ] Create `lib/features/catalog/widgets/category_chip.dart`
 - [ ] Create `lib/features/catalog/widgets/variant_selector.dart`
+- [ ] Create `lib/features/catalog/widgets/pdf_viewer_widget.dart` - for book preview
 
 ---
 
-## SECTION P: CUSTOMER APP - CART FEATURE
+## SECTION AA: CUSTOMER APP - CART FEATURE
 
-### P1. Create cart feature structure
+### AA1. Create cart feature structure
 
 - [ ] Create `lib/features/cart/` folder with: models/, providers/, screens/, widgets/
 
-### P2. Create cart provider
+### AA2. Create cart provider
 
 - [ ] Create `lib/features/cart/providers/cart_provider.dart` with:
   - `addToCart(productVariantId, quantity)`
@@ -524,29 +856,30 @@
   - `cartTotal` getter
   - Sync with backend on auth
 
-### P3. Create cart screen
+### AA3. Create cart screen
 
 - [ ] Create `lib/features/cart/screens/cart_screen.dart` with:
   - List of cart items with quantity controls
+  - Product images/PDF badges
   - Remove item button
   - Cart total
   - Checkout button
   - Empty state message
 
-### P4. Create cart widgets
+### AA4. Create cart widgets
 
 - [ ] Create `lib/features/cart/widgets/cart_item_card.dart`
 - [ ] Create `lib/features/cart/widgets/quantity_selector.dart`
 
 ---
 
-## SECTION Q: CUSTOMER APP - CHECKOUT FEATURE
+## SECTION AB: CUSTOMER APP - CHECKOUT FEATURE
 
-### Q1. Create checkout feature structure
+### AB1. Create checkout feature structure
 
 - [ ] Create `lib/features/checkout/` folder with: models/, providers/, screens/, widgets/
 
-### Q2. Create checkout provider
+### AB2. Create checkout provider
 
 - [ ] Create `lib/features/checkout/providers/checkout_provider.dart` with:
   - `placeOrder(address)`
@@ -554,14 +887,14 @@
   - `getPaymentLink(orderId)`
   - Order creation & payment handling
 
-### Q3. Create address form screen
+### AB3. Create address form screen
 
 - [ ] Create `lib/features/checkout/screens/address_screen.dart` with:
   - Address fields (street, city, postal, phone)
   - Validation
   - Continue button
 
-### Q4. Create order confirmation screen
+### AB4. Create order confirmation screen
 
 - [ ] Create `lib/features/checkout/screens/confirmation_screen.dart` with:
   - Order ID
@@ -572,13 +905,13 @@
 
 ---
 
-## SECTION R: CUSTOMER APP - ORDERS FEATURE
+## SECTION AC: CUSTOMER APP - ORDERS FEATURE
 
-### R1. Create orders feature structure
+### AC1. Create orders feature structure
 
 - [ ] Create `lib/features/orders/` folder with: models/, providers/, screens/, widgets/
 
-### R2. Create orders provider
+### AC2. Create orders provider
 
 - [ ] Create `lib/features/orders/providers/orders_provider.dart` with:
   - `fetchUserOrders(pagination)`
@@ -586,31 +919,31 @@
   - `orders` getter
   - `currentOrder` getter
 
-### R3. Create orders list screen
+### AC3. Create orders list screen
 
 - [ ] Create `lib/features/orders/screens/orders_list_screen.dart` with:
   - List of user orders with status
   - Tap to view details
   - Filter by status (optional)
 
-### R4. Create order details screen
+### AC4. Create order details screen
 
 - [ ] Create `lib/features/orders/screens/order_detail_screen.dart` with:
   - Order ID, date, status
-  - List of items
+  - List of items with images/PDF badges
   - Delivery address
   - Total price
   - Cancel button (if status allows)
 
 ---
 
-## SECTION S: CUSTOMER APP - PROFILE FEATURE
+## SECTION AD: CUSTOMER APP - PROFILE FEATURE
 
-### S1. Create profile feature
+### AD1. Create profile feature
 
 - [ ] Create `lib/features/profile/` folder with: screens/, widgets/
 
-### S2. Create profile screen
+### AD2. Create profile screen
 
 - [ ] Create `lib/features/profile/screens/profile_screen.dart` with:
   - Display user info (name, email, phone)
@@ -620,9 +953,9 @@
 
 ---
 
-## SECTION T: CUSTOMER APP - MAIN & ROUTING
+## SECTION AE: CUSTOMER APP - MAIN & ROUTING
 
-### T1. Create main.dart
+### AE1. Create main.dart
 
 - [ ] Set up app initialization
 - [ ] Set up Provider for state management
@@ -630,7 +963,7 @@
 - [ ] Set up theme provider
 - [ ] Set up error handling
 
-### T2. Create app widget
+### AE2. Create app widget
 
 - [ ] Create main MaterialApp/CupertinoApp
 - [ ] Configure theme
@@ -639,256 +972,87 @@
 
 ---
 
-## SECTION U: ADMIN APP - SETUP & CORE
+## SECTION AF: BACKEND TESTING
 
-### U1. Initialize Flutter admin app
-
-- [ ] Create `/apps/admin_app` folder
-- [ ] Initialize Flutter app
-- [ ] Configure `pubspec.yaml` (same core as customer app)
-- [ ] Add `flutter_shared` dependency
-
-### U2. Create core structure (same as customer app)
-
-- [ ] Copy core/, routing/, theme from customer app structure
-
----
-
-## SECTION V: ADMIN APP - AUTH FEATURE
-
-### V1. Create admin auth
-
-- [ ] Create auth feature
-- [ ] Create admin login screen (same as customer, but role check)
-- [ ] Verify user is admin role before allowing access
-
----
-
-## SECTION W: ADMIN APP - DASHBOARD
-
-### W1. Create dashboard feature
-
-- [ ] Create `lib/features/dashboard/` folder
-- [ ] Create dashboard provider with:
-  - `fetchDashboardStats()`
-  - Stats: total users, total orders, total revenue, recent orders
-- [ ] Create dashboard screen showing key metrics
-
----
-
-## SECTION X: ADMIN APP - CATEGORY MANAGEMENT
-
-### X1. Create category management feature
-
-- [ ] Create `lib/features/category_management/` folder with: models/, providers/, screens/, widgets/
-
-### X2. Create category provider
-
-- [ ] `fetchCategories()`
-- [ ] `createCategory(name, parent_id, metadata)`
-- [ ] `updateCategory(id, name, parent_id, metadata)`
-- [ ] `deleteCategory(id)`
-- [ ] `categories` getter (hierarchical tree view)
-
-### X3. Create category screens
-
-- [ ] `categories_list_screen.dart` - tree view with CRUD buttons
-- [ ] `category_form_screen.dart` - add/edit form
-- [ ] `category_detail_screen.dart` - view single category
-
----
-
-## SECTION Y: ADMIN APP - SUBJECT MANAGEMENT
-
-### Y1. Create subject management feature
-
-- [ ] Create `lib/features/subject_management/` folder
-
-### Y2. Create subject provider & screens
-
-- [ ] Same structure as category management
-- [ ] `fetchSubjects()`, `createSubject()`, `updateSubject()`, `deleteSubject()`
-- [ ] Tree view display, add/edit forms
-
----
-
-## SECTION Z: ADMIN APP - PRODUCT MANAGEMENT
-
-### Z1. Create product management feature
-
-- [ ] Create `lib/features/product_management/` folder
-
-### Z2. Create product provider
-
-- [ ] `fetchProducts(pagination, filters)`
-- [ ] `createProduct(title, description, isbn, base_price, subject_id)`
-- [ ] `updateProduct(id, data)`
-- [ ] `deleteProduct(id)`
-- [ ] `products` getter with pagination
-
-### Z3. Create product variant provider
-
-- [ ] `createVariant(product_id, variant_type, price, stock, sku)`
-- [ ] `updateVariant(id, price, stock)`
-- [ ] `deleteVariant(id)`
-
-### Z4. Create product screens
-
-- [ ] `products_list_screen.dart` - paginated list with CRUD buttons
-- [ ] `product_form_screen.dart` - add/edit product
-- [ ] `product_detail_screen.dart` - view with variants
-- [ ] `variant_form_screen.dart` - add/edit variant
-
----
-
-## SECTION AA: ADMIN APP - ORDER MANAGEMENT
-
-### AA1. Create order management feature
-
-- [ ] Create `lib/features/order_management/` folder
-
-### AA2. Create order provider
-
-- [ ] `fetchAllOrders(pagination, filters)`
-- [ ] `fetchOrderDetails(id)`
-- [ ] `updateOrderStatus(id, status)`
-- [ ] `cancelOrder(id)`
-
-### AA3. Create order screens
-
-- [ ] `orders_list_screen.dart` - table/list with filters (status, date)
-- [ ] `order_detail_screen.dart` - full order info with status update button
-
----
-
-## SECTION AB: ADMIN APP - USER MANAGEMENT
-
-### AB1. Create user management feature
-
-- [ ] Create `lib/features/user_management/` folder
-
-### AB2. Create user provider
-
-- [ ] `fetchAllUsers(pagination)`
-- [ ] `fetchUserDetails(id)`
-- [ ] `updateUser(id, data)`
-- [ ] `deleteUser(id)`
-
-### AB3. Create user screens
-
-- [ ] `users_list_screen.dart` - paginated user list
-- [ ] `user_detail_screen.dart` - view/edit user
-
----
-
-## SECTION AC: ADMIN APP - SETTINGS
-
-### AC1. Create settings feature
-
-- [ ] Create `lib/features/settings/` folder
-
-### AC2. Create settings provider
-
-- [ ] `fetchSettings()`
-- [ ] `updateSetting(key, value)`
-- [ ] `settings` getter
-
-### AC3. Create settings screen
-
-- [ ] `settings_screen.dart` with:
-  - allow_cod toggle
-  - max_order_quantity input
-  - show_out_of_stock toggle
-  - Save button
-
----
-
-## SECTION AD: ADMIN APP - MAIN & ROUTING
-
-### AD1. Create main.dart & routing
-
-- [ ] Admin app main.dart with routing
-- [ ] Role-based navigation (admin check)
-- [ ] Protected routes
-
----
-
-## SECTION AE: BACKEND TESTING
-
-### AE1. Create test files
+### AF1. Create test files
 
 - [ ] Create `tests/unit/` folder
 - [ ] Create `tests/integration/` folder
-- [ ] Add basic tests for: auth, catalog, orders (at least 1 happy path per module)
+- [ ] Add tests for: auth, catalog, orders, file uploads
+- [ ] Test file upload validation
+- [ ] Test file retrieval
+- [ ] Test file deletion
 
-### AE2. Run tests
+### AF2. Run tests
 
 - [ ] All tests should pass
 - [ ] Update `package.json` test script
 
 ---
 
-## SECTION AF: DOCKER & DEPLOYMENT PREP
+## SECTION AG: DOCKER & DEPLOYMENT PREP
 
-### AF1. Create Dockerfiles
+### AG1. Create Dockerfiles
 
 - [ ] Create `infrastructure/docker/api.Dockerfile` for Next.js API
 - [ ] Create `infrastructure/docker/postgres.Dockerfile` for database init
 - [ ] Create `infrastructure/docker/nginx.Dockerfile` for reverse proxy (optional for MVP)
 
-### AF2. Configure docker-compose.yml
+### AG2. Configure docker-compose.yml
 
 - [ ] Add PostgreSQL service
 - [ ] Add Redis service (optional, can cache later)
 - [ ] Add Next.js API service
 - [ ] Add Nginx service (optional)
-- [ ] Add volumes for persistence
+- [ ] Add volumes for persistence (including /uploads)
 - [ ] Add environment variables
 
-### AF3. Create scripts
+### AG3. Create scripts
 
 - [ ] `scripts/dev.sh` - starts docker-compose + watches Flutter apps
 - [ ] `scripts/deploy.sh` - build & push images (placeholder)
 - [ ] `scripts/migrate.sh` - run Prisma migrations in container
 - [ ] `scripts/seed.sh` - seed database in container
 
-### AF4. Create database backup script
+### AG4. Create database backup script
 
 - [ ] `infrastructure/backup/backup.sh` - daily PostgreSQL dump
 - [ ] Test backup restore process
 
 ---
 
-## SECTION AG: DOCUMENTATION
+## SECTION AH: DOCUMENTATION
 
-### AG1. Create deployment docs
+### AH1. Create deployment docs
 
 - [ ] Create `docs/deployment.md` with:
   - How to run locally (docker-compose)
   - How to run in production
   - Environment variables
   - Database setup
+  - File upload configuration
   - Backup/restore procedures
 
-### AG2. Create API documentation
+### AH2. Create API documentation
 
 - [ ] Create `docs/api-spec.md` or use Swagger/OpenAPI (optional for MVP, but recommended)
-  - List all endpoints
+  - List all endpoints including file upload endpoints
   - Request/response examples
   - Error codes
 
-### AG3. Update root README.md
+### AH3. Update root README.md
 
 - [ ] Architecture overview
 - [ ] Quick start (docker-compose up)
 - [ ] Folder structure explanation
+- [ ] File upload guidelines
 - [ ] Contributing guidelines
 
 ---
 
-## SECTION AH: FINAL TESTING & VALIDATION
+## SECTION AI: FINAL TESTING & VALIDATION
 
-### AH1. Manual testing - Auth
+### AI1. Manual testing - Auth
 
 - [ ] Register new customer account ✓
 - [ ] Login with credentials ✓
@@ -896,15 +1060,16 @@
 - [ ] Admin login ✓
 - [ ] Token refresh ✓
 
-### AH2. Manual testing - Catalog (Customer)
+### AI2. Manual testing - Catalog (Customer)
 
 - [ ] View all categories ✓
 - [ ] Filter products by category ✓
 - [ ] Filter products by subject ✓
-- [ ] View product details ✓
+- [ ] View product details (with image for stationery) ✓
+- [ ] View book preview (PDF) ✓
 - [ ] View product variants ✓
 
-### AH3. Manual testing - Cart (Customer)
+### AI3. Manual testing - Cart (Customer)
 
 - [ ] Add product to cart ✓
 - [ ] Update quantity ✓
@@ -912,20 +1077,20 @@
 - [ ] View cart total ✓
 - [ ] Clear cart ✓
 
-### AH4. Manual testing - Checkout (Customer)
+### AI4. Manual testing - Checkout (Customer)
 
 - [ ] Enter delivery address ✓
 - [ ] Place order ✓
 - [ ] Verify order in database ✓
 - [ ] View order in customer app ✓
 
-### AH5. Manual testing - Orders (Customer)
+### AI5. Manual testing - Orders (Customer)
 
 - [ ] View user orders list ✓
 - [ ] View order details ✓
 - [ ] Cancel order (if applicable) ✓
 
-### AH6. Manual testing - Admin
+### AI6. Manual testing - Admin
 
 - [ ] Login to admin app ✓
 - [ ] View dashboard stats ✓
@@ -934,8 +1099,13 @@
 - [ ] Delete category ✓
 - [ ] Create subject ✓
 - [ ] Edit subject ✓
-- [ ] Create product ✓
+- [ ] Create product (stationery with image) ✓
+- [ ] Create product (book with PDF) ✓
+- [ ] Upload product image ✓
+- [ ] Upload book PDF ✓
+- [ ] View uploaded files ✓
 - [ ] Edit product ✓
+- [ ] Delete product (verify files deleted) ✓
 - [ ] Create variant ✓
 - [ ] Update variant (price/stock) ✓
 - [ ] View all orders ✓
@@ -943,47 +1113,56 @@
 - [ ] View all users ✓
 - [ ] Update store settings ✓
 
-### AH7. API integration testing
+### AI7. API integration testing
 
 - [ ] Test all endpoints with Postman/Insomnia ✓
+- [ ] Test file upload endpoints ✓
+- [ ] Test file retrieval endpoints ✓
 - [ ] Verify error responses ✓
 - [ ] Verify auth middleware works ✓
 - [ ] Verify admin middleware works ✓
+- [ ] Test file size/type validation ✓
 
-### AH8. Performance & edge cases
+### AI8. Performance & edge cases
 
 - [ ] Test with empty categories/products ✓
 - [ ] Test with large product lists (pagination) ✓
 - [ ] Test out-of-stock handling ✓
 - [ ] Test network error handling in apps ✓
+- [ ] Test large file uploads ✓
+- [ ] Test invalid file types ✓
 
 ---
 
-## SECTION AI: FINAL CHECKLIST - GO LIVE
+## SECTION AJ: FINAL CHECKLIST - GO LIVE
 
-### AI1. Security review
+### AJ1. Security review
 
 - [ ] Change all default passwords ✓
 - [ ] Verify env secrets are NOT in git ✓
 - [ ] Enable HTTPS in Nginx ✓
 - [ ] Rate limiting configured ✓
 - [ ] CORS configured for frontend domains ✓
+- [ ] File upload security (size limits, type validation) ✓
+- [ ] Secure file serving (prevent directory traversal) ✓
 
-### AI2. Data & backups
+### AJ2. Data & backups
 
 - [ ] Database backup script runs ✓
+- [ ] File uploads backup configured ✓
 - [ ] Restore process tested ✓
 - [ ] Backup location is off-machine ✓
 - [ ] Data migration plan if needed ✓
 
-### AI3. Monitoring & logs
+### AJ3. Monitoring & logs
 
 - [ ] Container health checks configured ✓
 - [ ] Log rotation enabled ✓
 - [ ] Uptime monitoring configured ✓
 - [ ] Error alerting configured (optional) ✓
+- [ ] File storage monitoring (disk space) ✓
 
-### AI4. Release checklist
+### AJ4. Release checklist
 
 - [ ] All tests passing ✓
 - [ ] Code reviewed ✓
@@ -991,18 +1170,20 @@
 - [ ] Git tags created for release ✓
 - [ ] Changelog updated ✓
 
-### AI5. Soft launch
+### AJ5. Soft launch
 
 - [ ] Deploy to staging ✓
 - [ ] Test all critical user flows ✓
+- [ ] Test file uploads in staging ✓
 - [ ] Verify database integrity ✓
 - [ ] Monitor for 24 hours ✓
 
-### AI6. Production launch
+### AJ6. Production launch
 
 - [ ] Deploy to production ✓
 - [ ] Verify all endpoints respond ✓
 - [ ] Smoke test critical flows ✓
+- [ ] Test file uploads in production ✓
 - [ ] Monitor error logs ✓
 - [ ] Announce to users ✓
 
@@ -1020,5 +1201,18 @@
 8. **Database migrations** - always create & test migrations
 9. **Environment variables** - document all required vars
 10. **Error handling** - every API should have proper error responses
+11. **File uploads** - validate file types and sizes strictly
+12. **File storage** - ensure /uploads directory has proper permissions
+
+---
+
+**PRIORITY ORDER FOR DEVELOPMENT**:
+
+1. ✅ Backend infrastructure (Sections A-K) - COMPLETED
+2. 🎯 **NEXT: File upload support (Section L)** - START HERE
+3. Flutter shared package (Section M)
+4. Admin app (Sections N-W) - Build this BEFORE customer app
+5. Customer app (Sections X-AE)
+6. Testing, Docker, Documentation, Go-live (Sections AF-AJ)
 
 ---

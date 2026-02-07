@@ -42,6 +42,9 @@ export interface UpdateProductInput {
 	isbn?: string | null;
 	basePrice?: number;
 	subjectId?: string;
+	imageUrl?: string | null;
+	pdfUrl?: string | null;
+	fileType?: "IMAGE" | "PDF" | "NONE";
 	isActive?: boolean;
 	categoryIds?: string[];
 }
@@ -225,4 +228,53 @@ export function validateUpdateVariant(data: any): UpdateVariantInput {
 	}
 
 	return update;
+}
+
+/**
+ * Validate file upload for products
+ */
+export function validateFileUpload(
+	file: Express.Multer.File | undefined,
+	fileType: "IMAGE" | "PDF" | "NONE",
+): { valid: boolean; error?: string } {
+	if (!file) {
+		return { valid: false, error: "No file provided" };
+	}
+
+	const MAX_IMAGE_SIZE = 5 * 1024 * 1024; // 5MB
+	const MAX_PDF_SIZE = 10 * 1024 * 1024; // 10MB
+	const ALLOWED_IMAGE_TYPES = ["image/jpeg", "image/png", "image/webp"];
+	const ALLOWED_PDF_TYPES = ["application/pdf"];
+
+	if (fileType === "IMAGE") {
+		if (!ALLOWED_IMAGE_TYPES.includes(file.mimetype)) {
+			return {
+				valid: false,
+				error: `Invalid image type. Allowed: ${ALLOWED_IMAGE_TYPES.join(", ")}`,
+			};
+		}
+
+		if (file.size > MAX_IMAGE_SIZE) {
+			return {
+				valid: false,
+				error: `Image size exceeds maximum of ${MAX_IMAGE_SIZE / 1024 / 1024}MB`,
+			};
+		}
+	} else if (fileType === "PDF") {
+		if (!ALLOWED_PDF_TYPES.includes(file.mimetype)) {
+			return {
+				valid: false,
+				error: "Invalid PDF type. Only application/pdf allowed",
+			};
+		}
+
+		if (file.size > MAX_PDF_SIZE) {
+			return {
+				valid: false,
+				error: `PDF size exceeds maximum of ${MAX_PDF_SIZE / 1024 / 1024}MB`,
+			};
+		}
+	}
+
+	return { valid: true };
 }

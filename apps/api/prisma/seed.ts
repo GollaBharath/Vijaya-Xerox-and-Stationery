@@ -6,6 +6,25 @@
 
 const { PrismaClient } = require("@prisma/client");
 const bcrypt = require("bcrypt");
+const path = require("path");
+const fs = require("fs");
+
+// Initialize upload directories
+function initializeUploadDirs() {
+	const uploadsDir = path.join(process.cwd(), "uploads");
+	const imagesDir = path.join(uploadsDir, "images", "products");
+	const pdfsDir = path.join(uploadsDir, "pdfs", "books");
+
+	if (!fs.existsSync(imagesDir)) {
+		fs.mkdirSync(imagesDir, { recursive: true });
+		console.log("✓ Created images directory:", imagesDir);
+	}
+
+	if (!fs.existsSync(pdfsDir)) {
+		fs.mkdirSync(pdfsDir, { recursive: true });
+		console.log("✓ Created PDFs directory:", pdfsDir);
+	}
+}
 
 const prisma = new PrismaClient();
 
@@ -101,6 +120,9 @@ async function upsertVariant(data: UpsertVariantInput) {
 }
 
 async function main() {
+	// Initialize upload directories first
+	initializeUploadDirs();
+
 	const adminEmail = process.env.ADMIN_EMAIL || "admin@vijaya.local";
 	const adminPassword = process.env.ADMIN_PASSWORD || "Admin@12345";
 

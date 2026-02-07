@@ -3,6 +3,7 @@
  */
 
 import { prisma } from "@/lib/prisma";
+import { deleteFile } from "@/lib/file_storage";
 import {
 	Product,
 	ProductFilterOptions,
@@ -17,6 +18,9 @@ function toProduct(entity: any): Product {
 		isbn: entity.isbn ?? null,
 		basePrice: entity.basePrice,
 		subjectId: entity.subjectId,
+		imageUrl: entity.imageUrl ?? null,
+		pdfUrl: entity.pdfUrl ?? null,
+		fileType: entity.fileType ?? "NONE",
 		isActive: entity.isActive,
 		createdAt: entity.createdAt.toISOString(),
 		updatedAt: entity.updatedAt.toISOString(),
@@ -90,6 +94,9 @@ export async function createProduct(data: {
 	isbn?: string | null;
 	basePrice: number;
 	subjectId: string;
+	imageUrl?: string | null;
+	pdfUrl?: string | null;
+	fileType?: "IMAGE" | "PDF" | "NONE";
 	categoryIds?: string[];
 }): Promise<Product> {
 	const product = await prisma.product.create({
@@ -99,6 +106,9 @@ export async function createProduct(data: {
 			isbn: data.isbn ?? null,
 			basePrice: data.basePrice,
 			subjectId: data.subjectId,
+			imageUrl: data.imageUrl ?? null,
+			pdfUrl: data.pdfUrl ?? null,
+			fileType: data.fileType ?? "NONE",
 			categories: data.categoryIds?.length
 				? {
 						createMany: {
@@ -122,6 +132,9 @@ export async function updateProduct(
 		isbn?: string | null;
 		basePrice?: number;
 		subjectId?: string;
+		imageUrl?: string | null;
+		pdfUrl?: string | null;
+		fileType?: "IMAGE" | "PDF" | "NONE";
 		isActive?: boolean;
 		categoryIds?: string[];
 	},
@@ -134,6 +147,9 @@ export async function updateProduct(
 			isbn: data.isbn ?? undefined,
 			basePrice: data.basePrice,
 			subjectId: data.subjectId,
+			imageUrl: data.imageUrl ?? undefined,
+			pdfUrl: data.pdfUrl ?? undefined,
+			fileType: data.fileType ?? undefined,
 			isActive: data.isActive,
 			categories: data.categoryIds
 				? {
@@ -183,4 +199,38 @@ export async function getProductWithVariants(
 			updatedAt: v.updatedAt.toISOString(),
 		})),
 	};
+}
+
+export async function deleteProductFiles(id: string): Promise<boolean> {
+	try {
+		const product = await prisma.product.findUnique({
+			where: { id },
+			select: { imageUrl: true, pdfUrl: true },
+		});
+
+		if (!product) return false;
+
+		if (product.imageUrl) {
+			deleteFile(product.imageUrl);
+		}
+
+		if (product.pdfUrl) {
+			deleteFile(product.pdfUrl);
+		}
+
+		// Clear file URLs from database
+		await prisma.product.update({
+			where: { id },
+			data: {
+				imageUrl: null,
+				pdfUrl: null,
+				fileType: "NONE",
+			},
+		});
+
+		return true;
+	} catch (error) {
+		console.error("Error deleting product files:", error);
+		return false;
+	}
 }
