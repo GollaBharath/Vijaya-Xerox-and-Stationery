@@ -3,6 +3,9 @@ import 'package:go_router/go_router.dart';
 import '../features/auth/screens/splash_screen.dart' as auth;
 import '../features/auth/screens/login_screen.dart' as auth;
 import '../features/auth/screens/register_screen.dart' as auth;
+import '../features/catalog/screens/catalog_screen.dart';
+import '../features/catalog/screens/product_detail_screen.dart';
+import '../features/cart/screens/cart_screen.dart';
 import 'route_names.dart';
 
 /// Application router configuration using GoRouter
@@ -186,15 +189,6 @@ class HomeScreen extends StatelessWidget {
   }
 }
 
-class CatalogScreen extends StatelessWidget {
-  const CatalogScreen({super.key});
-
-  @override
-  Widget build(BuildContext context) {
-    return const Scaffold(body: Center(child: Text('Catalog')));
-  }
-}
-
 class CategoryProductsScreen extends StatelessWidget {
   final String categoryId;
 
@@ -203,26 +197,6 @@ class CategoryProductsScreen extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     return Scaffold(body: Center(child: Text('Category: $categoryId')));
-  }
-}
-
-class ProductDetailScreen extends StatelessWidget {
-  final String productId;
-
-  const ProductDetailScreen({super.key, required this.productId});
-
-  @override
-  Widget build(BuildContext context) {
-    return Scaffold(body: Center(child: Text('Product: $productId')));
-  }
-}
-
-class CartScreen extends StatelessWidget {
-  const CartScreen({super.key});
-
-  @override
-  Widget build(BuildContext context) {
-    return const Scaffold(body: Center(child: Text('Cart')));
   }
 }
 

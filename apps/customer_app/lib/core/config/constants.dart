@@ -4,6 +4,10 @@ class AppConstants {
   static const String appName = 'Vijaya Store';
   static const String appVersion = '1.0.0';
 
+  // API configuration
+  static const String apiBaseUrl =
+      'http://localhost:3000'; // Change this to your API URL
+
   // Time constants (in milliseconds)
   static const int connectionTimeout = 30000;
   static const int receiveTimeout = 30000;

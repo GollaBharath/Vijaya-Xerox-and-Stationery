@@ -814,18 +814,18 @@
 
 ### Z1. Create catalog feature structure
 
-- [ ] Create `lib/features/catalog/` folder with: models/, providers/, screens/, widgets/
+- [✅] Create `lib/features/catalog/` folder with: models/, providers/, screens/, widgets/
 
 ### Z2. Create catalog providers
 
-- [ ] Create `lib/features/catalog/providers/category_provider.dart` with:
+- [✅] Create `lib/features/catalog/providers/category_provider.dart` with:
   - `fetchCategories()`
   - `categories` getter (with caching)
   - Error state handling
-- [ ] Create `lib/features/catalog/providers/subject_provider.dart` with:
+- [✅] Create `lib/features/catalog/providers/subject_provider.dart` with:
   - `fetchSubjects()`
   - `subjects` getter (hierarchical)
-- [ ] Create `lib/features/catalog/providers/product_provider.dart` with:
+- [✅] Create `lib/features/catalog/providers/product_provider.dart` with:
   - `fetchProducts(categoryId, subjectId, pagination)`
   - `fetchProductDetails(id)`
   - `searchProducts(query)`
@@ -833,12 +833,12 @@
 
 ### Z3. Create catalog screens
 
-- [ ] Create `lib/features/catalog/screens/catalog_screen.dart` with:
+- [✅] Create `lib/features/catalog/screens/catalog_screen.dart` with:
   - Category/Subject filter chips
   - Product grid list with images (for stationery)
   - PDF badge indicator (for books)
   - Pull-to-refresh
-- [ ] Create `lib/features/catalog/screens/product_detail_screen.dart` with:
+- [✅] Create `lib/features/catalog/screens/product_detail_screen.dart` with:
   - Product image display (for stationery) with zoom
   - PDF viewer/download button (for books)
   - Product title, description
@@ -849,10 +849,10 @@
 
 ### Z4. Create catalog widgets
 
-- [ ] Create `lib/features/catalog/widgets/product_card.dart` - with image or PDF badge
-- [ ] Create `lib/features/catalog/widgets/category_chip.dart`
-- [ ] Create `lib/features/catalog/widgets/variant_selector.dart`
-- [ ] Create `lib/features/catalog/widgets/pdf_viewer_widget.dart` - for book preview
+- [✅] Create `lib/features/catalog/widgets/product_card.dart` - with image or PDF badge
+- [✅] Create `lib/features/catalog/widgets/category_chip.dart`
+- [✅] Create `lib/features/catalog/widgets/variant_selector.dart`
+- [✅] Create `lib/features/catalog/widgets/pdf_viewer_widget.dart` - for book preview
 
 ---
 
@@ -860,11 +860,11 @@
 
 ### AA1. Create cart feature structure
 
-- [ ] Create `lib/features/cart/` folder with: models/, providers/, screens/, widgets/
+- [✅] Create `lib/features/cart/` folder with: models/, providers/, screens/, widgets/
 
 ### AA2. Create cart provider
 
-- [ ] Create `lib/features/cart/providers/cart_provider.dart` with:
+- [✅] Create `lib/features/cart/providers/cart_provider.dart` with:
   - `addToCart(productVariantId, quantity)`
   - `removeFromCart(itemId)`
   - `updateQuantity(itemId, quantity)`
@@ -875,7 +875,7 @@
 
 ### AA3. Create cart screen
 
-- [ ] Create `lib/features/cart/screens/cart_screen.dart` with:
+- [✅] Create `lib/features/cart/screens/cart_screen.dart` with:
   - List of cart items with quantity controls
   - Product images/PDF badges
   - Remove item button
@@ -885,8 +885,8 @@
 
 ### AA4. Create cart widgets
 
-- [ ] Create `lib/features/cart/widgets/cart_item_card.dart`
-- [ ] Create `lib/features/cart/widgets/quantity_selector.dart`
+- [✅] Create `lib/features/cart/widgets/cart_item_card.dart`
+- [✅] Create `lib/features/cart/widgets/quantity_selector.dart`
 
 ---
 
