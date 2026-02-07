@@ -6,7 +6,7 @@ class AppConstants {
 
   // API configuration
   static const String apiBaseUrl =
-      'http://localhost:3000'; // Change this to your API URL
+      'http://192.168.0.7:3000'; // Android emulator uses 10.0.2.2 for localhost
 
   // Time constants (in milliseconds)
   static const int connectionTimeout = 30000;

@@ -32,23 +32,33 @@ class _LoginScreenState extends State<LoginScreen> {
   }
 
   void _handleLogin() async {
+    print('=== BUTTON PRESSED ===');
+    print('Form valid: ${_formKey.currentState!.validate()}');
+
     if (!_formKey.currentState!.validate()) {
+      print('Form validation failed');
       return;
     }
 
+    print('Getting authProvider...');
     final authProvider = context.read<AuthProvider>();
+    print('AuthProvider isLoading: ${authProvider.isLoading}');
+
     authProvider.clearError();
 
     try {
+      print('Calling login...');
       await authProvider.login(
         _emailController.text.trim(),
         _passwordController.text,
       );
 
+      print('Login successful, navigating...');
       if (mounted) {
         context.go(RouteNames.home);
       }
     } catch (e) {
+      print('Login error caught: $e');
       if (mounted) {
         ScaffoldMessenger.of(context).showSnackBar(
           SnackBar(

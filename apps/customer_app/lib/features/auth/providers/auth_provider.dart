@@ -1,5 +1,6 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_shared/models/user.dart';
+import 'package:flutter_shared/auth/token_manager.dart';
 import 'package:http/http.dart' as http;
 import 'dart:convert';
 import 'dart:async';
@@ -12,6 +13,7 @@ import '../models/auth_models.dart';
 
 /// Authentication state provider
 class AuthProvider extends ChangeNotifier {
+  final TokenManager _tokenManager = TokenManager();
   // State variables
   User? _currentUser;
   String? _accessToken;
@@ -64,28 +66,47 @@ class AuthProvider extends ChangeNotifier {
 
     try {
       final request = LoginRequest(email: email, password: password);
+      final url = ApiConfig.buildUrl(ApiConfig.authLogin);
+
+      // Debug logging
+      print('=== LOGIN DEBUG ===');
+      print('URL: $url');
+      print('Email: $email');
+      print('Request body: ${jsonEncode(request.toJson())}');
 
       final response = await http
           .post(
-            Uri.parse(ApiConfig.buildUrl(ApiConfig.authLogin)),
+            Uri.parse(url),
             headers: {'Content-Type': 'application/json'},
             body: jsonEncode(request.toJson()),
           )
           .timeout(
             const Duration(milliseconds: AppConstants.connectionTimeout),
-            onTimeout: () => throw TimeoutException(),
+            onTimeout: () {
+              print('LOGIN TIMEOUT');
+              throw TimeoutException();
+            },
           );
 
-      if (response.statusCode == 200) {
-        final authResponse = AuthResponse.fromJson(
-          jsonDecode(response.body) as Map<String, dynamic>,
-        );
+      print('Response status: ${response.statusCode}');
+      print('Response body: ${response.body}');
 
-        _currentUser = authResponse.user;
-        _accessToken = authResponse.accessToken;
-        _refreshToken = authResponse.refreshToken;
+      if (response.statusCode == 200) {
+        final responseData = jsonDecode(response.body) as Map<String, dynamic>;
+        final data = responseData['data'] as Map<String, dynamic>;
+        final userData = data['user'] as Map<String, dynamic>;
+        final tokensData = data['tokens'] as Map<String, dynamic>;
+
+        _currentUser = User.fromJson(userData);
+        _accessToken = tokensData['accessToken'] as String;
+        _refreshToken = tokensData['refreshToken'] as String;
 
         // Save to local storage
+        final authResponse = AuthResponse(
+          user: _currentUser!,
+          accessToken: _accessToken!,
+          refreshToken: _refreshToken!,
+        );
         await _saveTokens(authResponse);
 
         notifyListeners();
@@ -98,9 +119,12 @@ class AuthProvider extends ChangeNotifier {
         );
       }
     } on AppException catch (e) {
+      print('AppException: ${e.message}');
       _error = e.message;
       rethrow;
     } catch (e) {
+      print('Login error: $e');
+      print('Error type: ${e.runtimeType}');
       _error = 'Login failed: ${e.toString()}';
       throw NetworkException(message: _error!, originalException: e);
     } finally {
@@ -138,15 +162,21 @@ class AuthProvider extends ChangeNotifier {
           );
 
       if (response.statusCode == 201) {
-        final authResponse = AuthResponse.fromJson(
-          jsonDecode(response.body) as Map<String, dynamic>,
-        );
+        final responseData = jsonDecode(response.body) as Map<String, dynamic>;
+        final data = responseData['data'] as Map<String, dynamic>;
+        final userData = data['user'] as Map<String, dynamic>;
+        final tokensData = data['tokens'] as Map<String, dynamic>;
 
-        _currentUser = authResponse.user;
-        _accessToken = authResponse.accessToken;
-        _refreshToken = authResponse.refreshToken;
+        _currentUser = User.fromJson(userData);
+        _accessToken = tokensData['accessToken'] as String;
+        _refreshToken = tokensData['refreshToken'] as String;
 
         // Save to local storage
+        final authResponse = AuthResponse(
+          user: _currentUser!,
+          accessToken: _accessToken!,
+          refreshToken: _refreshToken!,
+        );
         await _saveTokens(authResponse);
 
         notifyListeners();
@@ -205,6 +235,9 @@ class AuthProvider extends ChangeNotifier {
     await prefs.remove(AppConstants.spKeyRefreshToken);
     await prefs.remove(AppConstants.spKeyUser);
 
+    // Also clear from TokenManager
+    await _tokenManager.clearTokens();
+
     notifyListeners();
   }
 
@@ -261,6 +294,14 @@ class AuthProvider extends ChangeNotifier {
     await prefs.setString(
       AppConstants.spKeyUser,
       jsonEncode(authResponse.user.toJson()),
+    );
+
+    // Also save to TokenManager for API client
+    await _tokenManager.saveTokens(
+      accessToken: authResponse.accessToken,
+      refreshToken: authResponse.refreshToken,
+      userId: authResponse.user.id,
+      userRole: authResponse.user.role,
     );
   }
 

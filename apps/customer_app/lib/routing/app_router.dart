@@ -6,6 +6,11 @@ import '../features/auth/screens/register_screen.dart' as auth;
 import '../features/catalog/screens/catalog_screen.dart';
 import '../features/catalog/screens/product_detail_screen.dart';
 import '../features/cart/screens/cart_screen.dart';
+import '../features/checkout/screens/address_screen.dart';
+import '../features/checkout/screens/confirmation_screen.dart';
+import '../features/orders/screens/orders_list_screen.dart';
+import '../features/orders/screens/order_detail_screen.dart';
+import '../features/profile/screens/profile_screen.dart';
 import 'route_names.dart';
 
 /// Application router configuration using GoRouter
@@ -126,17 +131,17 @@ class AppRouter {
       // Checkout flow (outside shell)
       GoRoute(
         path: RouteNames.checkout,
-        builder: (context, state) => const CheckoutScreen(),
+        builder: (context, state) => const AddressScreen(),
       ),
       GoRoute(
         path: RouteNames.orderConfirmation,
-        builder: (context, state) => const OrderConfirmationScreen(),
+        builder: (context, state) => const ConfirmationScreen(),
       ),
 
       // Orders
       GoRoute(
         path: RouteNames.orders,
-        builder: (context, state) => const OrdersScreen(),
+        builder: (context, state) => const OrdersListScreen(),
         routes: [
           GoRoute(
             path: ':orderId',
@@ -200,15 +205,6 @@ class CategoryProductsScreen extends StatelessWidget {
   }
 }
 
-class ProfileScreen extends StatelessWidget {
-  const ProfileScreen({super.key});
-
-  @override
-  Widget build(BuildContext context) {
-    return const Scaffold(body: Center(child: Text('Profile')));
-  }
-}
-
 class EditProfileScreen extends StatelessWidget {
   const EditProfileScreen({super.key});
 
@@ -253,44 +249,6 @@ class SettingsScreen extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     return const Scaffold(body: Center(child: Text('Settings')));
-  }
-}
-
-class CheckoutScreen extends StatelessWidget {
-  const CheckoutScreen({super.key});
-
-  @override
-  Widget build(BuildContext context) {
-    return const Scaffold(body: Center(child: Text('Checkout')));
-  }
-}
-
-class OrderConfirmationScreen extends StatelessWidget {
-  const OrderConfirmationScreen({super.key});
-
-  @override
-  Widget build(BuildContext context) {
-    return const Scaffold(body: Center(child: Text('Order Confirmation')));
-  }
-}
-
-class OrdersScreen extends StatelessWidget {
-  const OrdersScreen({super.key});
-
-  @override
-  Widget build(BuildContext context) {
-    return const Scaffold(body: Center(child: Text('Orders')));
-  }
-}
-
-class OrderDetailScreen extends StatelessWidget {
-  final String orderId;
-
-  const OrderDetailScreen({super.key, required this.orderId});
-
-  @override
-  Widget build(BuildContext context) {
-    return Scaffold(body: Center(child: Text('Order: $orderId')));
   }
 }
 
