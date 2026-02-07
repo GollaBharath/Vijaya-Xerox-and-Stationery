@@ -3,6 +3,7 @@ import 'package:provider/provider.dart';
 import '../../../core/theme/colors.dart';
 import '../../../core/config/constants.dart';
 import '../../../routing/route_names.dart';
+import '../../../shared/widgets/admin_drawer.dart';
 import '../providers/subject_provider.dart';
 import '../widgets/subject_tree_item.dart';
 
@@ -99,6 +100,7 @@ class _SubjectsListScreenState extends State<SubjectsListScreen> {
   @override
   Widget build(BuildContext context) {
     return Scaffold(
+      drawer: const AdminDrawer(currentRoute: RouteNames.subjects),
       appBar: AppBar(title: const Text('Subjects')),
       body: Consumer<SubjectProvider>(
         builder: (context, subjectProvider, _) {

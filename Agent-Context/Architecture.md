@@ -455,7 +455,142 @@ Optional:
 
 ---
 
-# 13. Development Roadmap
+# 13. API Response Standards & Frontend Integration Patterns
+
+## 13.1 Standard Response Format
+
+All API endpoints MUST return responses in this format:
+
+```typescript
+// Success response with list data
+{
+  "success": true,
+  "data": [...items],           // Array directly in data, NOT nested
+  "pagination": {               // For paginated endpoints
+    "page": 1,
+    "limit": 20,
+    "total": 100,
+    "totalPages": 5
+  }
+}
+
+// Success response with single object
+{
+  "success": true,
+  "data": {...single object...},
+  "message": "Operation successful" // Optional
+}
+
+// Error response
+{
+  "success": false,
+  "error": {
+    "code": "VALIDATION_ERROR",
+    "message": "Detailed error message"
+  }
+}
+```
+
+**CRITICAL RULES:**
+
+- `data` field contains the ACTUAL response items/object, NOT a wrapper
+- Never use `data: { items: [...] }` - use `data: [...]` directly
+- Always include `pagination` object for list endpoints (even if empty page)
+- Use consistent field naming (snake_case in backend, camelCase in Dart models)
+
+## 13.2 Frontend Data Parsing Pattern
+
+**CORRECT Pattern for List Endpoints:**
+
+```dart
+// Backend returns: { "success": true, "data": [...], "pagination": {...} }
+final response = await _apiClient.get(endpoint);
+final itemsList = (response['data'] as List?) ?? [];  // Cast directly to List
+final pagination = response['pagination'] as Map<String, dynamic>? ?? {};
+
+_items = itemsList
+    .map((json) => Item.fromJson(json as Map<String, dynamic>))
+    .toList();
+_totalPages = pagination['totalPages'] as int? ?? 1;
+```
+
+**INCORRECT Pattern (causes type errors):**
+
+```dart
+// DON'T DO THIS:
+final data = response['data'] as Map<String, dynamic>;  // Wrong! data is a List
+final itemsList = data['items'] as List;                // This key doesn't exist
+```
+
+## 13.3 Dart Model JSON Parsing with Null Safety
+
+All fields that can be `null` from backend MUST use safe casting with fallbacks:
+
+```dart
+factory Item.fromJson(Map<String, dynamic> json) {
+  return Item(
+    // Required fields - cast with null coalescing
+    id: (json['id'] as String?) ?? '',
+    title: (json['title'] as String?) ?? '',
+
+    // Numeric fields with null safety
+    basePrice: ((json['base_price'] as num?) ?? 0).toDouble(),
+    stock: (json['stock'] as int?) ?? 0,
+
+    // Optional fields - can be null
+    description: json['description'] as String?,
+    imageUrl: json['image_url'] as String?,
+
+    // Dates with null safety
+    createdAt: DateTime.parse((json['created_at'] as String?) ?? DateTime.now().toIso8601String()),
+  );
+}
+```
+
+## 13.4 API Endpoint Organization
+
+**Catalog endpoints MUST be under `/api/v1/catalog/`:**
+
+- `GET /api/v1/catalog/products`
+- `GET /api/v1/catalog/categories`
+- `GET /api/v1/catalog/subjects` ✓ (NOT `/api/v1/subjects`)
+
+**Non-catalog endpoints location:**
+
+- `GET /api/v1/orders`
+- `GET /api/v1/auth/login`
+
+## 13.5 API Client Timeout Requirements
+
+All HTTP methods MUST have timeouts to prevent hanging connections:
+
+```dart
+Future<dynamic> get(String endpoint, {bool withAuth = true}) async {
+  final response = await _httpClient
+      .get(url, headers: headers)
+      .timeout(const Duration(seconds: 30));  // Always add timeout
+  return _handleResponse(response);
+}
+```
+
+Timeout durations:
+
+- Standard requests: 30 seconds
+- File uploads: 60 seconds
+
+## 13.6 Common Mistakes to Avoid
+
+| Mistake                                                              | Impact                               | Fix                                    |
+| -------------------------------------------------------------------- | ------------------------------------ | -------------------------------------- |
+| Casting `response['data']` as Map when it's a List                   | Type error crash                     | Cast directly as `List`                |
+| Not handling null in numeric fields                                  | "null is not a subtype of num" error | Use `?? 0` fallback                    |
+| Endpoint at `/api/v1/subjects` instead of `/api/v1/catalog/subjects` | 404 Not Found                        | Move route file to correct directory   |
+| No timeout on HTTP requests                                          | Hanging requests, UX freeze          | Add `.timeout()` to all requests       |
+| Not safe-casting in fromJson                                         | Null pointer errors                  | Use `(json['field'] as Type?)` pattern |
+
+---
+
+# 14. Development Roadmap
 
 ## Phase 1 (MVP)
 

@@ -5,6 +5,7 @@ import '../../../core/theme/colors.dart';
 import '../../../core/config/constants.dart';
 import '../../../routing/route_names.dart';
 import '../../../routing/app_router.dart';
+import '../../../shared/widgets/admin_drawer.dart';
 import '../../auth/providers/auth_provider.dart';
 import '../providers/dashboard_provider.dart';
 import '../widgets/stat_card.dart';
@@ -65,6 +66,7 @@ class _DashboardScreenState extends State<DashboardScreen> {
     final authProvider = context.watch<AuthProvider>();
 
     return Scaffold(
+      drawer: const AdminDrawer(currentRoute: RouteNames.dashboard),
       appBar: AppBar(
         title: const Text('Dashboard'),
         actions: [

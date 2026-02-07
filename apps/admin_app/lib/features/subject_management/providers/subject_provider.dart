@@ -59,7 +59,7 @@ class SubjectProvider extends ChangeNotifier {
       notifyListeners();
 
       final response = await _apiClient.get(ApiEndpoints.subjectsRoot);
-      final data = response['data'] as List<dynamic>;
+      final data = (response['data'] as List<dynamic>?) ?? [];
 
       _subjects = data
           .map(

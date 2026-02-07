@@ -68,21 +68,22 @@ class Product {
   /// Create Product from JSON
   factory Product.fromJson(Map<String, dynamic> json) {
     return Product(
-      id: json['id'] as String,
-      title: json['title'] as String,
-      description: json['description'] as String,
+      id: (json['id'] as String?) ?? '',
+      title: (json['title'] as String?) ?? '',
+      description: (json['description'] as String?) ?? '',
       isbn: json['isbn'] as String?,
-      basePrice: (json['base_price'] as num).toDouble(),
-      subjectId: json['subject_id'] as String,
+      basePrice: ((json['base_price'] as num?) ?? 0).toDouble(),
+      subjectId: (json['subject_id'] as String?) ?? '',
       imageUrl: json['image_url'] as String?,
       pdfUrl: json['pdf_url'] as String?,
-      fileType: json['file_type'] as String? ?? 'NONE',
-      isActive: json['is_active'] as bool? ?? true,
-      createdAt: DateTime.parse(json['created_at'] as String),
+      fileType: (json['file_type'] as String?) ?? 'NONE',
+      isActive: (json['is_active'] as bool?) ?? true,
+      createdAt: DateTime.parse(
+          (json['created_at'] as String?) ?? DateTime.now().toIso8601String()),
       variants: json['variants'] != null
           ? (json['variants'] as List)
-                .map((v) => ProductVariant.fromJson(v as Map<String, dynamic>))
-                .toList()
+              .map((v) => ProductVariant.fromJson(v as Map<String, dynamic>))
+              .toList()
           : null,
     );
   }

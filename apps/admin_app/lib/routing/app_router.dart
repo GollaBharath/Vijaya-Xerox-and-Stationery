@@ -1,5 +1,6 @@
 import 'package:flutter/material.dart';
 import 'route_names.dart';
+import 'admin_guard.dart';
 import '../features/auth/screens/splash_screen.dart';
 import '../features/auth/screens/login_screen.dart';
 import '../features/dashboard/screens/dashboard_screen.dart';
@@ -7,6 +8,11 @@ import '../features/category_management/screens/categories_list_screen.dart';
 import '../features/category_management/screens/category_form_screen.dart';
 import '../features/subject_management/screens/subjects_list_screen.dart';
 import '../features/subject_management/screens/subject_form_screen.dart';
+import '../features/product_management/screens/products_list_screen.dart';
+import '../features/order_management/screens/orders_list_screen.dart';
+import '../features/user_management/screens/users_list_screen.dart';
+import '../features/user_management/screens/user_detail_screen.dart';
+import '../features/settings/screens/settings_screen.dart';
 
 /// Simple app router using Navigator 1.0
 /// Routes will be properly configured as features are built
@@ -27,65 +33,66 @@ class AppRouter {
 
       case RouteNames.dashboard:
         return MaterialPageRoute(
-          builder: (_) => const DashboardScreen(),
+          builder: (_) => const AdminGuard(child: DashboardScreen()),
           settings: settings,
         );
 
       case RouteNames.categories:
         return MaterialPageRoute(
-          builder: (_) => const CategoriesListScreen(),
+          builder: (_) => const AdminGuard(child: CategoriesListScreen()),
           settings: settings,
         );
 
       case RouteNames.categoryForm:
         final categoryId = settings.arguments as String?;
         return MaterialPageRoute(
-          builder: (_) => CategoryFormScreen(categoryId: categoryId),
+          builder: (_) =>
+              AdminGuard(child: CategoryFormScreen(categoryId: categoryId)),
           settings: settings,
         );
 
       case RouteNames.subjects:
         return MaterialPageRoute(
-          builder: (_) => const SubjectsListScreen(),
+          builder: (_) => const AdminGuard(child: SubjectsListScreen()),
           settings: settings,
         );
 
       case RouteNames.subjectForm:
         final subjectId = settings.arguments as String?;
         return MaterialPageRoute(
-          builder: (_) => SubjectFormScreen(subjectId: subjectId),
+          builder: (_) =>
+              AdminGuard(child: SubjectFormScreen(subjectId: subjectId)),
           settings: settings,
         );
 
       case RouteNames.products:
         return MaterialPageRoute(
-          builder: (_) => const Scaffold(
-            body: Center(child: Text('Products - To be implemented')),
-          ),
+          builder: (_) => const AdminGuard(child: ProductsListScreen()),
           settings: settings,
         );
 
       case RouteNames.orders:
         return MaterialPageRoute(
-          builder: (_) => const Scaffold(
-            body: Center(child: Text('Orders - To be implemented')),
-          ),
+          builder: (_) => const AdminGuard(child: OrdersListScreen()),
           settings: settings,
         );
 
       case RouteNames.users:
         return MaterialPageRoute(
-          builder: (_) => const Scaffold(
-            body: Center(child: Text('Users - To be implemented')),
-          ),
+          builder: (_) => const AdminGuard(child: UsersListScreen()),
+          settings: settings,
+        );
+
+      case RouteNames.userDetail:
+        final userId = settings.arguments as String;
+        return MaterialPageRoute(
+          builder: (_) => AdminGuard(child: UserDetailScreen(userId: userId)),
           settings: settings,
         );
 
       case RouteNames.settings:
         return MaterialPageRoute(
-          builder: (_) => const Scaffold(
-            body: Center(child: Text('Settings - To be implemented')),
-          ),
+          builder: (_) => const AdminGuard(child: SettingsScreen()),
           settings: settings,
         );
 

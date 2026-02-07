@@ -37,8 +37,8 @@ class ProductVariant {
       id: json['id'] as String,
       productId: json['product_id'] as String,
       variantType: json['variant_type'] as String,
-      price: (json['price'] as num).toDouble(),
-      stock: json['stock'] as int,
+      price: ((json['price'] as num?) ?? 0).toDouble(),
+      stock: (json['stock'] as int?) ?? 0,
       sku: json['sku'] as String,
     );
   }

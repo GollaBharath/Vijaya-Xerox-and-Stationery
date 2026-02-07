@@ -63,7 +63,7 @@ class CategoryProvider extends ChangeNotifier {
         '${ApiEndpoints.categoriesRoot}?isActive=true',
       );
       print('📂 Response: $response');
-      final data = response['data'] as List<dynamic>;
+      final data = (response['data'] as List<dynamic>?) ?? [];
       print('📂 Data count: ${data.length}');
 
       _categories = data

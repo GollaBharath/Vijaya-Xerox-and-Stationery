@@ -9,6 +9,11 @@ import 'features/auth/providers/auth_provider.dart';
 import 'features/dashboard/providers/dashboard_provider.dart';
 import 'features/category_management/providers/category_provider.dart';
 import 'features/subject_management/providers/subject_provider.dart';
+import 'features/user_management/providers/user_provider.dart';
+import 'features/settings/providers/settings_provider.dart';
+import 'features/product_management/providers/product_provider.dart';
+import 'features/product_management/providers/variant_provider.dart';
+import 'features/order_management/providers/order_provider.dart';
 
 void main() async {
   // Ensure Flutter bindings are initialized
@@ -44,6 +49,19 @@ class AdminApp extends StatelessWidget {
 
         // Subject management provider
         ChangeNotifierProvider(create: (_) => SubjectProvider()),
+
+        // User management provider
+        ChangeNotifierProvider(create: (_) => UserProvider()),
+
+        // Settings provider
+        ChangeNotifierProvider(create: (_) => SettingsProvider()),
+
+        // Product management providers
+        ChangeNotifierProvider(create: (_) => ProductProvider()),
+        ChangeNotifierProvider(create: (_) => VariantProvider()),
+
+        // Order management provider
+        ChangeNotifierProvider(create: (_) => OrderProvider()),
       ],
       child: MaterialApp(
         title: Env.appName,

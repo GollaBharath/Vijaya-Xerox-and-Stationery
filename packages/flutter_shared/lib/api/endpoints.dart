@@ -15,16 +15,28 @@ class ApiEndpoints {
   static const String adminUsers = '/api/v1/admin/users';
 
   // Catalog endpoints
-  static const String categoriesRoot = '/api/v1/catalog/categories';
-  static const String subjectsRoot = '/api/v1/catalog/subjects';
-  static const String productsRoot = '/api/v1/catalog/products';
+  static const String categories = '/api/v1/catalog/categories';
+  static const String subjects = '/api/v1/catalog/subjects';
+  static const String products = '/api/v1/catalog/products';
+  static const String variants = '/api/v1/catalog/variants';
+
+  // Legacy aliases (deprecated)
+  static const String categoriesRoot = categories;
+  static const String subjectsRoot = subjects;
+  static const String productsRoot = products;
 
   // Cart endpoints
-  static const String cartRoot = '/api/v1/cart';
+  static const String cart = '/api/v1/cart';
   static const String cartClear = '/api/v1/cart/clear';
 
+  // Legacy aliases (deprecated)
+  static const String cartRoot = cart;
+
   // Order endpoints
-  static const String ordersRoot = '/api/v1/orders';
+  static const String orders = '/api/v1/orders';
+
+  // Legacy aliases (deprecated)
+  static const String ordersRoot = orders;
 
   // File upload endpoints
   static const String uploadImage = '/api/v1/catalog/products/upload-image';
@@ -36,10 +48,17 @@ class ApiEndpoints {
 
   // Helper methods for dynamic endpoints
   static String userId(String id) => '$adminUsers/$id';
-  static String category(String id) => '$categoriesRoot/$id';
-  static String subject(String id) => '$subjectsRoot/$id';
-  static String product(String id) => '$productsRoot/$id';
-  static String productFiles(String id) => '$productsRoot/$id/files';
-  static String cartItem(String itemId) => '$cartRoot/$itemId';
-  static String order(String id) => '$ordersRoot/$id';
+  static String adminUser(String id) => '$adminUsers/$id';
+  static String category(String id) => '$categories/$id';
+  static String subject(String id) => '$subjects/$id';
+  static String product(String id) => '$products/$id';
+  static String productFiles(String id) => '$products/$id/files';
+  static String productVariants(String productId) =>
+      '$products/$productId/variants';
+  static String variant(String id) => '$variants/$id';
+  static String cartItem(String itemId) => '$cart/$itemId';
+  static String order(String id) => '$orders/$id';
 }
+
+// Shorter alias for convenience
+typedef Endpoints = ApiEndpoints;

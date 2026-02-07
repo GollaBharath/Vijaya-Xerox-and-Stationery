@@ -5,6 +5,7 @@ class User {
   final String email;
   final String phone;
   final String role; // 'ADMIN' or 'CUSTOMER'
+  final bool isActive;
   final DateTime createdAt;
 
   User({
@@ -13,6 +14,7 @@ class User {
     required this.email,
     required this.phone,
     required this.role,
+    required this.isActive,
     required this.createdAt,
   });
 
@@ -23,6 +25,7 @@ class User {
   bool get isCustomer => role == 'CUSTOMER';
 
   /// Convert User to JSON
+  /// Convert User to JSON
   Map<String, dynamic> toJson() {
     return {
       'id': id,
@@ -30,6 +33,7 @@ class User {
       'email': email,
       'phone': phone,
       'role': role,
+      'isActive': isActive,
       'created_at': createdAt.toIso8601String(),
     };
   }
@@ -42,6 +46,7 @@ class User {
       email: json['email'] as String,
       phone: json['phone'] as String,
       role: json['role'] as String,
+      isActive: json['isActive'] as bool? ?? true,
       createdAt: DateTime.parse(json['createdAt'] as String),
     );
   }
@@ -53,6 +58,7 @@ class User {
     String? email,
     String? phone,
     String? role,
+    bool? isActive,
     DateTime? createdAt,
   }) {
     return User(
@@ -61,6 +67,7 @@ class User {
       email: email ?? this.email,
       phone: phone ?? this.phone,
       role: role ?? this.role,
+      isActive: isActive ?? this.isActive,
       createdAt: createdAt ?? this.createdAt,
     );
   }
@@ -79,7 +86,8 @@ class User {
           name == other.name &&
           email == other.email &&
           phone == other.phone &&
-          role == other.role;
+          role == other.role &&
+          isActive == other.isActive;
 
   @override
   int get hashCode =>
@@ -87,5 +95,6 @@ class User {
       name.hashCode ^
       email.hashCode ^
       phone.hashCode ^
-      role.hashCode;
+      role.hashCode ^
+      isActive.hashCode;
 }

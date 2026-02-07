@@ -72,7 +72,9 @@ class ApiClient {
       final url = Uri.parse('$baseUrl$endpoint');
       final headers = await _buildHeaders(withAuth: withAuth);
 
-      final response = await _httpClient.get(url, headers: headers);
+      final response = await _httpClient
+          .get(url, headers: headers)
+          .timeout(const Duration(seconds: 30));
       return _handleResponse(response);
     } catch (e) {
       rethrow;
@@ -89,11 +91,13 @@ class ApiClient {
       final url = Uri.parse('$baseUrl$endpoint');
       final headers = await _buildHeaders(withAuth: withAuth);
 
-      final response = await _httpClient.post(
-        url,
-        headers: headers,
-        body: body != null ? jsonEncode(body) : null,
-      );
+      final response = await _httpClient
+          .post(
+            url,
+            headers: headers,
+            body: body != null ? jsonEncode(body) : null,
+          )
+          .timeout(const Duration(seconds: 30));
       return _handleResponse(response);
     } catch (e) {
       rethrow;
@@ -110,11 +114,13 @@ class ApiClient {
       final url = Uri.parse('$baseUrl$endpoint');
       final headers = await _buildHeaders(withAuth: withAuth);
 
-      final response = await _httpClient.patch(
-        url,
-        headers: headers,
-        body: body != null ? jsonEncode(body) : null,
-      );
+      final response = await _httpClient
+          .patch(
+            url,
+            headers: headers,
+            body: body != null ? jsonEncode(body) : null,
+          )
+          .timeout(const Duration(seconds: 30));
       return _handleResponse(response);
     } catch (e) {
       rethrow;
@@ -127,7 +133,9 @@ class ApiClient {
       final url = Uri.parse('$baseUrl$endpoint');
       final headers = await _buildHeaders(withAuth: withAuth);
 
-      final response = await _httpClient.delete(url, headers: headers);
+      final response = await _httpClient
+          .delete(url, headers: headers)
+          .timeout(const Duration(seconds: 30));
       return _handleResponse(response);
     } catch (e) {
       rethrow;
