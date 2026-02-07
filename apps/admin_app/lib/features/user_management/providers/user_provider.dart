@@ -78,30 +78,49 @@ class UserProvider extends ChangeNotifier {
 
       final response = await _apiClient.get(endpoint);
 
-      if (response['success'] == true) {
-        final usersData = (response['data'] as List?) ?? [];
-        final pagination =
-            response['pagination'] as Map<String, dynamic>? ?? {};
-        _totalPages = pagination['totalPages'] as int? ?? 1;
-        _hasMore = page < _totalPages;
+      // Handle different response structures
+      List<dynamic> usersData = [];
+      int totalPages = 1;
 
-        if (page == 1) {
-          _users = usersData
-              .map((u) => User.fromJson(u as Map<String, dynamic>))
-              .toList();
-        } else {
-          _users.addAll(
-            usersData
-                .map((u) => User.fromJson(u as Map<String, dynamic>))
-                .toList(),
-          );
+      if (response is Map<String, dynamic>) {
+        if (response['success'] == true && response['data'] != null) {
+          // Structure: { success: true, data: [...] }
+          final data = response['data'];
+          if (data is List) {
+            usersData = data;
+          } else if (data is Map<String, dynamic> && data['users'] is List) {
+            // Structure: { success: true, data: { users: [...] } }
+            usersData = data['users'] as List;
+          }
+
+          final pagination = response['pagination'] as Map<String, dynamic>?;
+          totalPages = pagination?['totalPages'] as int? ?? 1;
+        } else if (response['users'] is List) {
+          // Structure: { users: [...] }
+          usersData = response['users'] as List;
         }
-
-        _isLoading = false;
-        notifyListeners();
-      } else {
-        throw response['error']?['message'] ?? 'Failed to fetch users';
+      } else if (response is List) {
+        // Direct list response
+        usersData = response;
       }
+
+      _totalPages = totalPages;
+      _hasMore = page < _totalPages;
+
+      if (page == 1) {
+        _users = usersData
+            .map((u) => User.fromJson(u as Map<String, dynamic>))
+            .toList();
+      } else {
+        _users.addAll(
+          usersData
+              .map((u) => User.fromJson(u as Map<String, dynamic>))
+              .toList(),
+        );
+      }
+
+      _isLoading = false;
+      notifyListeners();
     } catch (e) {
       _isLoading = false;
       _error = 'Error fetching users: ${e.toString()}';

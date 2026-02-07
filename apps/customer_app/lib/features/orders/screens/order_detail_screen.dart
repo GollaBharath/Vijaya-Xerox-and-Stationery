@@ -1,10 +1,12 @@
 import 'package:flutter/material.dart';
 import 'package:provider/provider.dart';
+import 'package:go_router/go_router.dart';
 import 'package:intl/intl.dart';
 import 'package:cached_network_image/cached_network_image.dart';
 import 'package:flutter_shared/models/order.dart';
 import '../providers/orders_provider.dart';
 import '../../../core/config/env.dart';
+import '../../../routing/route_names.dart';
 
 /// Screen displaying detailed information about a specific order
 class OrderDetailScreen extends StatefulWidget {
@@ -112,7 +114,13 @@ class _OrderDetailScreenState extends State<OrderDetailScreen> {
   @override
   Widget build(BuildContext context) {
     return Scaffold(
-      appBar: AppBar(title: const Text('Order Details')),
+      appBar: AppBar(
+        leading: IconButton(
+          icon: const Icon(Icons.arrow_back),
+          onPressed: () => context.go(RouteNames.orders),
+        ),
+        title: const Text('Order Details'),
+      ),
       body: Consumer<OrdersProvider>(
         builder: (context, ordersProvider, child) {
           if (ordersProvider.isLoading && ordersProvider.currentOrder == null) {

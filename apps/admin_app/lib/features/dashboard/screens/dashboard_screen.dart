@@ -127,107 +127,133 @@ class _DashboardScreenState extends State<DashboardScreen> {
 
             return SingleChildScrollView(
               physics: const AlwaysScrollableScrollPhysics(),
-              padding: const EdgeInsets.all(AppConstants.defaultPadding),
+              padding: const EdgeInsets.all(16),
               child: Column(
                 crossAxisAlignment: CrossAxisAlignment.start,
                 children: [
                   // Welcome message
                   Text(
                     'Welcome, ${authProvider.currentUser?.name ?? 'Admin'}!',
-                    style: Theme.of(context).textTheme.headlineMedium,
+                    style: const TextStyle(
+                      fontSize: 24,
+                      fontWeight: FontWeight.bold,
+                    ),
                   ),
-                  const SizedBox(height: AppConstants.defaultPadding),
+                  const SizedBox(height: 24),
 
                   // Statistics cards
                   if (stats != null) ...[
-                    GridView.count(
+                    GridView.builder(
                       shrinkWrap: true,
                       physics: const NeverScrollableScrollPhysics(),
-                      crossAxisCount: 2,
-                      crossAxisSpacing: AppConstants.defaultPadding,
-                      mainAxisSpacing: AppConstants.defaultPadding,
-                      childAspectRatio: 1.5,
-                      children: [
-                        StatCard(
-                          title: 'Total Users',
-                          value: stats.totalUsers.toString(),
-                          icon: Icons.people,
-                          color: AppColors.primary,
-                        ),
-                        StatCard(
-                          title: 'Total Orders',
-                          value: stats.totalOrders.toString(),
-                          icon: Icons.shopping_cart,
-                          color: AppColors.secondary,
-                        ),
-                        StatCard(
-                          title: 'Total Revenue',
-                          value: Formatters.formatPrice(stats.totalRevenue),
-                          icon: Icons.attach_money,
-                          color: AppColors.success,
-                        ),
-                        StatCard(
-                          title: 'Recent Orders',
-                          value: stats.recentOrders.length.toString(),
-                          icon: Icons.receipt,
-                          color: AppColors.info,
-                        ),
-                      ],
+                      gridDelegate:
+                          const SliverGridDelegateWithFixedCrossAxisCount(
+                            crossAxisCount: 2,
+                            crossAxisSpacing: 12,
+                            mainAxisSpacing: 12,
+                            childAspectRatio: 1.5,
+                          ),
+                      itemCount: 4,
+                      itemBuilder: (context, index) {
+                        final cards = [
+                          StatCard(
+                            title: 'Total Users',
+                            value: stats.totalUsers.toString(),
+                            icon: Icons.people_outline,
+                            color: const Color(0xFF4CAF50),
+                          ),
+                          StatCard(
+                            title: 'Total Orders',
+                            value: stats.totalOrders.toString(),
+                            icon: Icons.shopping_cart_outlined,
+                            color: const Color(0xFF2196F3),
+                          ),
+                          StatCard(
+                            title: 'Total Revenue',
+                            value: Formatters.formatPrice(stats.totalRevenue),
+                            icon: Icons.account_balance_wallet_outlined,
+                            color: const Color(0xFFFF9800),
+                          ),
+                          StatCard(
+                            title: 'Recent Orders',
+                            value: stats.recentOrders.length.toString(),
+                            icon: Icons.receipt_long_outlined,
+                            color: const Color(0xFF9C27B0),
+                          ),
+                        ];
+                        return cards[index];
+                      },
                     ),
-                    const SizedBox(height: AppConstants.largePadding),
+                    const SizedBox(height: 32),
 
                     // Recent orders
                     Text(
                       'Recent Orders',
-                      style: Theme.of(context).textTheme.titleLarge,
+                      style: const TextStyle(
+                        fontSize: 18,
+                        fontWeight: FontWeight.bold,
+                      ),
                     ),
-                    const SizedBox(height: AppConstants.defaultPadding),
+                    const SizedBox(height: 16),
                     RecentOrdersList(orders: stats.recentOrders),
-                    const SizedBox(height: AppConstants.largePadding),
+                    const SizedBox(height: 32),
                   ],
 
                   // Navigation cards
                   Text(
                     'Quick Actions',
-                    style: Theme.of(context).textTheme.titleLarge,
+                    style: const TextStyle(
+                      fontSize: 18,
+                      fontWeight: FontWeight.bold,
+                    ),
                   ),
-                  const SizedBox(height: AppConstants.defaultPadding),
-                  GridView.count(
+                  const SizedBox(height: 16),
+                  GridView.builder(
                     shrinkWrap: true,
                     physics: const NeverScrollableScrollPhysics(),
-                    crossAxisCount: 2,
-                    crossAxisSpacing: AppConstants.defaultPadding,
-                    mainAxisSpacing: AppConstants.defaultPadding,
-                    childAspectRatio: 1.3,
-                    children: [
-                      NavigationCard(
-                        title: 'Categories',
-                        icon: Icons.category,
-                        color: AppColors.primary,
-                        onTap: () =>
-                            AppRouter.push(context, RouteNames.categories),
-                      ),
-                      NavigationCard(
-                        title: 'Products',
-                        icon: Icons.inventory,
-                        color: AppColors.secondary,
-                        onTap: () =>
-                            AppRouter.push(context, RouteNames.products),
-                      ),
-                      NavigationCard(
-                        title: 'Orders',
-                        icon: Icons.shopping_bag,
-                        color: AppColors.success,
-                        onTap: () => AppRouter.push(context, RouteNames.orders),
-                      ),
-                      NavigationCard(
-                        title: 'Users',
-                        icon: Icons.people,
-                        color: AppColors.info,
-                        onTap: () => AppRouter.push(context, RouteNames.users),
-                      ),
-                    ],
+                    gridDelegate:
+                        const SliverGridDelegateWithFixedCrossAxisCount(
+                          crossAxisCount: 2,
+                          crossAxisSpacing: 12,
+                          mainAxisSpacing: 12,
+                          childAspectRatio: 1.2,
+                        ),
+                    itemCount: 4,
+                    itemBuilder: (context, index) {
+                      final cards = [
+                        NavigationCard(
+                          title: 'Categories',
+                          icon: Icons.category_outlined,
+                          color: const Color(0xFF3F51B5),
+                          onTap: () =>
+                              AppRouter.push(context, RouteNames.categories),
+                        ),
+                        NavigationCard(
+                          title: 'Products',
+                          icon: Icons.inventory_2_outlined,
+                          color: const Color(0xFFE91E63),
+                          onTap: () =>
+                              AppRouter.push(context, RouteNames.products),
+                        ),
+                        NavigationCard(
+                          title: 'Orders',
+                          icon: Icons.shopping_bag_outlined,
+                          color: const Color(0xFF00BCD4),
+                          onTap: () =>
+                              AppRouter.push(context, RouteNames.orders),
+                        ),
+                        NavigationCard(
+                          title: 'Users',
+                          icon: Icons.people_alt_outlined,
+                          color: const Color(0xFFFF5722),
+                          onTap: () =>
+                              AppRouter.push(context, RouteNames.users),
+                        ),
+                      ];
+                      return cards[index];
+                    },
                   ),
+                  const SizedBox(height: 16),
                 ],
               ),
             );

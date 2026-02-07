@@ -3,6 +3,7 @@ import 'package:flutter/material.dart';
 import 'package:provider/provider.dart';
 import 'package:flutter_shared/flutter_shared.dart';
 import '../providers/product_provider.dart';
+import '../../subject_management/providers/subject_provider.dart';
 import '../widgets/image_picker_widget.dart';
 import '../widgets/pdf_picker_widget.dart';
 
@@ -38,6 +39,10 @@ class _ProductFormScreenState extends State<ProductFormScreen> {
     if (isEditing) {
       _populateForm();
     }
+    // Fetch subjects when screen loads
+    WidgetsBinding.instance.addPostFrameCallback((_) {
+      Provider.of<SubjectProvider>(context, listen: false).fetchSubjects();
+    });
   }
 
   void _populateForm() {
@@ -234,24 +239,50 @@ class _ProductFormScreenState extends State<ProductFormScreen> {
             ),
             const SizedBox(height: 16),
 
-            // Subject ID - In real app, this should be a dropdown
-            // For now, using text field (TODO: Implement subject selector)
-            TextFormField(
-              initialValue: _selectedSubjectId,
-              decoration: const InputDecoration(
-                labelText: 'Subject ID *',
-                border: OutlineInputBorder(),
-                prefixIcon: Icon(Icons.book),
-                helperText: 'Enter valid subject ID',
-              ),
-              onChanged: (value) {
-                _selectedSubjectId = value.trim().isEmpty ? null : value.trim();
-              },
-              validator: (value) {
-                if (value == null || value.trim().isEmpty) {
-                  return 'Subject ID is required';
+            // Subject Dropdown
+            Consumer<SubjectProvider>(
+              builder: (context, subjectProvider, _) {
+                if (subjectProvider.isLoading) {
+                  return const LinearProgressIndicator();
                 }
-                return null;
+
+                final subjects = subjectProvider.subjects;
+
+                // Ensure the selected value exists in the subjects list
+                final validValue =
+                    _selectedSubjectId != null &&
+                        subjects.any((s) => s.id == _selectedSubjectId)
+                    ? _selectedSubjectId
+                    : null;
+
+                return DropdownButtonFormField<String>(
+                  value: validValue,
+                  decoration: const InputDecoration(
+                    labelText: 'Subject *',
+                    border: OutlineInputBorder(),
+                    prefixIcon: Icon(Icons.book),
+                    helperText: 'Select a subject',
+                  ),
+                  items: subjects.map((subject) {
+                    // Add indentation for child subjects
+                    final indent = subject.parentSubjectId != null ? '  ' : '';
+                    return DropdownMenuItem<String>(
+                      value: subject.id,
+                      child: Text('$indent${subject.name}'),
+                    );
+                  }).toList(),
+                  onChanged: (value) {
+                    setState(() {
+                      _selectedSubjectId = value;
+                    });
+                  },
+                  validator: (value) {
+                    if (value == null || value.isEmpty) {
+                      return 'Please select a subject';
+                    }
+                    return null;
+                  },
+                );
               },
             ),
             const SizedBox(height: 16),

@@ -21,7 +21,7 @@ function toProduct(entity: any): Product {
 		imageUrl: entity.imageUrl ?? null,
 		pdfUrl: entity.pdfUrl ?? null,
 		fileType: entity.fileType ?? "NONE",
-		isActive: entity.isActive,
+		is_active: entity.isActive,
 		createdAt: entity.createdAt.toISOString(),
 		updatedAt: entity.updatedAt.toISOString(),
 	};
@@ -69,21 +69,35 @@ export async function findAllProducts(
 	pagination: { skip: number; take: number },
 	filters: ProductFilterOptions = {},
 ): Promise<Product[]> {
+	console.log("[Product Repo] Filters received:", filters);
+
+	const whereClause = {
+		isActive: filters.isActive ?? undefined,
+		subjectId: filters.subjectId ?? undefined,
+		title: filters.search
+			? { contains: filters.search, mode: "insensitive" }
+			: undefined,
+		categories: filters.categoryId
+			? { some: { categoryId: filters.categoryId } }
+			: undefined,
+	};
+
+	console.log(
+		"[Product Repo] Where clause:",
+		JSON.stringify(whereClause, null, 2),
+	);
+
 	const products = await prisma.product.findMany({
-		where: {
-			isActive: filters.isActive ?? undefined,
-			subjectId: filters.subjectId ?? undefined,
-			title: filters.search
-				? { contains: filters.search, mode: "insensitive" }
-				: undefined,
-			categories: filters.categoryId
-				? { some: { categoryId: filters.categoryId } }
-				: undefined,
-		},
+		where: whereClause,
 		skip: pagination.skip,
 		take: pagination.take,
 		orderBy: { createdAt: "desc" },
 	});
+
+	console.log(`[Product Repo] Found ${products.length} products`);
+	if (products.length > 0) {
+		console.log("[Product Repo] First product isActive:", products[0].isActive);
+	}
 
 	return products.map(toProduct);
 }
@@ -168,11 +182,19 @@ export async function updateProduct(
 }
 
 export async function deleteProduct(id: string): Promise<Product> {
+	// Get product before deleting to return it
+	const product = await prisma.product.findUnique({ where: { id } });
+
+	if (!product) {
+		throw new Error("Product not found");
+	}
+
+	// Delete associated files
 	await deleteProductFiles(id);
 
-	const product = await prisma.product.update({
+	// Delete the product permanently
+	await prisma.product.delete({
 		where: { id },
-		data: { isActive: false },
 	});
 
 	return toProduct(product);

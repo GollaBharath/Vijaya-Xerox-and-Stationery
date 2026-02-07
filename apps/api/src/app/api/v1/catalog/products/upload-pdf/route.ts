@@ -37,8 +37,12 @@ export async function POST(request: NextRequest) {
 		const buffer = await file.arrayBuffer();
 		const bufferData = Buffer.from(buffer);
 
-		// Validate PDF
-		if (file.type !== "application/pdf") {
+		// Validate PDF - check file extension if MIME type is not reliable
+		const fileName = file.name.toLowerCase();
+		const isPdfMimeType = file.type === "application/pdf";
+		const isPdfExtension = fileName.endsWith(".pdf");
+
+		if (!isPdfMimeType && !isPdfExtension) {
 			return NextResponse.json(
 				{ error: "Invalid file type. Only PDF allowed" },
 				{ status: 400 },

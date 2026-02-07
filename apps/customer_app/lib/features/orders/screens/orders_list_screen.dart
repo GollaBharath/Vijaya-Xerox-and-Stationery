@@ -77,7 +77,7 @@ class _OrdersListScreenState extends State<OrdersListScreen> {
       appBar: AppBar(
         leading: IconButton(
           icon: const Icon(Icons.arrow_back),
-          onPressed: () => Navigator.of(context).pop(),
+          onPressed: () => context.go(RouteNames.profile),
         ),
         title: const Text('My Orders'),
         actions: [

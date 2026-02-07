@@ -32,9 +32,16 @@ class VariantProvider with ChangeNotifier {
         Endpoints.productVariants(productId),
       );
 
-      _variants = (response['data'] as List)
-          .map((json) => ProductVariant.fromJson(json))
-          .toList();
+      final data = response['data'];
+      if (data is List) {
+        _variants = data
+            .map(
+              (json) => ProductVariant.fromJson(json as Map<String, dynamic>),
+            )
+            .toList();
+      } else {
+        _variants = [];
+      }
 
       _isLoading = false;
       notifyListeners();

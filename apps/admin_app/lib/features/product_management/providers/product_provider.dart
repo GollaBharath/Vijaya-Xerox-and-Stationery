@@ -53,6 +53,7 @@ class ProductProvider with ChangeNotifier {
 
       if (categoryId != null) queryParams['categoryId'] = categoryId;
       if (subjectId != null) queryParams['subjectId'] = subjectId;
+      // Only add isActive filter if explicitly set (null means show all)
       if (isActive != null) queryParams['isActive'] = isActive.toString();
 
       final queryString = queryParams.entries
@@ -137,7 +138,12 @@ class ProductProvider with ChangeNotifier {
       final response = await _apiClient.post(Endpoints.products, body: body);
       final newProduct = Product.fromJson(response['data']);
 
-      _products.insert(0, newProduct);
+      // Only add to list if it doesn't already exist (avoid duplicates)
+      final existingIndex = _products.indexWhere((p) => p.id == newProduct.id);
+      if (existingIndex == -1) {
+        _products.insert(0, newProduct);
+      }
+
       _isLoading = false;
       notifyListeners();
 
@@ -206,6 +212,25 @@ class ProductProvider with ChangeNotifier {
     }
   }
 
+  // Toggle product active status
+  Future<void> toggleProductActive(String productId, bool isActive) async {
+    try {
+      _isLoading = true;
+      _error = null;
+      notifyListeners();
+
+      await updateProduct(productId: productId, isActive: isActive);
+
+      _isLoading = false;
+      notifyListeners();
+    } catch (e) {
+      _error = e.toString();
+      _isLoading = false;
+      notifyListeners();
+      rethrow;
+    }
+  }
+
   // Delete product
   Future<void> deleteProduct(String productId) async {
     try {
@@ -237,9 +262,7 @@ class ProductProvider with ChangeNotifier {
       _error = null;
       notifyListeners();
 
-      final uri = Uri.parse(
-        '${_apiClient.baseUrl}${Endpoints.product(productId)}/upload',
-      );
+      final uri = Uri.parse('${_apiClient.baseUrl}${Endpoints.uploadImage}');
       final request = http.MultipartRequest('POST', uri);
 
       // Add authorization header
@@ -249,17 +272,18 @@ class ProductProvider with ChangeNotifier {
         request.headers['Authorization'] = 'Bearer $token';
       }
 
-      // Add file
+      // Add file and productId
       request.files.add(
         await http.MultipartFile.fromPath('file', imageFile.path),
       );
+      request.fields['productId'] = productId;
 
       final streamedResponse = await request.send();
       final response = await http.Response.fromStream(streamedResponse);
 
       if (response.statusCode >= 200 && response.statusCode < 300) {
         final data = json.decode(response.body);
-        final imageUrl = data['data']['imageUrl'] as String;
+        final imageUrl = data['imageUrl'] as String;
 
         // Update product in list
         final index = _products.indexWhere((p) => p.id == productId);
@@ -293,9 +317,7 @@ class ProductProvider with ChangeNotifier {
       _error = null;
       notifyListeners();
 
-      final uri = Uri.parse(
-        '${_apiClient.baseUrl}${Endpoints.product(productId)}/upload',
-      );
+      final uri = Uri.parse('${_apiClient.baseUrl}${Endpoints.uploadPdf}');
       final request = http.MultipartRequest('POST', uri);
 
       // Add authorization header
@@ -305,17 +327,18 @@ class ProductProvider with ChangeNotifier {
         request.headers['Authorization'] = 'Bearer $token';
       }
 
-      // Add file
+      // Add file and productId
       request.files.add(
         await http.MultipartFile.fromPath('file', pdfFile.path),
       );
+      request.fields['productId'] = productId;
 
       final streamedResponse = await request.send();
       final response = await http.Response.fromStream(streamedResponse);
 
       if (response.statusCode >= 200 && response.statusCode < 300) {
         final data = json.decode(response.body);
-        final pdfUrl = data['data']['pdfUrl'] as String;
+        final pdfUrl = data['pdfUrl'] as String;
 
         // Update product in list
         final index = _products.indexWhere((p) => p.id == productId);

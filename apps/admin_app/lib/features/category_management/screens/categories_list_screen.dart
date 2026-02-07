@@ -6,7 +6,6 @@ import '../../../routing/route_names.dart';
 import '../../../routing/app_router.dart';
 import '../../../shared/widgets/admin_drawer.dart';
 import '../providers/category_provider.dart';
-import '../widgets/category_tree_item.dart';
 
 /// Categories list screen with tree view
 class CategoriesListScreen extends StatefulWidget {
@@ -164,23 +163,19 @@ class _CategoriesListScreenState extends State<CategoriesListScreen> {
             }
 
             final categories = categoryProvider.categoryTree;
+            final allCategories = categoryProvider.categories;
+
+            // Get only root categories (no parent)
+            final rootCategories = categories
+                .where((c) => c.parentId == null)
+                .toList();
 
             return ListView.builder(
-              padding: const EdgeInsets.all(AppConstants.defaultPadding),
-              itemCount: categories.length,
+              padding: const EdgeInsets.all(12),
+              itemCount: rootCategories.length,
               itemBuilder: (context, index) {
-                final category = categories[index];
-                final depth = _getCategoryDepth(
-                  category,
-                  categoryProvider.categories,
-                );
-
-                return CategoryTreeItem(
-                  category: category,
-                  depth: depth,
-                  onEdit: () => _navigateToForm(categoryId: category.id),
-                  onDelete: () => _handleDelete(category.id, category.name),
-                );
+                final category = rootCategories[index];
+                return _buildCategoryTree(category, allCategories);
               },
             );
           },
@@ -194,23 +189,163 @@ class _CategoriesListScreenState extends State<CategoriesListScreen> {
     );
   }
 
-  int _getCategoryDepth(dynamic category, List<dynamic> allCategories) {
-    int depth = 0;
-    String? currentParentId = category.parentId;
+  Widget _buildCategoryTree(dynamic category, List<dynamic> allCategories) {
+    // Get children of this category
+    final children = allCategories
+        .where((c) => c.parentId == category.id)
+        .toList();
 
-    while (currentParentId != null) {
-      depth++;
-      try {
-        final parent = allCategories.firstWhere(
-          (cat) => cat.id == currentParentId,
-        );
-        currentParentId = parent.parentId;
-      } catch (e) {
-        // Parent not found, break loop
-        break;
-      }
-    }
+    final hasChildren = children.isNotEmpty;
 
-    return depth;
+    return Card(
+      margin: const EdgeInsets.only(bottom: 8),
+      elevation: 1,
+      shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(12)),
+      child: hasChildren
+          ? Theme(
+              data: Theme.of(
+                context,
+              ).copyWith(dividerColor: Colors.transparent),
+              child: ExpansionTile(
+                tilePadding: const EdgeInsets.symmetric(
+                  horizontal: 16,
+                  vertical: 4,
+                ),
+                childrenPadding: const EdgeInsets.only(left: 16, bottom: 8),
+                leading: const Icon(
+                  Icons.folder_outlined,
+                  color: Color(0xFFFF9800),
+                ),
+                title: Text(
+                  category.name,
+                  style: const TextStyle(
+                    fontWeight: FontWeight.w600,
+                    fontSize: 15,
+                  ),
+                ),
+                subtitle: Container(
+                  margin: const EdgeInsets.only(top: 4),
+                  child: Row(
+                    children: [
+                      Container(
+                        padding: const EdgeInsets.symmetric(
+                          horizontal: 8,
+                          vertical: 2,
+                        ),
+                        decoration: BoxDecoration(
+                          color: category.isActive
+                              ? const Color(0xFF4CAF50).withOpacity(0.1)
+                              : Colors.grey.withOpacity(0.1),
+                          borderRadius: BorderRadius.circular(12),
+                        ),
+                        child: Text(
+                          category.isActive ? 'Active' : 'Inactive',
+                          style: TextStyle(
+                            fontSize: 11,
+                            color: category.isActive
+                                ? const Color(0xFF4CAF50)
+                                : Colors.grey,
+                            fontWeight: FontWeight.w500,
+                          ),
+                        ),
+                      ),
+                      const SizedBox(width: 8),
+                      Text(
+                        '${children.length} sub-categor${children.length != 1 ? 'ies' : 'y'}',
+                        style: TextStyle(
+                          fontSize: 11,
+                          color: Colors.grey.shade600,
+                        ),
+                      ),
+                    ],
+                  ),
+                ),
+                trailing: Row(
+                  mainAxisSize: MainAxisSize.min,
+                  children: [
+                    IconButton(
+                      icon: const Icon(Icons.edit_outlined, size: 20),
+                      onPressed: () => _navigateToForm(categoryId: category.id),
+                      tooltip: 'Edit',
+                      color: Colors.blue.shade700,
+                    ),
+                    IconButton(
+                      icon: const Icon(Icons.delete_outline, size: 20),
+                      onPressed: () =>
+                          _handleDelete(category.id, category.name),
+                      tooltip: 'Delete',
+                      color: Colors.red.shade700,
+                    ),
+                  ],
+                ),
+                children: children
+                    .map((child) => _buildCategoryTree(child, allCategories))
+                    .toList(),
+              ),
+            )
+          : ListTile(
+              contentPadding: const EdgeInsets.symmetric(
+                horizontal: 16,
+                vertical: 8,
+              ),
+              leading: const Icon(
+                Icons.label_outline,
+                color: Color(0xFFE91E63),
+              ),
+              title: Text(
+                category.name,
+                style: const TextStyle(
+                  fontWeight: FontWeight.w500,
+                  fontSize: 14,
+                ),
+              ),
+              subtitle: Container(
+                margin: const EdgeInsets.only(top: 4),
+                child: Row(
+                  children: [
+                    Container(
+                      padding: const EdgeInsets.symmetric(
+                        horizontal: 8,
+                        vertical: 2,
+                      ),
+                      decoration: BoxDecoration(
+                        color: category.isActive
+                            ? const Color(0xFF4CAF50).withOpacity(0.1)
+                            : Colors.grey.withOpacity(0.1),
+                        borderRadius: BorderRadius.circular(12),
+                      ),
+                      child: Text(
+                        category.isActive ? 'Active' : 'Inactive',
+                        style: TextStyle(
+                          fontSize: 11,
+                          color: category.isActive
+                              ? const Color(0xFF4CAF50)
+                              : Colors.grey,
+                          fontWeight: FontWeight.w500,
+                        ),
+                      ),
+                    ),
+                  ],
+                ),
+              ),
+              trailing: Row(
+                mainAxisSize: MainAxisSize.min,
+                children: [
+                  IconButton(
+                    icon: const Icon(Icons.edit_outlined, size: 20),
+                    onPressed: () => _navigateToForm(categoryId: category.id),
+                    tooltip: 'Edit',
+                    color: Colors.blue.shade700,
+                  ),
+                  IconButton(
+                    icon: const Icon(Icons.delete_outline, size: 20),
+                    onPressed: () => _handleDelete(category.id, category.name),
+                    tooltip: 'Delete',
+                    color: Colors.red.shade700,
+                  ),
+                ],
+              ),
+            ),
+    );
   }
 }

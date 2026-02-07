@@ -164,9 +164,9 @@ class CategoryProvider extends ChangeNotifier {
 
       final body = <String, dynamic>{};
       if (name != null) body['name'] = name;
-      if (parentId != null) body['parent_id'] = parentId;
+      if (parentId != null) body['parentId'] = parentId;
       if (metadata != null) body['metadata'] = metadata;
-      if (isActive != null) body['is_active'] = isActive;
+      if (isActive != null) body['isActive'] = isActive;
 
       final response = await _apiClient.patch(
         '${ApiEndpoints.categoriesRoot}/$id',

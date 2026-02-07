@@ -28,6 +28,14 @@ export const GET = errorHandler(async (request: NextRequest) => {
 	const isActiveParam = url.searchParams.get("isActive");
 	const isActive = isActiveParam ? parseBoolean(isActiveParam) : undefined;
 
+	console.log("[Products API] Filter params:", {
+		isActiveParam,
+		isActive,
+		search,
+		subjectId,
+		categoryId,
+	});
+
 	const filters = { search, subjectId, categoryId, isActive };
 
 	const [products, total] = await Promise.all([

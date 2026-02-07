@@ -5,7 +5,6 @@ import '../../../core/config/constants.dart';
 import '../../../routing/route_names.dart';
 import '../../../shared/widgets/admin_drawer.dart';
 import '../providers/subject_provider.dart';
-import '../widgets/subject_tree_item.dart';
 
 /// Subjects list screen with tree view
 class SubjectsListScreen extends StatefulWidget {
@@ -80,21 +79,155 @@ class _SubjectsListScreenState extends State<SubjectsListScreen> {
     }
   }
 
-  int _getSubjectDepth(String subjectId, List<SubjectData> subjects) {
-    int depth = 0;
-    String? currentId = subjectId;
+  Widget _buildSubjectTree(dynamic subject, List<dynamic> allSubjects) {
+    // Get children of this subject
+    final children = allSubjects
+        .where((s) => s.parentSubjectId == subject.id)
+        .toList();
 
-    while (currentId != null) {
-      final subject = subjects.firstWhere(
-        (s) => s.id == currentId,
-        orElse: () => SubjectData(id: '', name: '', parentSubjectId: null),
-      );
-      if (subject.name.isEmpty) break;
-      currentId = subject.parentSubjectId;
-      depth++;
-    }
+    final hasChildren = children.isNotEmpty;
 
-    return depth - 1;
+    return Card(
+      margin: const EdgeInsets.only(bottom: 8),
+      elevation: 1,
+      shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(12)),
+      child: hasChildren
+          ? Theme(
+              data: Theme.of(
+                context,
+              ).copyWith(dividerColor: Colors.transparent),
+              child: ExpansionTile(
+                tilePadding: const EdgeInsets.symmetric(
+                  horizontal: 16,
+                  vertical: 4,
+                ),
+                childrenPadding: const EdgeInsets.only(left: 16, bottom: 8),
+                leading: const Icon(
+                  Icons.folder_outlined,
+                  color: Color(0xFF2196F3),
+                ),
+                title: Text(
+                  subject.name,
+                  style: const TextStyle(
+                    fontWeight: FontWeight.w600,
+                    fontSize: 15,
+                  ),
+                ),
+                subtitle: Container(
+                  margin: const EdgeInsets.only(top: 4),
+                  child: Row(
+                    children: [
+                      Container(
+                        padding: const EdgeInsets.symmetric(
+                          horizontal: 8,
+                          vertical: 2,
+                        ),
+                        decoration: BoxDecoration(
+                          color: const Color(0xFF4CAF50).withOpacity(0.1),
+                          borderRadius: BorderRadius.circular(12),
+                        ),
+                        child: Text(
+                          'Active',
+                          style: TextStyle(
+                            fontSize: 11,
+                            color: const Color(0xFF4CAF50),
+                            fontWeight: FontWeight.w500,
+                          ),
+                        ),
+                      ),
+                      const SizedBox(width: 8),
+                      Text(
+                        '${children.length} sub-subject${children.length != 1 ? 's' : ''}',
+                        style: TextStyle(
+                          fontSize: 11,
+                          color: Colors.grey.shade600,
+                        ),
+                      ),
+                    ],
+                  ),
+                ),
+                trailing: Row(
+                  mainAxisSize: MainAxisSize.min,
+                  children: [
+                    IconButton(
+                      icon: const Icon(Icons.edit_outlined, size: 20),
+                      onPressed: () => _navigateToForm(subjectId: subject.id),
+                      tooltip: 'Edit',
+                      color: Colors.blue.shade700,
+                    ),
+                    IconButton(
+                      icon: const Icon(Icons.delete_outline, size: 20),
+                      onPressed: () => _handleDelete(subject.id, subject.name),
+                      tooltip: 'Delete',
+                      color: Colors.red.shade700,
+                    ),
+                  ],
+                ),
+                children: children
+                    .map((child) => _buildSubjectTree(child, allSubjects))
+                    .toList(),
+              ),
+            )
+          : ListTile(
+              contentPadding: const EdgeInsets.symmetric(
+                horizontal: 16,
+                vertical: 8,
+              ),
+              leading: const Icon(
+                Icons.article_outlined,
+                color: Color(0xFF9C27B0),
+              ),
+              title: Text(
+                subject.name,
+                style: const TextStyle(
+                  fontWeight: FontWeight.w500,
+                  fontSize: 14,
+                ),
+              ),
+              subtitle: Container(
+                margin: const EdgeInsets.only(top: 4),
+                child: Row(
+                  children: [
+                    Container(
+                      padding: const EdgeInsets.symmetric(
+                        horizontal: 8,
+                        vertical: 2,
+                      ),
+                      decoration: BoxDecoration(
+                        color: const Color(0xFF4CAF50).withOpacity(0.1),
+                        borderRadius: BorderRadius.circular(12),
+                      ),
+                      child: Text(
+                        'Active',
+                        style: TextStyle(
+                          fontSize: 11,
+                          color: const Color(0xFF4CAF50),
+                          fontWeight: FontWeight.w500,
+                        ),
+                      ),
+                    ),
+                  ],
+                ),
+              ),
+              trailing: Row(
+                mainAxisSize: MainAxisSize.min,
+                children: [
+                  IconButton(
+                    icon: const Icon(Icons.edit_outlined, size: 20),
+                    onPressed: () => _navigateToForm(subjectId: subject.id),
+                    tooltip: 'Edit',
+                    color: Colors.blue.shade700,
+                  ),
+                  IconButton(
+                    icon: const Icon(Icons.delete_outline, size: 20),
+                    onPressed: () => _handleDelete(subject.id, subject.name),
+                    tooltip: 'Delete',
+                    color: Colors.red.shade700,
+                  ),
+                ],
+              ),
+            ),
+    );
   }
 
   @override
@@ -166,31 +299,21 @@ class _SubjectsListScreenState extends State<SubjectsListScreen> {
           }
 
           final subjects = subjectProvider.subjectTree;
-          final subjectDataList = subjectProvider.subjects
-              .map(
-                (s) => SubjectData(
-                  id: s.id,
-                  name: s.name,
-                  parentSubjectId: s.parentSubjectId,
-                ),
-              )
+          final allSubjects = subjectProvider.subjects;
+
+          // Get only root subjects (no parent)
+          final rootSubjects = subjects
+              .where((s) => s.parentSubjectId == null)
               .toList();
 
           return RefreshIndicator(
             onRefresh: _handleRefresh,
             child: ListView.builder(
-              padding: const EdgeInsets.all(AppConstants.defaultPadding),
-              itemCount: subjects.length,
+              padding: const EdgeInsets.all(12),
+              itemCount: rootSubjects.length,
               itemBuilder: (context, index) {
-                final subject = subjects[index];
-                final depth = _getSubjectDepth(subject.id, subjectDataList);
-
-                return SubjectTreeItem(
-                  subject: subject,
-                  depth: depth,
-                  onEdit: () => _navigateToForm(subjectId: subject.id),
-                  onDelete: () => _handleDelete(subject.id, subject.name),
-                );
+                final subject = rootSubjects[index];
+                return _buildSubjectTree(subject, allSubjects);
               },
             ),
           );
@@ -203,17 +326,4 @@ class _SubjectsListScreenState extends State<SubjectsListScreen> {
       ),
     );
   }
-}
-
-/// Helper class for depth calculation
-class SubjectData {
-  final String id;
-  final String name;
-  final String? parentSubjectId;
-
-  SubjectData({
-    required this.id,
-    required this.name,
-    required this.parentSubjectId,
-  });
 }

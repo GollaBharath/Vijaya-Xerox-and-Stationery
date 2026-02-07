@@ -1,5 +1,4 @@
 import 'package:flutter/material.dart';
-import '../../../core/config/constants.dart';
 
 /// Statistic card widget for dashboard
 class StatCard extends StatelessWidget {
@@ -20,35 +19,49 @@ class StatCard extends StatelessWidget {
   Widget build(BuildContext context) {
     return Card(
       elevation: 2,
-      child: Padding(
-        padding: const EdgeInsets.all(AppConstants.defaultPadding),
-        child: Column(
-          mainAxisAlignment: MainAxisAlignment.center,
-          crossAxisAlignment: CrossAxisAlignment.start,
-          children: [
-            Row(
+      shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(12)),
+      child: LayoutBuilder(
+        builder: (context, constraints) {
+          final iconSize = constraints.maxHeight * 0.25;
+          return Padding(
+            padding: EdgeInsets.all(constraints.maxWidth * 0.08),
+            child: Column(
+              mainAxisAlignment: MainAxisAlignment.spaceEvenly,
+              mainAxisSize: MainAxisSize.max,
               children: [
-                Icon(icon, color: color, size: 28),
-                const Spacer(),
+                Flexible(
+                  flex: 2,
+                  child: Icon(icon, color: color, size: iconSize.clamp(20, 40)),
+                ),
+                Flexible(
+                  flex: 2,
+                  child: FittedBox(
+                    fit: BoxFit.scaleDown,
+                    child: Text(
+                      value,
+                      style: TextStyle(
+                        fontSize: 22,
+                        fontWeight: FontWeight.bold,
+                        color: color,
+                      ),
+                    ),
+                  ),
+                ),
+                Flexible(
+                  flex: 1,
+                  child: FittedBox(
+                    fit: BoxFit.scaleDown,
+                    child: Text(
+                      title,
+                      style: const TextStyle(fontSize: 12, color: Colors.grey),
+                      textAlign: TextAlign.center,
+                    ),
+                  ),
+                ),
               ],
             ),
-            const SizedBox(height: AppConstants.smallPadding),
-            Text(
-              value,
-              style: Theme.of(context).textTheme.headlineSmall?.copyWith(
-                fontWeight: FontWeight.bold,
-                color: color,
-              ),
-            ),
-            const SizedBox(height: 4),
-            Text(
-              title,
-              style: Theme.of(context).textTheme.bodySmall,
-              maxLines: 1,
-              overflow: TextOverflow.ellipsis,
-            ),
-          ],
-        ),
+          );
+        },
       ),
     );
   }

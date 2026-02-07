@@ -1,5 +1,4 @@
 import 'package:flutter/material.dart';
-import '../../../core/config/constants.dart';
 
 /// Navigation card widget for quick actions
 class NavigationCard extends StatelessWidget {
@@ -20,30 +19,51 @@ class NavigationCard extends StatelessWidget {
   Widget build(BuildContext context) {
     return Card(
       elevation: 2,
+      shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(12)),
       child: InkWell(
         onTap: onTap,
-        borderRadius: BorderRadius.circular(AppConstants.borderRadius),
-        child: Padding(
-          padding: const EdgeInsets.all(AppConstants.defaultPadding),
-          child: Column(
-            mainAxisAlignment: MainAxisAlignment.center,
-            children: [
-              Container(
-                padding: const EdgeInsets.all(AppConstants.defaultPadding),
-                decoration: BoxDecoration(
-                  color: color.withAlpha(51),
-                  shape: BoxShape.circle,
-                ),
-                child: Icon(icon, color: color, size: 32),
+        borderRadius: BorderRadius.circular(12),
+        child: LayoutBuilder(
+          builder: (context, constraints) {
+            final avatarRadius = constraints.maxHeight * 0.25;
+            final iconSize = avatarRadius * 0.8;
+            return Padding(
+              padding: EdgeInsets.all(constraints.maxWidth * 0.08),
+              child: Column(
+                mainAxisAlignment: MainAxisAlignment.center,
+                mainAxisSize: MainAxisSize.max,
+                children: [
+                  Flexible(
+                    flex: 3,
+                    child: CircleAvatar(
+                      radius: avatarRadius.clamp(25, 40),
+                      backgroundColor: color.withOpacity(0.15),
+                      child: Icon(
+                        icon,
+                        color: color,
+                        size: iconSize.clamp(20, 32),
+                      ),
+                    ),
+                  ),
+                  SizedBox(height: constraints.maxHeight * 0.05),
+                  Flexible(
+                    flex: 1,
+                    child: FittedBox(
+                      fit: BoxFit.scaleDown,
+                      child: Text(
+                        title,
+                        style: const TextStyle(
+                          fontSize: 14,
+                          fontWeight: FontWeight.w600,
+                        ),
+                        textAlign: TextAlign.center,
+                      ),
+                    ),
+                  ),
+                ],
               ),
-              const SizedBox(height: AppConstants.defaultPadding),
-              Text(
-                title,
-                style: Theme.of(context).textTheme.titleMedium,
-                textAlign: TextAlign.center,
-              ),
-            ],
-          ),
+            );
+          },
         ),
       ),
     );
