@@ -1,6 +1,6 @@
 import { NextRequest, NextResponse } from "next/server";
 import { requireAdmin } from "@/middleware/admin.middleware";
-import { savePDFFile } from "@/lib/file_storage";
+import { deleteFile, savePDFFile } from "@/lib/file_storage";
 import * as productRepo from "@/modules/catalog/product.repo";
 
 export async function POST(request: NextRequest) {
@@ -50,6 +50,11 @@ export async function POST(request: NextRequest) {
 				{ error: "PDF size exceeds maximum of 10MB" },
 				{ status: 400 },
 			);
+		}
+
+		// Remove old PDF if present
+		if (product.pdfUrl) {
+			deleteFile(product.pdfUrl);
 		}
 
 		// Save PDF file

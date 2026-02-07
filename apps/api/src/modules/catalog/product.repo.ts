@@ -168,6 +168,8 @@ export async function updateProduct(
 }
 
 export async function deleteProduct(id: string): Promise<Product> {
+	await deleteProductFiles(id);
+
 	const product = await prisma.product.update({
 		where: { id },
 		data: { isActive: false },

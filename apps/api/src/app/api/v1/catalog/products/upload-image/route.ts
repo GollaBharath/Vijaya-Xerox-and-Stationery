@@ -1,6 +1,6 @@
 import { NextRequest, NextResponse } from "next/server";
 import { requireAdmin } from "@/middleware/admin.middleware";
-import { saveImageFile } from "@/lib/file_storage";
+import { deleteFile, saveImageFile } from "@/lib/file_storage";
 import * as productRepo from "@/modules/catalog/product.repo";
 
 export async function POST(request: NextRequest) {
@@ -52,6 +52,11 @@ export async function POST(request: NextRequest) {
 				{ error: "Image size exceeds maximum of 5MB" },
 				{ status: 400 },
 			);
+		}
+
+		// Remove old image if present
+		if (product.imageUrl) {
+			deleteFile(product.imageUrl);
 		}
 
 		// Save image file

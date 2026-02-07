@@ -403,12 +403,12 @@
 
 ### L7. Test file upload functionality
 
-- [ ] Test image upload for stationery products
-- [ ] Test PDF upload for book products
-- [ ] Test file retrieval endpoints
-- [ ] Test file deletion on product delete
-- [ ] Test file size/type validation
-- [ ] Test duplicate filename handling
+- [✅] Test image upload for stationery products
+- [✅] Test PDF upload for book products
+- [✅] Test file retrieval endpoints
+- [✅] Test file deletion on product delete
+- [✅] Test file size/type validation
+- [✅] Test duplicate filename handling
 
 ---
 
