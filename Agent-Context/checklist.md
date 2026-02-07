@@ -4,11 +4,12 @@
 
 **Principles**:
 
-- Follow the Architecture.md and Folder-structure.md exactly
+- Follow the Architecture.md, Folder-structure.md, and Backend-Endpoints.md exactly
 - Complete 1 task at a time, in order
 - Do NOT skip tasks
 - Commit after each major section
 - Test before moving to next task
+- All documentation goes in `/docs` directory only
 
 ---
 
@@ -67,28 +68,28 @@
 
 ### C1. Create lib utilities
 
-- [ ] Create `src/lib/prisma.ts` (singleton Prisma client)
-- [ ] Create `src/lib/env.ts` (validated env variables)
-- [ ] Create `src/lib/redis.ts` (Redis client setup)
-- [ ] Create `src/lib/logger.ts` (simple logger)
-- [ ] Create `src/lib/rate_limiter.ts` (basic rate limiting)
+- [✅] Create `src/lib/prisma.ts` (singleton Prisma client)
+- [✅] Create `src/lib/env.ts` (validated env variables)
+- [✅] Create `src/lib/redis.ts` (Redis client setup)
+- [✅] Create `src/lib/logger.ts` (simple logger)
+- [✅] Create `src/lib/rate_limiter.ts` (basic rate limiting)
 
 ### C2. Create global types
 
-- [ ] Create `src/types/global.d.ts` with API response types
-- [ ] Define common types: `ApiResponse<T>`, `ApiError`, `Pagination`
+- [✅] Create `src/types/global.d.ts` with API response types
+- [✅] Define common types: `ApiResponse<T>`, `ApiError`, `Pagination`
 
 ### C3. Create middleware
 
-- [ ] Create `src/middleware/auth.middleware.ts` (JWT verification)
-- [ ] Create `src/middleware/admin.middleware.ts` (admin role check)
-- [ ] Create `src/middleware/error.middleware.ts` (error handler wrapper)
+- [✅] Create `src/middleware/auth.middleware.ts` (JWT verification)
+- [✅] Create `src/middleware/admin.middleware.ts` (admin role check)
+- [✅] Create `src/middleware/error.middleware.ts` (error handler wrapper)
 
 ### C4. Create utility functions
 
-- [ ] Create `src/utils/validators.ts` (email, phone, password validators)
-- [ ] Create `src/utils/pagination.ts` (limit/offset logic)
-- [ ] Create `src/utils/helpers.ts` (common helpers)
+- [✅] Create `src/utils/validators.ts` (email, phone, password validators)
+- [✅] Create `src/utils/pagination.ts` (limit/offset logic)
+- [✅] Create `src/utils/helpers.ts` (common helpers)
 
 ---
 
@@ -96,13 +97,13 @@
 
 ### D1. Create auth module structure
 
-- [ ] Create `src/modules/auth/` folder
-- [ ] Create `auth.types.ts` with: LoginRequest, LoginResponse, RegisterRequest, etc.
-- [ ] Create `auth.validator.ts` with: validateLogin(), validateRegister()
+- [✅] Create `src/modules/auth/` folder
+- [✅] Create `auth.types.ts` with: LoginRequest, LoginResponse, RegisterRequest, etc.
+- [✅] Create `auth.validator.ts` with: validateLogin(), validateRegister()
 
 ### D2. Create auth repository
 
-- [ ] Create `auth.repo.ts` with:
+- [✅] Create `auth.repo.ts` with:
   - `findUserByEmail(email)`
   - `findUserById(id)`
   - `createUser(name, email, phone, password_hash, role)`
@@ -110,7 +111,7 @@
 
 ### D3. Create auth service
 
-- [ ] Create `auth.service.ts` with:
+- [✅] Create `auth.service.ts` with:
   - `register(data)` - validate, hash password, create user, return token
   - `login(email, password)` - validate, verify password, return token
   - `verifyToken(token)` - JWT verification
@@ -118,18 +119,18 @@
 
 ### D4. Create auth route handlers
 
-- [ ] Create `src/app/api/v1/auth/register/route.ts` (POST)
+- [✅] Create `src/app/api/v1/auth/register/route.ts` (POST)
   - Validate request
   - Call auth.service.register()
   - Return user + access token
-- [ ] Create `src/app/api/v1/auth/login/route.ts` (POST)
+- [✅] Create `src/app/api/v1/auth/login/route.ts` (POST)
   - Validate request
   - Call auth.service.login()
   - Return user + access token
-- [ ] Create `src/app/api/v1/auth/refresh/route.ts` (POST)
+- [✅] Create `src/app/api/v1/auth/refresh/route.ts` (POST)
   - Refresh token validation
   - Return new access token
-- [ ] Create `src/app/api/v1/auth/me/route.ts` (GET)
+- [✅] Create `src/app/api/v1/auth/me/route.ts` (GET)
   - Requires auth middleware
   - Return current user
 
@@ -139,13 +140,13 @@
 
 ### E1. Create catalog module structure
 
-- [ ] Create `src/modules/catalog/` folder
-- [ ] Create `catalog.types.ts` with: Category, Product, ProductVariant types
-- [ ] Create `catalog.validator.ts` with validation functions
+- [✅] Create `src/modules/catalog/` folder
+- [✅] Create `catalog.types.ts` with: Category, Product, ProductVariant types
+- [✅] Create `catalog.validator.ts` with validation functions
 
 ### E2. Create category repository
 
-- [ ] Create `category.repo.ts` with:
+- [✅] Create `category.repo.ts` with:
   - `findCategoryById(id)`
   - `findAllCategories(is_active)`
   - `createCategory(name, parent_id, metadata)`
@@ -155,13 +156,13 @@
 
 ### E3. Create category route handlers
 
-- [ ] Create `src/app/api/v1/catalog/categories/route.ts` (GET list, POST create - admin only)
-- [ ] Create `src/app/api/v1/catalog/categories/[id]/route.ts` (GET, PATCH, DELETE - admin only)
-- [ ] Create `src/app/api/v1/catalog/categories/tree/route.ts` (GET - category hierarchy with caching)
+- [✅] Create `src/app/api/v1/catalog/categories/route.ts` (GET list, POST create - admin only)
+- [✅] Create `src/app/api/v1/catalog/categories/[id]/route.ts` (GET, PATCH, DELETE - admin only)
+- [✅] Create `src/app/api/v1/catalog/categories/tree/route.ts` (GET - category hierarchy with caching)
 
 ### E4. Create product repository
 
-- [ ] Create `product.repo.ts` with:
+- [✅] Create `product.repo.ts` with:
   - `findProductById(id)`
   - `findProductsByCategory(categoryId, pagination)`
   - `findProductsBySubject(subjectId, pagination)`
@@ -173,7 +174,7 @@
 
 ### E5. Create product variant repository
 
-- [ ] Create `variant.repo.ts` with:
+- [✅] Create `variant.repo.ts` with:
   - `findVariantById(id)`
   - `findVariantsByProduct(product_id)`
   - `createVariant(product_id, variant_type, price, stock, sku)`
@@ -183,9 +184,9 @@
 
 ### E6. Create product route handlers
 
-- [ ] Create `src/app/api/v1/catalog/products/route.ts` (GET list, POST create - admin only)
-- [ ] Create `src/app/api/v1/catalog/products/[id]/route.ts` (GET, PATCH, DELETE - admin only)
-- [ ] Create `src/app/api/v1/catalog/products/[id]/variants/route.ts` (GET, POST - admin can POST)
+- [✅] Create `src/app/api/v1/catalog/products/route.ts` (GET list, POST create - admin only)
+- [✅] Create `src/app/api/v1/catalog/products/[id]/route.ts` (GET, PATCH, DELETE - admin only)
+- [✅] Create `src/app/api/v1/catalog/products/[id]/variants/route.ts` (GET, POST - admin can POST)
 
 ---
 
@@ -193,13 +194,13 @@
 
 ### F1. Create subjects module
 
-- [ ] Create `src/modules/subjects/` folder
-- [ ] Create `subjects.types.ts`
-- [ ] Create `subjects.validator.ts`
+- [✅] Create `src/modules/subjects/` folder
+- [✅] Create `subjects.types.ts`
+- [✅] Create `subjects.validator.ts`
 
 ### F2. Create subject repository
 
-- [ ] Create `subjects.repo.ts` with:
+- [✅] Create `subjects.repo.ts` with:
   - `findSubjectById(id)`
   - `findAllSubjects()`
   - `createSubject(name, parent_subject_id)`
@@ -209,9 +210,9 @@
 
 ### F3. Create subject route handlers
 
-- [ ] Create `src/app/api/v1/subjects/route.ts` (GET list, POST create - admin only)
-- [ ] Create `src/app/api/v1/subjects/[id]/route.ts` (GET, PATCH, DELETE - admin only)
-- [ ] Create `src/app/api/v1/subjects/tree/route.ts` (GET - subject hierarchy)
+- [✅] Create `src/app/api/v1/subjects/route.ts` (GET list, POST create - admin only)
+- [✅] Create `src/app/api/v1/subjects/[id]/route.ts` (GET, PATCH, DELETE - admin only)
+- [✅] Create `src/app/api/v1/subjects/tree/route.ts` (GET - subject hierarchy)
 
 ---
 
@@ -219,13 +220,13 @@
 
 ### G1. Create cart module
 
-- [ ] Create `src/modules/cart/` folder
-- [ ] Create `cart.types.ts`
-- [ ] Create `cart.validator.ts`
+- [✅] Create `src/modules/cart/` folder
+- [✅] Create `cart.types.ts`
+- [✅] Create `cart.validator.ts`
 
 ### G2. Create cart repository
 
-- [ ] Create `cart.repo.ts` with:
+- [✅] Create `cart.repo.ts` with:
   - `getCartByUserId(user_id)`
   - `getCartItems(user_id, pagination)`
   - `addToCart(user_id, product_variant_id, quantity)`
@@ -236,9 +237,9 @@
 
 ### G3. Create cart route handlers
 
-- [ ] Create `src/app/api/v1/cart/route.ts` (GET cart, POST add item - auth required)
-- [ ] Create `src/app/api/v1/cart/[itemId]/route.ts` (PATCH quantity, DELETE item - auth required)
-- [ ] Create `src/app/api/v1/cart/clear/route.ts` (DELETE all - auth required)
+- [✅] Create `src/app/api/v1/cart/route.ts` (GET cart, POST add item - auth required)
+- [✅] Create `src/app/api/v1/cart/[itemId]/route.ts` (PATCH quantity, DELETE item - auth required)
+- [✅] Create `src/app/api/v1/cart/clear/route.ts` (DELETE all - auth required)
 
 ---
 
@@ -246,13 +247,13 @@
 
 ### H1. Create orders module
 
-- [ ] Create `src/modules/orders/` folder
-- [ ] Create `orders.types.ts`
-- [ ] Create `orders.validator.ts`
+- [✅] Create `src/modules/orders/` folder
+- [✅] Create `orders.types.ts`
+- [✅] Create `orders.validator.ts`
 
 ### H2. Create order repository
 
-- [ ] Create `orders.repo.ts` with:
+- [✅] Create `orders.repo.ts` with:
   - `findOrderById(id)`
   - `findOrdersByUserId(user_id, pagination)`
   - `findAllOrders(pagination, filters)` - admin only
@@ -263,15 +264,15 @@
 
 ### H3. Create order service
 
-- [ ] Create `orders.service.ts` with:
+- [✅] Create `orders.service.ts` with:
   - `checkoutCart(user_id, address)` - validate cart, check stock, create order, clear cart
   - `getOrderDetails(orderId)` - fetch order with items and product details
 
 ### H4. Create order route handlers
 
-- [ ] Create `src/app/api/v1/orders/route.ts` (GET list - auth required, POST create - auth required)
-- [ ] Create `src/app/api/v1/orders/[id]/route.ts` (GET order details - auth required)
-- [ ] Create `src/app/api/v1/orders/[id]/cancel/route.ts` (POST cancel - auth required)
+- [✅] Create `src/app/api/v1/orders/route.ts` (GET list - auth required, POST create - auth required)
+- [✅] Create `src/app/api/v1/orders/[id]/route.ts` (GET order details - auth required)
+- [✅] Create `src/app/api/v1/orders/[id]/cancel/route.ts` (POST cancel - auth required)
 
 ---
 
@@ -279,12 +280,12 @@
 
 ### I1. Create settings module
 
-- [ ] Create `src/modules/settings/` folder
-- [ ] Create `settings.types.ts`
+- [✅] Create `src/modules/settings/` folder
+- [✅] Create `settings.types.ts`
 
 ### I2. Create settings repository
 
-- [ ] Create `settings.repo.ts` with:
+- [✅] Create `settings.repo.ts` with:
   - `getSetting(key)`
   - `getAllSettings()`
   - `setSetting(key, value_json)`
@@ -292,7 +293,7 @@
 
 ### I3. Create settings route handlers
 
-- [ ] Create `src/app/api/v1/admin/settings/route.ts` (GET, POST - admin only)
+- [✅] Create `src/app/api/v1/admin/settings/route.ts` (GET, POST - admin only)
 
 ---
 
@@ -300,12 +301,12 @@
 
 ### J1. Create admin users endpoint
 
-- [ ] Create `src/app/api/v1/admin/users/route.ts` (GET all users - admin only)
-- [ ] Create `src/app/api/v1/admin/users/[id]/route.ts` (GET, PATCH, DELETE - admin only)
+- [✅] Create `src/app/api/v1/admin/users/route.ts` (GET all users - admin only)
+- [✅] Create `src/app/api/v1/admin/users/[id]/route.ts` (GET, PATCH, DELETE - admin only)
 
 ### J2. Create admin dashboard endpoint
 
-- [ ] Create `src/app/api/v1/admin/dashboard/route.ts` (GET stats - admin only)
+- [✅] Create `src/app/api/v1/admin/dashboard/route.ts` (GET stats - admin only)
   - Total users, total orders, total revenue, recent orders
 
 ---
@@ -314,17 +315,17 @@
 
 ### K1. Create health endpoint
 
-- [ ] Create `src/app/api/v1/health/route.ts` (GET - returns 200 OK)
+- [✅] Create `src/app/api/v1/health/route.ts` (GET - returns 200 OK)
 
 ### K2. Create seed script
 
-- [ ] Create `prisma/seed.ts` with:
+- [✅] Create `prisma/seed.ts` with:
   - Create admin user
   - Create sample categories (Medical, Stationery, etc.)
   - Create sample subjects (Anatomy, etc.)
   - Create sample products
   - Create sample product variants
-- [ ] Add seed command to `package.json`
+- [✅] Add seed command to `package.json`
 
 ---
 

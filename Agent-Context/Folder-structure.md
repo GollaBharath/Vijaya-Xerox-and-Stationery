@@ -6,12 +6,21 @@ bookstore-system/
 ├── apps/
 ├── packages/
 ├── infrastructure/
-├── docs/
+├── docs/                # ALL documentation goes here
 ├── scripts/
 ├── .env.example
 ├── docker-compose.yml
-├── README.md
+├── README.md            # Optional: GitHub landing page only
 ```
+
+**IMPORTANT**: All `.md` documentation files MUST be placed in `/docs` directory. No scattered documentation in root or other folders.
+
+**Agent-Context Files** (for AI agents only):
+
+- Architecture.md
+- checklist.md
+- Folder-structure.md
+- Backend-Endpoints.md
 
 ---
 

@@ -102,9 +102,61 @@ Avoid over-caching.
 
 ---
 
-# 4. Backend Code Structure
+# 4. Code Structure & Documentation
 
-### refer Folder-structure.md
+## ⚠️ CRITICAL: FOLDER STRUCTURE MUST BE FOLLOWED EXACTLY
+
+**All code MUST follow the structure defined in Folder-structure.md**
+
+This is not a suggestion - it is a strict requirement. The folder structure is designed for:
+
+- Maintainability and scalability
+- Clear separation of concerns
+- Type safety and predictable imports
+- Easy navigation and onboarding
+
+## ⚠️ CRITICAL: DOCUMENTATION STRUCTURE
+
+**All documentation MUST be placed in the `/docs` directory**
+
+This is mandatory for project organization:
+
+- NO scattered `.md` files in the root directory
+- ALL project documentation goes in `/docs`
+- Only exception: Root `README.md` (if needed for GitHub)
+- Agent-Context files are for AI agents only (Architecture.md, checklist.md, Folder-structure.md, Backend-Endpoints.md)
+
+**Before creating ANY new file or folder:**
+
+1. Check Folder-structure.md for the correct location
+2. Verify the path matches the documented structure
+3. Do not create parallel or alternative structures
+
+**Key principles:**
+
+- All Next.js app code goes in `src/app/`
+- Business logic goes in `src/modules/`
+- Shared utilities go in `src/lib/`
+- Types go in `src/types/`
+- Middleware goes in `src/middleware/`
+
+### Full Structure Reference
+
+See [Folder-structure.md](./Folder-structure.md) for complete folder hierarchy.
+
+See [Backend-Endpoints.md](./Backend-Endpoints.md) for complete API endpoint documentation.
+
+**Summary for Next.js API:**
+
+```
+/apps/api/src/
+├── app/api/v1/          # Route handlers (REST endpoints)
+├── modules/             # Business logic (services, repos, validators)
+├── lib/                 # Core utilities (prisma, redis, logger)
+├── middleware/          # Request interceptors
+├── utils/               # Helper functions
+└── types/               # TypeScript definitions
+```
 
 ---
 
@@ -332,6 +384,8 @@ Always prefix:
 ```
 
 Protects future compatibility.
+
+**For complete endpoint documentation, see [Backend-Endpoints.md](./Backend-Endpoints.md)**
 
 ---
 
