@@ -97,11 +97,9 @@ class AuthProvider extends ChangeNotifier {
           originalException: response.body,
         );
       }
-    } on AppException {
+    } on AppException catch (e) {
+      _error = e.message;
       rethrow;
-    } on TimeoutException {
-      _error = 'Request timed out. Please check your internet connection.';
-      throw TimeoutException(message: _error!);
     } catch (e) {
       _error = 'Login failed: ${e.toString()}';
       throw NetworkException(message: _error!, originalException: e);
@@ -164,11 +162,9 @@ class AuthProvider extends ChangeNotifier {
           originalException: response.body,
         );
       }
-    } on AppException {
+    } on AppException catch (e) {
+      _error = e.message;
       rethrow;
-    } on TimeoutException {
-      _error = 'Request timed out. Please check your internet connection.';
-      throw TimeoutException(message: _error!);
     } catch (e) {
       _error = 'Registration failed: ${e.toString()}';
       throw NetworkException(message: _error!, originalException: e);

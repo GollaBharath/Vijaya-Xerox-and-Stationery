@@ -1,8 +1,8 @@
 import 'package:flutter/material.dart';
 import 'package:go_router/go_router.dart';
-import '../features/auth/screens/splash_screen.dart';
-import '../features/auth/screens/login_screen.dart';
-import '../features/auth/screens/register_screen.dart';
+import '../features/auth/screens/splash_screen.dart' as auth;
+import '../features/auth/screens/login_screen.dart' as auth;
+import '../features/auth/screens/register_screen.dart' as auth;
 import 'route_names.dart';
 
 /// Application router configuration using GoRouter
@@ -41,17 +41,17 @@ class AppRouter {
       // Splash route
       GoRoute(
         path: RouteNames.splash,
-        builder: (context, state) => const SplashScreen(),
+        builder: (context, state) => const auth.SplashScreen(),
       ),
 
       // Auth routes
       GoRoute(
         path: RouteNames.login,
-        builder: (context, state) => const LoginScreen(),
+        builder: (context, state) => const auth.LoginScreen(),
       ),
       GoRoute(
         path: RouteNames.register,
-        builder: (context, state) => const RegisterScreen(),
+        builder: (context, state) => const auth.RegisterScreen(),
       ),
 
       // Main app shell with bottom nav
@@ -177,35 +177,8 @@ class GoRouterObserver extends NavigatorObserver {
 }
 
 // Placeholder screens - these will be implemented later
-class SplashScreen extends StatelessWidget {
-  const SplashScreen({Key? key}) : super(key: key);
-
-  @override
-  Widget build(BuildContext context) {
-    return const Scaffold(body: Center(child: CircularProgressIndicator()));
-  }
-}
-
-class LoginScreen extends StatelessWidget {
-  const LoginScreen({Key? key}) : super(key: key);
-
-  @override
-  Widget build(BuildContext context) {
-    return const Scaffold(body: Center(child: Text('Login')));
-  }
-}
-
-class RegisterScreen extends StatelessWidget {
-  const RegisterScreen({Key? key}) : super(key: key);
-
-  @override
-  Widget build(BuildContext context) {
-    return const Scaffold(body: Center(child: Text('Register')));
-  }
-}
-
 class HomeScreen extends StatelessWidget {
-  const HomeScreen({Key? key}) : super(key: key);
+  const HomeScreen({super.key});
 
   @override
   Widget build(BuildContext context) {
@@ -214,7 +187,7 @@ class HomeScreen extends StatelessWidget {
 }
 
 class CatalogScreen extends StatelessWidget {
-  const CatalogScreen({Key? key}) : super(key: key);
+  const CatalogScreen({super.key});
 
   @override
   Widget build(BuildContext context) {
@@ -225,8 +198,7 @@ class CatalogScreen extends StatelessWidget {
 class CategoryProductsScreen extends StatelessWidget {
   final String categoryId;
 
-  const CategoryProductsScreen({Key? key, required this.categoryId})
-    : super(key: key);
+  const CategoryProductsScreen({super.key, required this.categoryId});
 
   @override
   Widget build(BuildContext context) {
@@ -237,8 +209,7 @@ class CategoryProductsScreen extends StatelessWidget {
 class ProductDetailScreen extends StatelessWidget {
   final String productId;
 
-  const ProductDetailScreen({Key? key, required this.productId})
-    : super(key: key);
+  const ProductDetailScreen({super.key, required this.productId});
 
   @override
   Widget build(BuildContext context) {
@@ -247,7 +218,7 @@ class ProductDetailScreen extends StatelessWidget {
 }
 
 class CartScreen extends StatelessWidget {
-  const CartScreen({Key? key}) : super(key: key);
+  const CartScreen({super.key});
 
   @override
   Widget build(BuildContext context) {
@@ -256,7 +227,7 @@ class CartScreen extends StatelessWidget {
 }
 
 class ProfileScreen extends StatelessWidget {
-  const ProfileScreen({Key? key}) : super(key: key);
+  const ProfileScreen({super.key});
 
   @override
   Widget build(BuildContext context) {
@@ -265,7 +236,7 @@ class ProfileScreen extends StatelessWidget {
 }
 
 class EditProfileScreen extends StatelessWidget {
-  const EditProfileScreen({Key? key}) : super(key: key);
+  const EditProfileScreen({super.key});
 
   @override
   Widget build(BuildContext context) {
@@ -274,7 +245,7 @@ class EditProfileScreen extends StatelessWidget {
 }
 
 class AddressesScreen extends StatelessWidget {
-  const AddressesScreen({Key? key}) : super(key: key);
+  const AddressesScreen({super.key});
 
   @override
   Widget build(BuildContext context) {
@@ -283,7 +254,7 @@ class AddressesScreen extends StatelessWidget {
 }
 
 class AddAddressScreen extends StatelessWidget {
-  const AddAddressScreen({Key? key}) : super(key: key);
+  const AddAddressScreen({super.key});
 
   @override
   Widget build(BuildContext context) {
@@ -294,8 +265,7 @@ class AddAddressScreen extends StatelessWidget {
 class EditAddressScreen extends StatelessWidget {
   final String addressId;
 
-  const EditAddressScreen({Key? key, required this.addressId})
-    : super(key: key);
+  const EditAddressScreen({super.key, required this.addressId});
 
   @override
   Widget build(BuildContext context) {
@@ -304,7 +274,7 @@ class EditAddressScreen extends StatelessWidget {
 }
 
 class SettingsScreen extends StatelessWidget {
-  const SettingsScreen({Key? key}) : super(key: key);
+  const SettingsScreen({super.key});
 
   @override
   Widget build(BuildContext context) {
@@ -313,7 +283,7 @@ class SettingsScreen extends StatelessWidget {
 }
 
 class CheckoutScreen extends StatelessWidget {
-  const CheckoutScreen({Key? key}) : super(key: key);
+  const CheckoutScreen({super.key});
 
   @override
   Widget build(BuildContext context) {
@@ -322,7 +292,7 @@ class CheckoutScreen extends StatelessWidget {
 }
 
 class OrderConfirmationScreen extends StatelessWidget {
-  const OrderConfirmationScreen({Key? key}) : super(key: key);
+  const OrderConfirmationScreen({super.key});
 
   @override
   Widget build(BuildContext context) {
@@ -331,7 +301,7 @@ class OrderConfirmationScreen extends StatelessWidget {
 }
 
 class OrdersScreen extends StatelessWidget {
-  const OrdersScreen({Key? key}) : super(key: key);
+  const OrdersScreen({super.key});
 
   @override
   Widget build(BuildContext context) {
@@ -342,7 +312,7 @@ class OrdersScreen extends StatelessWidget {
 class OrderDetailScreen extends StatelessWidget {
   final String orderId;
 
-  const OrderDetailScreen({Key? key, required this.orderId}) : super(key: key);
+  const OrderDetailScreen({super.key, required this.orderId});
 
   @override
   Widget build(BuildContext context) {
@@ -353,7 +323,7 @@ class OrderDetailScreen extends StatelessWidget {
 class SearchScreen extends StatelessWidget {
   final String query;
 
-  const SearchScreen({Key? key, required this.query}) : super(key: key);
+  const SearchScreen({super.key, required this.query});
 
   @override
   Widget build(BuildContext context) {
@@ -362,7 +332,7 @@ class SearchScreen extends StatelessWidget {
 }
 
 class NotFoundScreen extends StatelessWidget {
-  const NotFoundScreen({Key? key}) : super(key: key);
+  const NotFoundScreen({super.key});
 
   @override
   Widget build(BuildContext context) {
@@ -371,7 +341,7 @@ class NotFoundScreen extends StatelessWidget {
 }
 
 class ErrorScreen extends StatelessWidget {
-  const ErrorScreen({Key? key}) : super(key: key);
+  const ErrorScreen({super.key});
 
   @override
   Widget build(BuildContext context) {
@@ -382,7 +352,7 @@ class ErrorScreen extends StatelessWidget {
 class MainShell extends StatelessWidget {
   final Widget child;
 
-  const MainShell({Key? key, required this.child}) : super(key: key);
+  const MainShell({super.key, required this.child});
 
   @override
   Widget build(BuildContext context) {

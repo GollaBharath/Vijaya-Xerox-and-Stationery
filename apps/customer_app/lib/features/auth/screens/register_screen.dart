@@ -285,11 +285,10 @@ class _RegisterScreenState extends State<RegisterScreen> {
                           color: AppColors.primary,
                           fontWeight: FontWeight.w600,
                         ),
-                        recognizer: TapGestureRecognizer(
-                          onTap: () {
+                        recognizer: TapGestureRecognizer()
+                          ..onTap = () {
                             context.pop();
                           },
-                        ),
                       ),
                     ],
                   ),

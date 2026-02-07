@@ -3,7 +3,6 @@ import 'package:flutter/material.dart';
 import 'package:go_router/go_router.dart';
 import 'package:provider/provider.dart';
 
-import '../../../core/config/constants.dart';
 import '../../../core/errors/error_mapper.dart';
 import '../../../core/theme/colors.dart';
 import '../../../core/theme/typography.dart';
@@ -209,11 +208,10 @@ class _LoginScreenState extends State<LoginScreen> {
                           color: AppColors.primary,
                           fontWeight: FontWeight.w600,
                         ),
-                        recognizer: TapGestureRecognizer(
-                          onTap: () {
+                        recognizer: TapGestureRecognizer()
+                          ..onTap = () {
                             context.push(RouteNames.register);
                           },
-                        ),
                       ),
                     ],
                   ),
