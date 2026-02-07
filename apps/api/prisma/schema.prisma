@@ -1,0 +1,230 @@
+// This is your Prisma schema file,
+// learn more about it in the docs: https://pris.ly/d/prisma-schema
+
+generator client {
+  provider = "prisma-client-js"
+}
+
+datasource db {
+  provider = "postgresql"
+  url      = env("DATABASE_URL")
+}
+
+// ================================
+// User Model
+// ================================
+model User {
+  id            String     @id @default(cuid())
+  name          String
+  phone         String     @unique
+  email         String     @unique
+  passwordHash  String     @map("password_hash")
+  role          UserRole   @default(CUSTOMER)
+  isActive      Boolean    @default(true) @map("is_active")
+  createdAt     DateTime   @default(now()) @map("created_at")
+  updatedAt     DateTime   @updatedAt @map("updated_at")
+
+  // Relations
+  orders        Order[]
+  cartItems     CartItem[]
+
+  @@map("users")
+}
+
+enum UserRole {
+  CUSTOMER
+  ADMIN
+}
+
+// ================================
+// Category Model (Hierarchical)
+// ================================
+model Category {
+  id            String     @id @default(cuid())
+  name          String
+  parentId      String?    @map("parent_id")
+  metadata      Json?      @default("{}")
+  isActive      Boolean    @default(true) @map("is_active")
+  createdAt     DateTime   @default(now()) @map("created_at")
+  updatedAt     DateTime   @updatedAt @map("updated_at")
+
+  // Self-referencing relation
+  parent        Category?  @relation("CategoryChildren", fields: [parentId], references: [id], onDelete: SetNull)
+  children      Category[] @relation("CategoryChildren")
+
+  // Relations
+  products      ProductCategory[]
+
+  @@map("categories")
+}
+
+// ================================
+// Subject Model (Academic)
+// ================================
+model Subject {
+  id              String     @id @default(cuid())
+  name            String     @unique
+  parentSubjectId String?    @map("parent_subject_id")
+  createdAt       DateTime   @default(now()) @map("created_at")
+  updatedAt       DateTime   @updatedAt @map("updated_at")
+
+  // Self-referencing relation
+  parentSubject   Subject?   @relation("SubjectChildren", fields: [parentSubjectId], references: [id], onDelete: SetNull)
+  childSubjects   Subject[]  @relation("SubjectChildren")
+
+  // Relations
+  products        Product[]
+
+  @@map("subjects")
+}
+
+// ================================
+// Product Model
+// ================================
+model Product {
+  id          String     @id @default(cuid())
+  title       String
+  description String?
+  isbn        String?    @unique
+  basePrice   Float      @map("base_price")
+  subjectId   String     @map("subject_id")
+  isActive    Boolean    @default(true) @map("is_active")
+  createdAt   DateTime   @default(now()) @map("created_at")
+  updatedAt   DateTime   @updatedAt @map("updated_at")
+
+  // Relations
+  subject         Subject      @relation(fields: [subjectId], references: [id], onDelete: Cascade)
+  variants        ProductVariant[]
+  categories      ProductCategory[]
+
+  @@map("products")
+}
+
+// ================================
+// Product Variant Model
+// ================================
+model ProductVariant {
+  id          String     @id @default(cuid())
+  productId   String     @map("product_id")
+  variantType VariantType @map("variant_type")
+  price       Float
+  stock       Int
+  sku         String     @unique
+  createdAt   DateTime   @default(now()) @map("created_at")
+  updatedAt   DateTime   @updatedAt @map("updated_at")
+
+  // Relations
+  product     Product    @relation(fields: [productId], references: [id], onDelete: Cascade)
+  orderItems  OrderItem[]
+  cartItems   CartItem[]
+
+  @@map("product_variants")
+}
+
+enum VariantType {
+  COLOR
+  BW
+}
+
+// ================================
+// Product Category Junction Table
+// ================================
+model ProductCategory {
+  id         String     @id @default(cuid())
+  productId  String     @map("product_id")
+  categoryId String     @map("category_id")
+  createdAt  DateTime   @default(now()) @map("created_at")
+
+  // Relations
+  product    Product    @relation(fields: [productId], references: [id], onDelete: Cascade)
+  category   Category   @relation(fields: [categoryId], references: [id], onDelete: Cascade)
+
+  @@unique([productId, categoryId])
+  @@map("product_categories")
+}
+
+// ================================
+// Order Model
+// ================================
+model Order {
+  id             String      @id @default(cuid())
+  userId         String      @map("user_id")
+  status         OrderStatus @default(PENDING)
+  totalPrice     Float       @map("total_price")
+  paymentStatus  PaymentStatus @default(PENDING) @map("payment_status")
+  addressSnapshot Json?       @map("address_snapshot")
+  createdAt      DateTime    @default(now()) @map("created_at")
+  updatedAt      DateTime    @updatedAt @map("updated_at")
+
+  // Relations
+  user           User        @relation(fields: [userId], references: [id], onDelete: Cascade)
+  items          OrderItem[]
+
+  @@map("orders")
+}
+
+enum OrderStatus {
+  PENDING
+  CONFIRMED
+  PROCESSING
+  SHIPPED
+  DELIVERED
+  CANCELLED
+}
+
+enum PaymentStatus {
+  PENDING
+  COMPLETED
+  FAILED
+  REFUNDED
+}
+
+// ================================
+// Order Item Model
+// ================================
+model OrderItem {
+  id                String     @id @default(cuid())
+  orderId           String     @map("order_id")
+  productVariantId  String     @map("product_variant_id")
+  quantity          Int
+  priceSnapshot     Float      @map("price_snapshot")
+  createdAt         DateTime   @default(now()) @map("created_at")
+
+  // Relations
+  order             Order      @relation(fields: [orderId], references: [id], onDelete: Cascade)
+  productVariant    ProductVariant @relation(fields: [productVariantId], references: [id], onDelete: Restrict)
+
+  @@map("order_items")
+}
+
+// ================================
+// Cart Item Model
+// ================================
+model CartItem {
+  id               String     @id @default(cuid())
+  userId           String     @map("user_id")
+  productVariantId String     @map("product_variant_id")
+  quantity         Int        @default(1)
+  createdAt        DateTime   @default(now()) @map("created_at")
+  updatedAt        DateTime   @updatedAt @map("updated_at")
+
+  // Relations
+  user             User       @relation(fields: [userId], references: [id], onDelete: Cascade)
+  productVariant   ProductVariant @relation(fields: [productVariantId], references: [id], onDelete: Cascade)
+
+  @@unique([userId, productVariantId])
+  @@map("cart_items")
+}
+
+// ================================
+// Store Settings Model
+// ================================
+model StoreSetting {
+  id        String     @id @default(cuid())
+  key       String     @unique
+  valueJson Json?      @map("value_json")
+  createdAt DateTime   @default(now()) @map("created_at")
+  updatedAt DateTime   @updatedAt @map("updated_at")
+
+  @@map("store_settings")
+}
