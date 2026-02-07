@@ -30,6 +30,7 @@ lib/
 ### Models
 
 All models support:
+
 - `toJson()` / `fromJson()` - Serialization
 - `copyWith()` - Create modified copies
 - Equality operators for comparison
@@ -169,6 +170,7 @@ String typeText = Formatters.formatFileType('IMAGE'); // "📷 Image"
 ## Models Reference
 
 ### User
+
 - `id: String`
 - `name: String`
 - `email: String`
@@ -179,6 +181,7 @@ String typeText = Formatters.formatFileType('IMAGE'); // "📷 Image"
 **Getters:** `isAdmin`, `isCustomer`
 
 ### Product
+
 - `id: String`
 - `title: String`
 - `description: String`
@@ -195,6 +198,7 @@ String typeText = Formatters.formatFileType('IMAGE'); // "📷 Image"
 **Getters:** `isStationery`, `isBook`, `hasFiles`, `displayPrice`
 
 ### ProductVariant
+
 - `id: String`
 - `productId: String`
 - `variantType: String`
@@ -205,6 +209,7 @@ String typeText = Formatters.formatFileType('IMAGE'); // "📷 Image"
 **Getters:** `isInStock`
 
 ### Order
+
 - `id: String`
 - `userId: String`
 - `status: String` (PENDING, CONFIRMED, SHIPPED, DELIVERED, CANCELLED)
