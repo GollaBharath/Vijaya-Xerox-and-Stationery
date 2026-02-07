@@ -198,11 +198,15 @@ class _CategoriesListScreenState extends State<CategoriesListScreen> {
 
     while (currentParentId != null) {
       depth++;
-      final parent = allCategories.firstWhere(
-        (cat) => cat.id == currentParentId,
-        orElse: () => null,
-      );
-      currentParentId = parent?.parentId;
+      try {
+        final parent = allCategories.firstWhere(
+          (cat) => cat.id == currentParentId,
+        );
+        currentParentId = parent.parentId;
+      } catch (e) {
+        // Parent not found, break loop
+        break;
+      }
     }
 
     return depth;

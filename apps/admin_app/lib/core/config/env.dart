@@ -3,7 +3,7 @@ class Env {
   // API Base URL - configure based on environment
   static const String apiBaseUrl = String.fromEnvironment(
     'API_BASE_URL',
-    defaultValue: 'http://localhost:3000/api/v1',
+    defaultValue: 'http://192.168.0.7:3000',
   );
 
   // Enable debug logging

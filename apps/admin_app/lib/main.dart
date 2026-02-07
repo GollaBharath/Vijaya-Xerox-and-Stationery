@@ -1,5 +1,6 @@
 import 'package:flutter/material.dart';
 import 'package:provider/provider.dart';
+import 'package:flutter_shared/auth/token_manager.dart';
 import 'core/theme/app_theme.dart';
 import 'core/config/env.dart';
 import 'routing/app_router.dart';
@@ -9,7 +10,7 @@ import 'features/dashboard/providers/dashboard_provider.dart';
 import 'features/category_management/providers/category_provider.dart';
 import 'features/subject_management/providers/subject_provider.dart';
 
-void main() {
+void main() async {
   // Ensure Flutter bindings are initialized
   WidgetsFlutterBinding.ensureInitialized();
 
@@ -17,6 +18,10 @@ void main() {
   if (!Env.isValid()) {
     throw Exception('Invalid environment configuration');
   }
+
+  // Initialize TokenManager before creating any providers
+  final tokenManager = TokenManager();
+  await tokenManager.initialize();
 
   runApp(const AdminApp());
 }

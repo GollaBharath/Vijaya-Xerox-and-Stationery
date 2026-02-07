@@ -19,10 +19,20 @@ class AuthService {
         withAuth: false,
       );
 
+      print('🔐 Login response: $response');
+
+      // Extract data from API response wrapper
+      final data = response['data'] as Map<String, dynamic>;
+      print('📦 Data extracted: $data');
+
+      final tokens = data['tokens'] as Map<String, dynamic>;
+      print('🎫 Tokens extracted: $tokens');
+
       // Extract tokens from response
-      final accessToken = response['access_token'] as String;
-      final refreshToken = response['refresh_token'] as String;
-      final user = User.fromJson(response['user'] as Map<String, dynamic>);
+      final accessToken = tokens['accessToken'] as String;
+      final refreshToken = tokens['refreshToken'] as String;
+      final user = User.fromJson(data['user'] as Map<String, dynamic>);
+      print('👤 User created: ${user.email}, role: ${user.role}');
 
       // Save tokens
       await tokenManager.saveTokens(
@@ -31,9 +41,12 @@ class AuthService {
         userId: user.id,
         userRole: user.role,
       );
+      print('✅ Tokens saved successfully');
 
       return user;
-    } catch (e) {
+    } catch (e, stackTrace) {
+      print('❌ Login error: $e');
+      print('Stack trace: $stackTrace');
       rethrow;
     }
   }
@@ -57,10 +70,14 @@ class AuthService {
         withAuth: false,
       );
 
+      // Extract data from API response wrapper
+      final data = response['data'] as Map<String, dynamic>;
+      final tokens = data['tokens'] as Map<String, dynamic>;
+
       // Extract tokens from response
-      final accessToken = response['access_token'] as String;
-      final refreshToken = response['refresh_token'] as String;
-      final user = User.fromJson(response['user'] as Map<String, dynamic>);
+      final accessToken = tokens['accessToken'] as String;
+      final refreshToken = tokens['refreshToken'] as String;
+      final user = User.fromJson(data['user'] as Map<String, dynamic>);
 
       // Save tokens
       await tokenManager.saveTokens(
@@ -80,7 +97,8 @@ class AuthService {
   Future<User> getCurrentUser() async {
     try {
       final response = await apiClient.get(ApiEndpoints.authMe);
-      return User.fromJson(response['user'] as Map<String, dynamic>);
+      final data = response['data'] as Map<String, dynamic>;
+      return User.fromJson(data['user'] as Map<String, dynamic>);
     } catch (e) {
       rethrow;
     }
@@ -96,23 +114,14 @@ class AuthService {
 
       final response = await apiClient.post(
         ApiEndpoints.authRefresh,
-        body: {'refresh_token': oldRefreshToken},
+        body: {'refreshToken': oldRefreshToken},
         withAuth: false,
       );
 
-      final newAccessToken = response['access_token'] as String;
-      final newRefreshToken = response['refresh_token'] as String;
+      final data = response['data'] as Map<String, dynamic>;
+      final newAccessToken = data['accessToken'] as String;
 
       await tokenManager.updateAccessToken(newAccessToken);
-      // Update refresh token if provided
-      if (newRefreshToken.isNotEmpty) {
-        await tokenManager.saveTokens(
-          accessToken: newAccessToken,
-          refreshToken: newRefreshToken,
-          userId: await tokenManager.getUserId(),
-          userRole: await tokenManager.getUserRole(),
-        );
-      }
     } catch (e) {
       rethrow;
     }

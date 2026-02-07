@@ -36,10 +36,10 @@ class Category {
     return Category(
       id: json['id'] as String,
       name: json['name'] as String,
-      parentId: json['parent_id'] as String?,
+      parentId: json['parentId'] as String?,
       metadata: json['metadata'] as Map<String, dynamic>?,
-      isActive: json['is_active'] as bool? ?? true,
-      createdAt: DateTime.parse(json['created_at'] as String),
+      isActive: json['isActive'] as bool? ?? true,
+      createdAt: DateTime.parse(json['createdAt'] as String),
     );
   }
 

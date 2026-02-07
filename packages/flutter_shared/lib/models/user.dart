@@ -42,7 +42,7 @@ class User {
       email: json['email'] as String,
       phone: json['phone'] as String,
       role: json['role'] as String,
-      createdAt: DateTime.parse(json['created_at'] as String),
+      createdAt: DateTime.parse(json['createdAt'] as String),
     );
   }
 

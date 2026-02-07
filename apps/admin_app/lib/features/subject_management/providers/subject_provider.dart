@@ -84,7 +84,7 @@ class SubjectProvider extends ChangeNotifier {
 
       final response = await _apiClient.get('${ApiEndpoints.subjectsRoot}/$id');
       _selectedSubject = shared_models.Subject.fromJson(
-        response as Map<String, dynamic>,
+        response['data'] as Map<String, dynamic>,
       );
 
       notifyListeners();
@@ -117,7 +117,7 @@ class SubjectProvider extends ChangeNotifier {
       );
 
       final newSubject = shared_models.Subject.fromJson(
-        response as Map<String, dynamic>,
+        response['data'] as Map<String, dynamic>,
       );
       _subjects.add(newSubject);
 
@@ -153,7 +153,7 @@ class SubjectProvider extends ChangeNotifier {
       );
 
       final updatedSubject = shared_models.Subject.fromJson(
-        response as Map<String, dynamic>,
+        response['data'] as Map<String, dynamic>,
       );
       final index = _subjects.indexWhere((subj) => subj.id == id);
       if (index != -1) {

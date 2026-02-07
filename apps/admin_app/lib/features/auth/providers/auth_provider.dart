@@ -10,13 +10,12 @@ import '../../../core/config/env.dart';
 /// Authentication state provider for admin app
 class AuthProvider extends ChangeNotifier {
   late final AuthService _authService;
-  
+
   User? _currentUser;
   bool _isLoading = false;
   String? _errorMessage;
 
   AuthProvider() {
-    // Initialize AuthService with dependencies
     final tokenManager = TokenManager();
     final apiClient = ApiClient(
       tokenManager: tokenManager,
@@ -44,11 +43,11 @@ class AuthProvider extends ChangeNotifier {
 
       // Check if user is logged in
       final isLoggedIn = await _authService.isLoggedIn();
-      
+
       if (isLoggedIn) {
         // Fetch current user from API
         _currentUser = await _authService.getCurrentUser();
-        
+
         // Verify user is admin
         if (_currentUser?.role != AppConstants.roleAdmin) {
           _errorMessage = 'Access denied. Admin privileges required.';
@@ -72,10 +71,7 @@ class AuthProvider extends ChangeNotifier {
       notifyListeners();
 
       // Attempt login
-      _currentUser = await _authService.login(
-        email: email,
-        password: password,
-      );
+      _currentUser = await _authService.login(email: email, password: password);
 
       // Verify user is admin
       if (_currentUser?.role != AppConstants.roleAdmin) {
@@ -122,7 +118,7 @@ class AuthProvider extends ChangeNotifier {
       if (!isAuthenticated) return;
 
       _currentUser = await _authService.getCurrentUser();
-      
+
       // Verify user is still admin
       if (_currentUser?.role != AppConstants.roleAdmin) {
         _errorMessage = 'Access denied. Admin privileges revoked.';
@@ -132,7 +128,7 @@ class AuthProvider extends ChangeNotifier {
       }
     } catch (e) {
       _errorMessage = _getErrorMessage(e);
-      
+
       // If unauthorized, logout
       if (e is local_exceptions.UnauthorizedException) {
         await logout();

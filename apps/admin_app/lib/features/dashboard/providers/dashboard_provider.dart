@@ -87,7 +87,9 @@ class DashboardProvider extends ChangeNotifier {
 
       final response = await _apiClient.get(ApiEndpoints.adminDashboard);
 
-      _stats = DashboardStats.fromJson(response as Map<String, dynamic>);
+      _stats = DashboardStats.fromJson(
+        response['data'] as Map<String, dynamic>,
+      );
       _isLoading = false;
       notifyListeners();
     } catch (e) {

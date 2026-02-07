@@ -19,7 +19,7 @@ class Subject {
     return Subject(
       id: json['id'] as String,
       name: json['name'] as String,
-      parentSubjectId: json['parent_subject_id'] as String?,
+      parentSubjectId: json['parentSubjectId'] as String?,
     );
   }
 

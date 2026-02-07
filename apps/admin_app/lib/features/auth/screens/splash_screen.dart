@@ -40,6 +40,8 @@ class _SplashScreenState extends State<SplashScreen> {
       AppRouter.pushReplacement(context, RouteNames.dashboard);
     } else {
       // User is not logged in or not admin - go to login
+      // Clear any initialization errors before showing login screen
+      authProvider.clearError();
       AppRouter.pushReplacement(context, RouteNames.login);
     }
   }

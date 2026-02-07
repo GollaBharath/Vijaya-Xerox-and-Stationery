@@ -7,6 +7,11 @@ class TokenManager {
   static const String _userIdKey = 'user_id';
   static const String _userRoleKey = 'user_role';
 
+  // Singleton pattern
+  static final TokenManager _instance = TokenManager._internal();
+  factory TokenManager() => _instance;
+  TokenManager._internal();
+
   late SharedPreferences _prefs;
   bool _initialized = false;
 

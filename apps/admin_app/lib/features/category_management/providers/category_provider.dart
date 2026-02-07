@@ -58,8 +58,13 @@ class CategoryProvider extends ChangeNotifier {
       _errorMessage = null;
       notifyListeners();
 
-      final response = await _apiClient.get(ApiEndpoints.categoriesRoot);
+      print('📂 Fetching categories...');
+      final response = await _apiClient.get(
+        '${ApiEndpoints.categoriesRoot}?isActive=true',
+      );
+      print('📂 Response: $response');
       final data = response['data'] as List<dynamic>;
+      print('📂 Data count: ${data.length}');
 
       _categories = data
           .map(
@@ -68,9 +73,12 @@ class CategoryProvider extends ChangeNotifier {
           )
           .toList();
 
+      print('📂 Categories loaded: ${_categories.length}');
       _isLoading = false;
       notifyListeners();
-    } catch (e) {
+    } catch (e, stack) {
+      print('❌ Fetch categories error: $e');
+      print('❌ Stack: $stack');
       _errorMessage = _getErrorMessage(e);
       _isLoading = false;
       notifyListeners();
@@ -86,7 +94,7 @@ class CategoryProvider extends ChangeNotifier {
         '${ApiEndpoints.categoriesRoot}/$id',
       );
       _selectedCategory = shared_models.Category.fromJson(
-        response as Map<String, dynamic>,
+        response['data'] as Map<String, dynamic>,
       );
 
       notifyListeners();
@@ -115,20 +123,25 @@ class CategoryProvider extends ChangeNotifier {
         if (metadata != null) 'metadata': metadata,
       };
 
+      print('📝 Creating category: $body');
       final response = await _apiClient.post(
         ApiEndpoints.categoriesRoot,
         body: body,
       );
+      print('📝 Create response: $response');
 
       final newCategory = shared_models.Category.fromJson(
-        response as Map<String, dynamic>,
+        response['data'] as Map<String, dynamic>,
       );
       _categories.add(newCategory);
 
+      print('✅ Category created: ${newCategory.name}');
       _isLoading = false;
       notifyListeners();
       return true;
-    } catch (e) {
+    } catch (e, stack) {
+      print('❌ Create category error: $e');
+      print('❌ Stack: $stack');
       _errorMessage = _getErrorMessage(e);
       _isLoading = false;
       notifyListeners();
@@ -161,7 +174,7 @@ class CategoryProvider extends ChangeNotifier {
       );
 
       final updatedCategory = shared_models.Category.fromJson(
-        response as Map<String, dynamic>,
+        response['data'] as Map<String, dynamic>,
       );
       final index = _categories.indexWhere((cat) => cat.id == id);
       if (index != -1) {
