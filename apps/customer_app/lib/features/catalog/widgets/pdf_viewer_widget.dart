@@ -1,6 +1,7 @@
 import 'package:flutter/material.dart';
 import 'package:http/http.dart' as http;
 import 'dart:typed_data';
+import '../../../core/config/env.dart';
 
 /// Widget for viewing PDF files
 class PdfViewerWidget extends StatefulWidget {
@@ -32,7 +33,8 @@ class _PdfViewerWidgetState extends State<PdfViewerWidget> {
     });
 
     try {
-      final response = await http.get(Uri.parse(widget.pdfUrl));
+      final resolvedUrl = _resolvePdfUrl(widget.pdfUrl);
+      final response = await http.get(Uri.parse(resolvedUrl));
 
       if (response.statusCode == 200) {
         setState(() {
@@ -49,6 +51,14 @@ class _PdfViewerWidgetState extends State<PdfViewerWidget> {
         _isLoading = false;
       });
     }
+  }
+
+  String _resolvePdfUrl(String pdfPath) {
+    if (pdfPath.startsWith('http')) return pdfPath;
+    if (pdfPath.startsWith('/')) {
+      return '${Environment.apiBaseUrl}$pdfPath';
+    }
+    return '${Environment.apiBaseUrl}/api/v1/files/pdfs/books/$pdfPath';
   }
 
   @override

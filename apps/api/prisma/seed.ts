@@ -123,12 +123,14 @@ async function main() {
 	// Initialize upload directories first
 	initializeUploadDirs();
 
+	console.log("🌱 Starting database seed...");
+
+	// Create Admin User
 	const adminEmail = process.env.ADMIN_EMAIL || "admin@vijaya.local";
 	const adminPassword = process.env.ADMIN_PASSWORD || "Admin@12345";
-
 	const passwordHash = await bcrypt.hash(adminPassword, 10);
 
-	await prisma.user.upsert({
+	const admin = await prisma.user.upsert({
 		where: { email: adminEmail },
 		update: {
 			name: "Admin",
@@ -146,7 +148,43 @@ async function main() {
 			isActive: true,
 		},
 	});
+	console.log("✓ Admin user created:", admin.email);
 
+	// Create Test Customer Users
+	const testPassword = await bcrypt.hash("Test@12345", 10);
+
+	const customer1 = await prisma.user.upsert({
+		where: { email: "customer1@test.com" },
+		update: { passwordHash: testPassword },
+		create: {
+			name: "John Doe",
+			email: "customer1@test.com",
+			phone: "9876543210",
+			passwordHash: testPassword,
+			role: "CUSTOMER",
+			isActive: true,
+		},
+	});
+	console.log("✓ Test customer 1 created:", customer1.email);
+
+	const customer2 = await prisma.user.upsert({
+		where: { email: "customer2@test.com" },
+		update: { passwordHash: testPassword },
+		create: {
+			name: "Jane Smith",
+			email: "customer2@test.com",
+			phone: "9876543211",
+			passwordHash: testPassword,
+			role: "CUSTOMER",
+			isActive: true,
+		},
+	});
+	console.log("✓ Test customer 2 created:", customer2.email);
+
+	console.log("✓ Test customer 2 created:", customer2.email);
+
+	// Create Categories
+	console.log("\n📚 Creating categories...");
 	const medical = await upsertCategory("Medical", null, { type: "books" });
 	const stationery = await upsertCategory("Stationery", null, {
 		type: "stationery",
@@ -154,14 +192,37 @@ async function main() {
 	const medicalBooks = await upsertCategory("Medical Books", medical.id, {
 		parent: "Medical",
 	});
+	const officeSupplies = await upsertCategory(
+		"Office Supplies",
+		stationery.id,
+		{
+			parent: "Stationery",
+		},
+	);
+	const writingInstruments = await upsertCategory(
+		"Writing Instruments",
+		stationery.id,
+		{
+			parent: "Stationery",
+		},
+	);
+	console.log("✓ Categories created");
 
+	// Create Subjects
+	console.log("\n📖 Creating subjects...");
 	const anatomy = await upsertSubject("Anatomy", null);
 	const physiology = await upsertSubject("Physiology", null);
+	const biochemistry = await upsertSubject("Biochemistry", null);
+	const pharmacology = await upsertSubject("Pharmacology", null);
 	const general = await upsertSubject("General", null);
+	console.log("✓ Subjects created");
 
+	// Create Products
+	console.log("\n📦 Creating products...");
 	const product1 = await upsertProductByIsbn({
-		title: "BD Chaurasia Anatomy",
-		description: "Anatomy textbook",
+		title: "BD Chaurasia Anatomy - Volume 1",
+		description:
+			"Comprehensive anatomy textbook covering upper and lower limbs. Essential for medical students.",
 		isbn: "9788131902021",
 		basePrice: 1200,
 		subjectId: anatomy.id,
@@ -169,74 +230,229 @@ async function main() {
 	});
 
 	const product2 = await upsertProductByIsbn({
-		title: "Guyton and Hall Physiology",
-		description: "Physiology textbook",
+		title: "Guyton and Hall Textbook of Medical Physiology",
+		description:
+			"The gold standard physiology textbook. Detailed explanations with clinical correlations.",
 		isbn: "9788131236102",
 		basePrice: 1500,
 		subjectId: physiology.id,
 		categoryIds: [medicalBooks.id],
 	});
 
-	const notebook = await prisma.product.findFirst({
-		where: { title: "Notebook A4" },
+	const product3 = await upsertProductByIsbn({
+		title: "Harper's Illustrated Biochemistry",
+		description:
+			"Comprehensive biochemistry reference with clear illustrations and clinical applications.",
+		isbn: "9780071765961",
+		basePrice: 1350,
+		subjectId: biochemistry.id,
+		categoryIds: [medicalBooks.id],
 	});
-	const product3 =
+
+	const product4 = await upsertProductByIsbn({
+		title: "Lippincott Pharmacology",
+		description:
+			"Illustrated pharmacology textbook with case studies and self-assessment questions.",
+		isbn: "9781451191776",
+		basePrice: 1450,
+		subjectId: pharmacology.id,
+		categoryIds: [medicalBooks.id],
+	});
+
+	const product5 = await upsertProductByIsbn({
+		title: "Gray's Anatomy for Students",
+		description:
+			"The classic anatomy reference book with detailed illustrations and clinical notes.",
+		isbn: "9780323393041",
+		basePrice: 2500,
+		subjectId: anatomy.id,
+		categoryIds: [medicalBooks.id],
+	});
+
+	const notebook = await prisma.product.findFirst({
+		where: { title: "Notebook A4 - 200 Pages" },
+	});
+	const product6 =
 		notebook ||
 		(await prisma.product.create({
 			data: {
-				title: "Notebook A4",
-				description: "A4 ruled notebook",
+				title: "Notebook A4 - 200 Pages",
+				description:
+					"A4 size ruled notebook with 200 pages, perfect for note-taking",
 				basePrice: 120,
 				subjectId: general.id,
 				isActive: true,
 				categories: {
 					createMany: {
-						data: [{ categoryId: stationery.id }],
+						data: [{ categoryId: officeSupplies.id }],
 					},
 				},
 			},
 		}));
 
+	const pen = await prisma.product.findFirst({
+		where: { title: "Blue Ballpoint Pen" },
+	});
+	const product7 =
+		pen ||
+		(await prisma.product.create({
+			data: {
+				title: "Blue Ballpoint Pen",
+				description: "Smooth writing blue ballpoint pen, pack of 10",
+				basePrice: 50,
+				subjectId: general.id,
+				isActive: true,
+				categories: {
+					createMany: {
+						data: [{ categoryId: writingInstruments.id }],
+					},
+				},
+			},
+		}));
+
+	const marker = await prisma.product.findFirst({
+		where: { title: "Permanent Marker Set" },
+	});
+	const product8 =
+		marker ||
+		(await prisma.product.create({
+			data: {
+				title: "Permanent Marker Set",
+				description: "Set of 12 assorted color permanent markers",
+				basePrice: 180,
+				subjectId: general.id,
+				isActive: true,
+				categories: {
+					createMany: {
+						data: [{ categoryId: writingInstruments.id }],
+					},
+				},
+			},
+		}));
+	console.log("✓ Products created");
+
+	// Create Product Variants
+	console.log("\n🎨 Creating product variants...");
 	await upsertVariant({
 		productId: product1.id,
 		variantType: "COLOR",
 		price: 1350,
-		stock: 10,
-		sku: "BD-ANAT-COLOR",
+		stock: 15,
+		sku: "BD-ANAT-V1-COLOR",
 	});
 
 	await upsertVariant({
 		productId: product1.id,
 		variantType: "BW",
 		price: 1200,
-		stock: 20,
-		sku: "BD-ANAT-BW",
+		stock: 25,
+		sku: "BD-ANAT-V1-BW",
 	});
 
 	await upsertVariant({
 		productId: product2.id,
 		variantType: "COLOR",
-		price: 1600,
-		stock: 8,
+		price: 1650,
+		stock: 12,
 		sku: "GH-PHYS-COLOR",
+	});
+
+	await upsertVariant({
+		productId: product2.id,
+		variantType: "BW",
+		price: 1500,
+		stock: 18,
+		sku: "GH-PHYS-BW",
+	});
+
+	await upsertVariant({
+		productId: product3.id,
+		variantType: "COLOR",
+		price: 1500,
+		stock: 10,
+		sku: "HARPER-BIOCHEM-COLOR",
 	});
 
 	await upsertVariant({
 		productId: product3.id,
 		variantType: "BW",
-		price: 120,
-		stock: 50,
-		sku: "NOTEBOOK-A4-BW",
+		price: 1350,
+		stock: 14,
+		sku: "HARPER-BIOCHEM-BW",
 	});
+
+	await upsertVariant({
+		productId: product4.id,
+		variantType: "COLOR",
+		price: 1600,
+		stock: 8,
+		sku: "LIPP-PHARM-COLOR",
+	});
+
+	await upsertVariant({
+		productId: product4.id,
+		variantType: "BW",
+		price: 1450,
+		stock: 11,
+		sku: "LIPP-PHARM-BW",
+	});
+
+	await upsertVariant({
+		productId: product5.id,
+		variantType: "COLOR",
+		price: 2750,
+		stock: 5,
+		sku: "GRAY-ANAT-COLOR",
+	});
+
+	await upsertVariant({
+		productId: product5.id,
+		variantType: "BW",
+		price: 2500,
+		stock: 7,
+		sku: "GRAY-ANAT-BW",
+	});
+
+	await upsertVariant({
+		productId: product6.id,
+		variantType: "BW",
+		price: 120,
+		stock: 100,
+		sku: "NOTEBOOK-A4-200",
+	});
+
+	await upsertVariant({
+		productId: product7.id,
+		variantType: "BW",
+		price: 50,
+		stock: 200,
+		sku: "PEN-BLUE-10",
+	});
+
+	await upsertVariant({
+		productId: product8.id,
+		variantType: "COLOR",
+		price: 180,
+		stock: 50,
+		sku: "MARKER-PERM-12",
+	});
+	console.log("✓ Product variants created");
+
+	console.log("\n✅ Database seeded successfully!");
+	console.log("\n👤 Admin Login:");
+	console.log(`   Email: ${adminEmail}`);
+	console.log(`   Password: ${adminPassword}`);
+	console.log("\n👥 Test Customers:");
+	console.log("   Email: customer1@test.com | Password: Test@12345");
+	console.log("   Email: customer2@test.com | Password: Test@12345");
 }
 
 main()
 	.then(async () => {
 		await prisma.$disconnect();
-		console.log("Seed completed");
 	})
 	.catch(async (e) => {
-		console.error(e);
+		console.error("❌ Seed failed:", e);
 		await prisma.$disconnect();
 		process.exit(1);
 	});

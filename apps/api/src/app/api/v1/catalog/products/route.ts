@@ -54,9 +54,11 @@ export const GET = errorHandler(async (request: NextRequest) => {
 		}),
 	]);
 
-	const response: ApiResponse<typeof products> = {
+	const response: ApiResponse<{ products: typeof products }> = {
 		success: true,
-		data: products,
+		data: {
+			products,
+		},
 		pagination: createPaginationMeta(page, limit, total),
 	};
 

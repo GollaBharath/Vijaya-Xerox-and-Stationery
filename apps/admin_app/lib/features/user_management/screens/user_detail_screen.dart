@@ -1,5 +1,7 @@
 import 'package:flutter/material.dart';
 import 'package:provider/provider.dart';
+import '../../../routing/route_names.dart';
+import '../../../shared/widgets/admin_scaffold.dart';
 import '../providers/user_provider.dart';
 
 class UserDetailScreen extends StatefulWidget {
@@ -102,50 +104,54 @@ class _UserDetailScreenState extends State<UserDetailScreen> {
 
   @override
   Widget build(BuildContext context) {
-    return Scaffold(
-      appBar: AppBar(
-        title: const Text('User Details'),
-        elevation: 0,
-        actions: [
-          if (!_isEditing)
-            Padding(
-              padding: const EdgeInsets.all(8.0),
-              child: Center(
-                child: ElevatedButton(
-                  onPressed: () {
-                    setState(() {
-                      _isEditing = true;
-                    });
-                  },
-                  child: const Text('Edit'),
-                ),
+    final List<Widget> headerActions;
+    if (_isEditing) {
+      headerActions = [
+        Padding(
+          padding: const EdgeInsets.all(8.0),
+          child: Row(
+            children: [
+              TextButton(
+                onPressed: () {
+                  setState(() {
+                    _isEditing = false;
+                    _passwordController.clear();
+                    _loadUserDetails();
+                  });
+                },
+                child: const Text('Cancel'),
               ),
-            )
-          else
-            Padding(
-              padding: const EdgeInsets.all(8.0),
-              child: Row(
-                children: [
-                  TextButton(
-                    onPressed: () {
-                      setState(() {
-                        _isEditing = false;
-                        _passwordController.clear();
-                        _loadUserDetails();
-                      });
-                    },
-                    child: const Text('Cancel'),
-                  ),
-                  const SizedBox(width: 8),
-                  ElevatedButton(
-                    onPressed: _saveChanges,
-                    child: const Text('Save'),
-                  ),
-                ],
+              const SizedBox(width: 8),
+              ElevatedButton(
+                onPressed: _saveChanges,
+                child: const Text('Save'),
               ),
+            ],
+          ),
+        ),
+      ];
+    } else {
+      headerActions = [
+        Padding(
+          padding: const EdgeInsets.all(8.0),
+          child: Center(
+            child: ElevatedButton(
+              onPressed: () {
+                setState(() {
+                  _isEditing = true;
+                });
+              },
+              child: const Text('Edit'),
             ),
-        ],
-      ),
+          ),
+        ),
+      ];
+    }
+
+    return AdminScaffold(
+      title: 'User Details',
+      currentRoute: RouteNames.users,
+      actions: headerActions,
       body: Consumer<UserProvider>(
         builder: (context, userProvider, _) {
           if (userProvider.isLoading && userProvider.selectedUser == null) {
@@ -182,15 +188,12 @@ class _UserDetailScreenState extends State<UserDetailScreen> {
               child: Column(
                 crossAxisAlignment: CrossAxisAlignment.start,
                 children: [
-                  // User ID (read-only)
                   _buildInfoField(
                     label: 'User ID',
                     value: user.id,
                     enabled: false,
                   ),
                   const SizedBox(height: 16),
-
-                  // Name field
                   TextField(
                     controller: _nameController,
                     enabled: _isEditing,
@@ -206,8 +209,6 @@ class _UserDetailScreenState extends State<UserDetailScreen> {
                     ),
                   ),
                   const SizedBox(height: 16),
-
-                  // Email field
                   TextField(
                     controller: _emailController,
                     enabled: _isEditing,
@@ -223,8 +224,6 @@ class _UserDetailScreenState extends State<UserDetailScreen> {
                     ),
                   ),
                   const SizedBox(height: 16),
-
-                  // Phone field
                   TextField(
                     controller: _phoneController,
                     enabled: _isEditing,
@@ -240,8 +239,6 @@ class _UserDetailScreenState extends State<UserDetailScreen> {
                     ),
                   ),
                   const SizedBox(height: 16),
-
-                  // Role dropdown
                   if (_isEditing) ...[
                     DropdownButtonFormField<String>(
                       value: _selectedRole,
@@ -277,8 +274,6 @@ class _UserDetailScreenState extends State<UserDetailScreen> {
                     ),
                     const SizedBox(height: 16),
                   ],
-
-                  // Password field (only in edit mode)
                   if (_isEditing) ...[
                     TextField(
                       controller: _passwordController,
@@ -308,8 +303,6 @@ class _UserDetailScreenState extends State<UserDetailScreen> {
                     ),
                     const SizedBox(height: 16),
                   ],
-
-                  // Active status
                   if (_isEditing) ...[
                     CheckboxListTile(
                       value: _isActive ?? false,
@@ -330,8 +323,6 @@ class _UserDetailScreenState extends State<UserDetailScreen> {
                     ),
                     const SizedBox(height: 16),
                   ],
-
-                  // Account info
                   Container(
                     decoration: BoxDecoration(
                       color: Colors.grey[100],

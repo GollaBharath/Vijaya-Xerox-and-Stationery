@@ -21,7 +21,7 @@ function toProduct(entity: any): Product {
 		imageUrl: entity.imageUrl ?? null,
 		pdfUrl: entity.pdfUrl ?? null,
 		fileType: entity.fileType ?? "NONE",
-		is_active: entity.isActive,
+		isActive: entity.isActive,
 		createdAt: entity.createdAt.toISOString(),
 		updatedAt: entity.updatedAt.toISOString(),
 	};
@@ -75,7 +75,7 @@ export async function findAllProducts(
 		isActive: filters.isActive ?? undefined,
 		subjectId: filters.subjectId ?? undefined,
 		title: filters.search
-			? { contains: filters.search, mode: "insensitive" }
+			? { contains: filters.search, mode: "insensitive" as const }
 			: undefined,
 		categories: filters.categoryId
 			? { some: { categoryId: filters.categoryId } }

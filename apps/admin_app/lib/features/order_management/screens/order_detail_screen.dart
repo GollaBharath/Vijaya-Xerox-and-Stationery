@@ -1,6 +1,8 @@
 import 'package:flutter/material.dart';
 import 'package:provider/provider.dart';
 import 'package:flutter_shared/models/order.dart';
+import '../../../routing/route_names.dart';
+import '../../../shared/widgets/admin_scaffold.dart';
 import '../providers/order_provider.dart';
 
 /// Order Detail Screen
@@ -190,13 +192,9 @@ class _OrderDetailScreenState extends State<OrderDetailScreen> {
 
   @override
   Widget build(BuildContext context) {
-    return Scaffold(
-      appBar: AppBar(
-        title: const Text('Order Details'),
-        elevation: 0,
-        backgroundColor: Colors.white,
-        foregroundColor: Colors.black87,
-      ),
+    return AdminScaffold(
+      title: 'Order Details',
+      currentRoute: RouteNames.orders,
       body: Consumer<OrderProvider>(
         builder: (context, orderProvider, _) {
           if (orderProvider.isLoading && orderProvider.selectedOrder == null) {

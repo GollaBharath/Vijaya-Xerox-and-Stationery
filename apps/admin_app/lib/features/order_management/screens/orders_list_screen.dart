@@ -1,7 +1,7 @@
 import 'package:flutter/material.dart';
 import 'package:provider/provider.dart';
 import '../../../routing/route_names.dart';
-import '../../../shared/widgets/admin_drawer.dart';
+import '../../../shared/widgets/admin_scaffold.dart';
 import '../providers/order_provider.dart';
 import 'order_detail_screen.dart';
 
@@ -108,14 +108,9 @@ class _OrdersListScreenState extends State<OrdersListScreen> {
 
   @override
   Widget build(BuildContext context) {
-    return Scaffold(
-      drawer: const AdminDrawer(currentRoute: RouteNames.orders),
-      appBar: AppBar(
-        title: const Text('Orders Management'),
-        elevation: 0,
-        backgroundColor: Colors.white,
-        foregroundColor: Colors.black87,
-      ),
+    return AdminScaffold(
+      title: 'Orders Management',
+      currentRoute: RouteNames.orders,
       body: Consumer<OrderProvider>(
         builder: (context, orderProvider, _) {
           if (orderProvider.isLoading && orderProvider.orders.isEmpty) {
@@ -191,9 +186,12 @@ class _OrdersListScreenState extends State<OrdersListScreen> {
                             label: const Text('Clear Filters'),
                           ),
                         OutlinedButton.icon(
-                          onPressed: () => Navigator.of(context).pop(),
-                          icon: const Icon(Icons.arrow_back),
-                          label: const Text('Go Back'),
+                          onPressed: () => Navigator.pushReplacementNamed(
+                            context,
+                            RouteNames.dashboard,
+                          ),
+                          icon: const Icon(Icons.dashboard),
+                          label: const Text('Go to Dashboard'),
                         ),
                       ],
                     ),

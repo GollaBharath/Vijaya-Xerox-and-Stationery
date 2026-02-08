@@ -2,7 +2,7 @@ import 'package:flutter/material.dart';
 import 'package:provider/provider.dart';
 import 'package:flutter_shared/flutter_shared.dart';
 import '../../../routing/route_names.dart';
-import '../../../shared/widgets/admin_drawer.dart';
+import '../../../shared/widgets/admin_scaffold.dart';
 import '../providers/product_provider.dart';
 import 'product_form_screen.dart';
 import 'product_detail_screen.dart';
@@ -199,75 +199,73 @@ class _ProductsListScreenState extends State<ProductsListScreen> {
 
   @override
   Widget build(BuildContext context) {
-    return Scaffold(
-      drawer: const AdminDrawer(currentRoute: RouteNames.products),
-      appBar: AppBar(
-        title: const Text('Product Management'),
-        bottom: PreferredSize(
-          preferredSize: const Size.fromHeight(56),
-          child: Container(
-            padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 8),
-            child: Row(
-              children: [
-                const Text(
-                  'Filter: ',
-                  style: TextStyle(fontWeight: FontWeight.w500),
-                ),
-                const SizedBox(width: 8),
-                Expanded(
-                  child: SingleChildScrollView(
-                    scrollDirection: Axis.horizontal,
-                    child: Row(
-                      children: [
-                        FilterChip(
-                          label: const Text('All'),
-                          selected: _filterIsActive == null,
-                          onSelected: (selected) {
-                            if (selected) {
-                              setState(() => _filterIsActive = null);
-                              _loadProducts();
-                            }
-                          },
-                          avatar: _filterIsActive == null
-                              ? const Icon(Icons.check_circle, size: 18)
-                              : null,
-                        ),
-                        const SizedBox(width: 8),
-                        FilterChip(
-                          label: const Text('Active'),
-                          selected: _filterIsActive == true,
-                          onSelected: (selected) {
-                            if (selected) {
-                              setState(() => _filterIsActive = true);
-                              _loadProducts();
-                            }
-                          },
-                          avatar: _filterIsActive == true
-                              ? const Icon(Icons.check_circle, size: 18)
-                              : null,
-                          selectedColor: Colors.green.shade100,
-                        ),
-                        const SizedBox(width: 8),
-                        FilterChip(
-                          label: const Text('Inactive'),
-                          selected: _filterIsActive == false,
-                          onSelected: (selected) {
-                            if (selected) {
-                              setState(() => _filterIsActive = false);
-                              _loadProducts();
-                            }
-                          },
-                          avatar: _filterIsActive == false
-                              ? const Icon(Icons.check_circle, size: 18)
-                              : null,
-                          selectedColor: Colors.orange.shade100,
-                        ),
-                      ],
-                    ),
+    return AdminScaffold(
+      title: 'Product Management',
+      currentRoute: RouteNames.products,
+      bottom: PreferredSize(
+        preferredSize: const Size.fromHeight(56),
+        child: Container(
+          padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 8),
+          child: Row(
+            children: [
+              const Text(
+                'Filter: ',
+                style: TextStyle(fontWeight: FontWeight.w500),
+              ),
+              const SizedBox(width: 8),
+              Expanded(
+                child: SingleChildScrollView(
+                  scrollDirection: Axis.horizontal,
+                  child: Row(
+                    children: [
+                      FilterChip(
+                        label: const Text('All'),
+                        selected: _filterIsActive == null,
+                        onSelected: (selected) {
+                          if (selected) {
+                            setState(() => _filterIsActive = null);
+                            _loadProducts();
+                          }
+                        },
+                        avatar: _filterIsActive == null
+                            ? const Icon(Icons.check_circle, size: 18)
+                            : null,
+                      ),
+                      const SizedBox(width: 8),
+                      FilterChip(
+                        label: const Text('Active'),
+                        selected: _filterIsActive == true,
+                        onSelected: (selected) {
+                          if (selected) {
+                            setState(() => _filterIsActive = true);
+                            _loadProducts();
+                          }
+                        },
+                        avatar: _filterIsActive == true
+                            ? const Icon(Icons.check_circle, size: 18)
+                            : null,
+                        selectedColor: Colors.green.shade100,
+                      ),
+                      const SizedBox(width: 8),
+                      FilterChip(
+                        label: const Text('Inactive'),
+                        selected: _filterIsActive == false,
+                        onSelected: (selected) {
+                          if (selected) {
+                            setState(() => _filterIsActive = false);
+                            _loadProducts();
+                          }
+                        },
+                        avatar: _filterIsActive == false
+                            ? const Icon(Icons.check_circle, size: 18)
+                            : null,
+                        selectedColor: Colors.orange.shade100,
+                      ),
+                    ],
                   ),
                 ),
-              ],
-            ),
+              ),
+            ],
           ),
         ),
       ),

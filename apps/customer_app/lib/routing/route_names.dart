@@ -12,7 +12,6 @@ class RouteNames {
 
   // Main app routes
   static const String home = '/home';
-  static const String catalog = '/catalog';
   static const String categoryProducts = '/category-products';
   static const String productDetail = '/product-detail';
   static const String search = '/search';

@@ -22,7 +22,7 @@ export async function checkoutCart(
 
 	// Validate stock and active products
 	for (const item of cartItems) {
-		const variant = item.productVariant;
+		const variant = item.variant;
 		if (!variant || !variant.product || !variant.product.isActive) {
 			throw new NotFoundError("Product variant");
 		}
@@ -38,7 +38,7 @@ export async function checkoutCart(
 	const orderItems = cartItems.map((item) => ({
 		productVariantId: item.productVariantId,
 		quantity: item.quantity,
-		priceSnapshot: item.productVariant?.price ?? 0,
+		priceSnapshot: item.variant?.price ?? 0,
 	}));
 
 	const totalPrice = orderItems.reduce(

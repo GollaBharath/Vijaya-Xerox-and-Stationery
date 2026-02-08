@@ -6,7 +6,7 @@ import '../../../core/config/constants.dart';
 import '../../../core/theme/colors.dart';
 import '../../../core/theme/typography.dart';
 import '../../../routing/route_names.dart';
-import '../providers/auth_provider.dart';
+import '../providers/firebase_auth_provider.dart';
 
 /// Splash screen that checks authentication and redirects
 class SplashScreen extends StatefulWidget {
@@ -24,7 +24,7 @@ class _SplashScreenState extends State<SplashScreen> {
   }
 
   Future<void> _initializeApp() async {
-    final authProvider = context.read<AuthProvider>();
+    final authProvider = context.read<FirebaseAuthProvider>();
 
     // Initialize auth provider (load from storage, etc.)
     await authProvider.initialize();

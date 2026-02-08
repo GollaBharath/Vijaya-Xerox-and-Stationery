@@ -2,6 +2,7 @@ import 'package:flutter/material.dart';
 import 'package:flutter_shared/utils/formatters.dart';
 import '../../../core/theme/colors.dart';
 import '../../../core/config/constants.dart';
+import '../../order_management/screens/order_detail_screen.dart';
 import '../providers/dashboard_provider.dart';
 
 /// Recent orders list widget for dashboard
@@ -60,6 +61,14 @@ class RecentOrdersList extends StatelessWidget {
         itemBuilder: (context, index) {
           final order = orders[index];
           return ListTile(
+            onTap: () {
+              Navigator.push(
+                context,
+                MaterialPageRoute(
+                  builder: (_) => OrderDetailScreen(orderId: order.id),
+                ),
+              );
+            },
             leading: CircleAvatar(
               backgroundColor: _getStatusColor(order.status).withAlpha(51),
               child: Icon(

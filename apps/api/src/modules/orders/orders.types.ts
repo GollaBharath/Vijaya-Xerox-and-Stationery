@@ -47,6 +47,8 @@ export interface OrderFilterOptions {
 	status?: OrderStatus;
 	paymentStatus?: PaymentStatus;
 	userId?: string;
+	dateFrom?: Date;
+	dateTo?: Date;
 }
 
 export interface CheckoutRequest {

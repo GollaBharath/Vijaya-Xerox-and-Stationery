@@ -52,10 +52,14 @@ class RecentOrder {
   factory RecentOrder.fromJson(Map<String, dynamic> json) {
     return RecentOrder(
       id: json['id'] as String,
-      userName: json['user_name'] as String? ?? 'Unknown',
-      status: json['status'] as String,
-      totalPrice: (json['total_price'] as num).toDouble(),
-      createdAt: DateTime.parse(json['created_at'] as String),
+      userName: (json['userName'] ?? json['user_name']) as String? ?? 'Unknown',
+      status: (json['status'] ?? 'UNKNOWN') as String,
+      totalPrice:
+          ((json['totalPrice'] ?? json['total_price']) as num?)?.toDouble() ??
+          0.0,
+      createdAt: DateTime.parse(
+        (json['createdAt'] ?? json['created_at']) as String,
+      ),
     );
   }
 }

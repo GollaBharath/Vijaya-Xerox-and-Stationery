@@ -1,9 +1,10 @@
 import 'package:flutter/material.dart';
 import 'package:provider/provider.dart';
+import 'package:firebase_core/firebase_core.dart';
 import 'package:flutter_shared/flutter_shared.dart';
 import 'core/config/constants.dart';
 import 'core/theme/app_theme.dart';
-import 'features/auth/providers/auth_provider.dart';
+import 'features/auth/providers/firebase_auth_provider.dart';
 import 'features/catalog/providers/category_provider.dart';
 import 'features/catalog/providers/subject_provider.dart';
 import 'features/catalog/providers/product_provider.dart';
@@ -15,35 +16,46 @@ import 'routing/app_router.dart';
 void main() async {
   WidgetsFlutterBinding.ensureInitialized();
 
+  // Initialize Firebase
+  await Firebase.initializeApp();
+
   // Initialize token manager
   final tokenManager = TokenManager();
   await tokenManager.initialize();
 
-  // Create auth provider and initialize
-  final authProvider = AuthProvider();
+  // Create API client
+  final apiClient = ApiClient(
+    baseUrl: AppConstants.apiBaseUrl,
+    tokenManager: tokenManager,
+  );
+
+  // Create Firebase auth provider and initialize
+  final authProvider = FirebaseAuthProvider(apiClient: apiClient);
   await authProvider.initialize();
 
-  runApp(MainApp(tokenManager: tokenManager, authProvider: authProvider));
+  runApp(
+    MainApp(
+      tokenManager: tokenManager,
+      authProvider: authProvider,
+      apiClient: apiClient,
+    ),
+  );
 }
 
 class MainApp extends StatelessWidget {
   final TokenManager tokenManager;
-  final AuthProvider authProvider;
+  final FirebaseAuthProvider authProvider;
+  final ApiClient apiClient;
 
   const MainApp({
     super.key,
     required this.tokenManager,
     required this.authProvider,
+    required this.apiClient,
   });
 
   @override
   Widget build(BuildContext context) {
-    // Create API client
-    final apiClient = ApiClient(
-      baseUrl: AppConstants.apiBaseUrl,
-      tokenManager: tokenManager,
-    );
-
     return MultiProvider(
       providers: [
         ChangeNotifierProvider.value(value: authProvider),
@@ -54,7 +66,7 @@ class MainApp extends StatelessWidget {
         ChangeNotifierProvider(create: (_) => CheckoutProvider(apiClient)),
         ChangeNotifierProvider(create: (_) => OrdersProvider(apiClient)),
       ],
-      child: Consumer<AuthProvider>(
+      child: Consumer<FirebaseAuthProvider>(
         builder: (context, authProvider, _) {
           // Key forces router to rebuild when auth state changes
           return MaterialApp.router(

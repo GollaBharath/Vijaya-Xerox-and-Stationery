@@ -8,7 +8,7 @@ import '../../../core/theme/colors.dart';
 import '../../../core/theme/typography.dart';
 import '../../../core/utils/validators.dart';
 import '../../../routing/route_names.dart';
-import '../providers/auth_provider.dart';
+import '../providers/firebase_auth_provider.dart';
 
 /// Register screen
 class RegisterScreen extends StatefulWidget {
@@ -51,15 +51,14 @@ class _RegisterScreenState extends State<RegisterScreen> {
       return;
     }
 
-    final authProvider = context.read<AuthProvider>();
+    final authProvider = context.read<FirebaseAuthProvider>();
     authProvider.clearError();
 
     try {
       await authProvider.register(
-        name: _nameController.text.trim(),
-        email: _emailController.text.trim(),
-        phone: _phoneController.text.trim(),
-        password: _passwordController.text,
+        _emailController.text.trim(),
+        _passwordController.text,
+        _nameController.text.trim(),
       );
 
       if (mounted) {
@@ -242,7 +241,7 @@ class _RegisterScreenState extends State<RegisterScreen> {
                     const SizedBox(height: 24),
 
                     // Register button
-                    Consumer<AuthProvider>(
+                    Consumer<FirebaseAuthProvider>(
                       builder: (context, authProvider, child) {
                         return SizedBox(
                           width: double.infinity,

@@ -42,10 +42,14 @@ class CartItem {
   factory CartItem.fromJson(Map<String, dynamic> json) {
     return CartItem(
       id: json['id'] as String,
-      userId: json['user_id'] as String,
-      productVariantId: json['product_variant_id'] as String,
+      // Support both snake_case and camelCase for API compatibility
+      userId: (json['userId'] ?? json['user_id']) as String,
+      productVariantId:
+          (json['productVariantId'] ?? json['product_variant_id']) as String,
       quantity: json['quantity'] as int,
-      createdAt: DateTime.parse(json['created_at'] as String),
+      // Support both snake_case and camelCase for createdAt
+      createdAt:
+          DateTime.parse((json['createdAt'] ?? json['created_at']) as String),
       variant: json['variant'] != null
           ? ProductVariant.fromJson(json['variant'] as Map<String, dynamic>)
           : null,

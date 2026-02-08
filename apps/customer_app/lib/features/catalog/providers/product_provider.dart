@@ -206,7 +206,7 @@ class ProductProvider extends ChangeNotifier {
 
     try {
       final queryParams = <String, String>{
-        'q': query,
+        'search': query,
         'page': _currentPage.toString(),
         'limit': _pageSize.toString(),
       };

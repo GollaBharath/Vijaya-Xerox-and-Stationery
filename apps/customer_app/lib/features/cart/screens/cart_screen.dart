@@ -181,7 +181,7 @@ class _CartScreenState extends State<CartScreen> {
           const SizedBox(height: 24),
           ElevatedButton.icon(
             onPressed: () {
-              context.go(RouteNames.catalog);
+              context.go(RouteNames.home);
             },
             icon: const Icon(Icons.shopping_bag),
             label: const Text('Browse Products'),

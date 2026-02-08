@@ -4,7 +4,7 @@ import '../../../core/theme/colors.dart';
 import '../../../core/config/constants.dart';
 import '../../../routing/route_names.dart';
 import '../../../routing/app_router.dart';
-import '../../../shared/widgets/admin_drawer.dart';
+import '../../../shared/widgets/admin_scaffold.dart';
 import '../providers/category_provider.dart';
 
 /// Categories list screen with tree view
@@ -80,18 +80,16 @@ class _CategoriesListScreenState extends State<CategoriesListScreen> {
 
   @override
   Widget build(BuildContext context) {
-    return Scaffold(
-      drawer: const AdminDrawer(currentRoute: RouteNames.categories),
-      appBar: AppBar(
-        title: const Text('Categories'),
-        actions: [
-          IconButton(
-            icon: const Icon(Icons.refresh),
-            onPressed: _handleRefresh,
-            tooltip: 'Refresh',
-          ),
-        ],
-      ),
+    return AdminScaffold(
+      title: 'Categories',
+      currentRoute: RouteNames.categories,
+      actions: [
+        IconButton(
+          icon: const Icon(Icons.refresh),
+          onPressed: _handleRefresh,
+          tooltip: 'Refresh',
+        ),
+      ],
       body: RefreshIndicator(
         onRefresh: _handleRefresh,
         child: Consumer<CategoryProvider>(

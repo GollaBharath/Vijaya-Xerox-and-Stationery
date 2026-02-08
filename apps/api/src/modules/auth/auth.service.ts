@@ -7,6 +7,7 @@
 import jwt, { type Secret, type SignOptions } from "jsonwebtoken";
 import { env } from "@/lib/env";
 import { logger } from "@/lib/logger";
+import { verifyFirebaseToken } from "@/lib/firebase-admin";
 import { UserRole, JWTPayload, ErrorCode } from "@/types/global";
 import { hashPassword, comparePassword } from "@/utils/helpers";
 import { AppError, UnauthorizedError } from "@/middleware/error.middleware";
@@ -33,7 +34,7 @@ function toUserResponse(user: {
 	id: string;
 	name: string;
 	email: string;
-	phone: string;
+	phone: string | null;
 	role: UserRole;
 	isActive: boolean;
 	createdAt: Date;
@@ -42,7 +43,7 @@ function toUserResponse(user: {
 		id: user.id,
 		name: user.name,
 		email: user.email,
-		phone: user.phone,
+		phone: user.phone || "",
 		role: user.role,
 		isActive: user.isActive,
 		createdAt: user.createdAt.toISOString(),
@@ -50,6 +51,8 @@ function toUserResponse(user: {
 }
 
 /**
+ * Generate JWT tokens (access + refresh)
+ *//**
  * Generate JWT tokens (access + refresh)
  */
 export function generateTokens(userId: string, role: UserRole): AuthTokens {
@@ -195,6 +198,15 @@ export async function login(data: LoginRequest): Promise<LoginResponse> {
 		);
 	}
 
+	// Check if user has a password
+	if (!user.passwordHash) {
+		throw new AppError(
+			ErrorCode.INVALID_CREDENTIALS,
+			"This account has no password set. Please reset your password.",
+			401,
+		);
+	}
+
 	// Verify password
 	const isPasswordValid = await comparePassword(password, user.passwordHash);
 
@@ -264,4 +276,71 @@ export async function getCurrentUser(userId: string): Promise<UserResponse> {
 	}
 
 	return toUserResponse(user);
+}
+
+/**
+ * Firebase Login - Creates user if doesn't exist
+ */
+export async function firebaseLogin(idToken: string): Promise<LoginResponse> {
+	try {
+		// Verify Firebase token
+		const decodedToken = await verifyFirebaseToken(idToken);
+
+		const email = decodedToken.email;
+		const name =
+			decodedToken.name || decodedToken.email?.split("@")[0] || "User";
+		const firebaseUid = decodedToken.uid;
+
+		if (!email) {
+			throw new UnauthorizedError("Email not found in Firebase token");
+		}
+
+		// Check if user exists
+		let user = await findUserByEmail(email);
+
+		if (!user) {
+			// Create new user
+			user = await createUser({
+				name,
+				email,
+				phone: "", // Empty string instead of null
+				passwordHash: null, // Firebase users don't have password
+				role: "CUSTOMER",
+			});
+
+			logger.info("New user created via Firebase", {
+				userId: user.id,
+				email: user.email,
+				firebaseUid,
+			});
+		} else {
+			// Check if user is active
+			if (!user.isActive) {
+				throw new AppError(
+					ErrorCode.FORBIDDEN,
+					"Your account has been deactivated. Please contact support.",
+					403,
+				);
+			}
+
+			logger.info("Existing user logged in via Firebase", {
+				userId: user.id,
+				email: user.email,
+			});
+		}
+
+		// Generate JWT tokens
+		const tokens = generateTokens(user.id, user.role);
+
+		return {
+			user: toUserResponse(user),
+			tokens,
+		};
+	} catch (error) {
+		if (error instanceof AppError) {
+			throw error;
+		}
+		logger.error("Firebase login error", { error });
+		throw new UnauthorizedError("Invalid Firebase token");
+	}
 }

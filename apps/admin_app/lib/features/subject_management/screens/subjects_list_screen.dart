@@ -3,7 +3,7 @@ import 'package:provider/provider.dart';
 import '../../../core/theme/colors.dart';
 import '../../../core/config/constants.dart';
 import '../../../routing/route_names.dart';
-import '../../../shared/widgets/admin_drawer.dart';
+import '../../../shared/widgets/admin_scaffold.dart';
 import '../providers/subject_provider.dart';
 
 /// Subjects list screen with tree view
@@ -232,9 +232,9 @@ class _SubjectsListScreenState extends State<SubjectsListScreen> {
 
   @override
   Widget build(BuildContext context) {
-    return Scaffold(
-      drawer: const AdminDrawer(currentRoute: RouteNames.subjects),
-      appBar: AppBar(title: const Text('Subjects')),
+    return AdminScaffold(
+      title: 'Subjects',
+      currentRoute: RouteNames.subjects,
       body: Consumer<SubjectProvider>(
         builder: (context, subjectProvider, _) {
           if (subjectProvider.isLoading && subjectProvider.subjects.isEmpty) {

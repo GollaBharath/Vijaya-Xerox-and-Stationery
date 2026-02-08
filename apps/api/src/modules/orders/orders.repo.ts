@@ -86,6 +86,13 @@ export async function findAllOrders(
 			status: filters.status ?? undefined,
 			paymentStatus: filters.paymentStatus ?? undefined,
 			userId: filters.userId ?? undefined,
+			createdAt:
+				filters.dateFrom || filters.dateTo
+					? {
+							gte: filters.dateFrom ?? undefined,
+							lte: filters.dateTo ?? undefined,
+						}
+					: undefined,
 		},
 		skip: pagination.skip,
 		take: pagination.take,

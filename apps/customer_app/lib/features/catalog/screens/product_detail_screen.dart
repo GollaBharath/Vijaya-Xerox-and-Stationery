@@ -2,6 +2,7 @@ import 'package:flutter/material.dart';
 import 'package:provider/provider.dart';
 import 'package:flutter_shared/flutter_shared.dart';
 import 'package:cached_network_image/cached_network_image.dart';
+import '../../../core/config/env.dart';
 import '../providers/product_provider.dart';
 import '../../cart/providers/cart_provider.dart';
 import '../widgets/variant_selector.dart';
@@ -24,7 +25,10 @@ class _ProductDetailScreenState extends State<ProductDetailScreen> {
   @override
   void initState() {
     super.initState();
-    _loadProductDetails();
+    // Schedule data load after the first frame
+    WidgetsBinding.instance.addPostFrameCallback((_) {
+      _loadProductDetails();
+    });
   }
 
   void _loadProductDetails() {
@@ -220,14 +224,17 @@ class _ProductDetailScreenState extends State<ProductDetailScreen> {
   }
 
   Widget _buildProductMedia(Product product) {
-    if (product.isStationery && product.imageUrl != null) {
+    final resolvedImageUrl = _resolveImageUrl(product.imageUrl);
+    final resolvedPdfUrl = _resolvePdfUrl(product.pdfUrl);
+
+    if (product.isStationery && resolvedImageUrl != null) {
       // Display image for stationery
       return Hero(
         tag: 'product-${product.id}',
         child: GestureDetector(
-          onTap: () => _showImageZoom(product.imageUrl!),
+          onTap: () => _showImageZoom(resolvedImageUrl),
           child: CachedNetworkImage(
-            imageUrl: product.imageUrl!,
+            imageUrl: resolvedImageUrl,
             height: 300,
             width: double.infinity,
             fit: BoxFit.cover,
@@ -244,7 +251,7 @@ class _ProductDetailScreenState extends State<ProductDetailScreen> {
           ),
         ),
       );
-    } else if (product.isBook && product.pdfUrl != null) {
+    } else if (product.isBook && resolvedPdfUrl != null) {
       // Display PDF badge and preview button for books
       return Container(
         height: 300,
@@ -255,7 +262,7 @@ class _ProductDetailScreenState extends State<ProductDetailScreen> {
             const Icon(Icons.picture_as_pdf, size: 100, color: Colors.red),
             const SizedBox(height: 16),
             ElevatedButton.icon(
-              onPressed: () => _showPdfViewer(product.pdfUrl!),
+              onPressed: () => _showPdfViewer(resolvedPdfUrl),
               icon: const Icon(Icons.visibility),
               label: const Text('Preview PDF'),
             ),
@@ -389,5 +396,23 @@ class _ProductDetailScreenState extends State<ProductDetailScreen> {
     Navigator.of(context).push(
       MaterialPageRoute(builder: (context) => PdfViewerWidget(pdfUrl: pdfUrl)),
     );
+  }
+
+  String? _resolveImageUrl(String? imagePath) {
+    if (imagePath == null || imagePath.isEmpty) return null;
+    if (imagePath.startsWith('http')) return imagePath;
+    if (imagePath.startsWith('/')) {
+      return '${Environment.apiBaseUrl}$imagePath';
+    }
+    return '${Environment.apiBaseUrl}/api/v1/files/images/products/$imagePath';
+  }
+
+  String? _resolvePdfUrl(String? pdfPath) {
+    if (pdfPath == null || pdfPath.isEmpty) return null;
+    if (pdfPath.startsWith('http')) return pdfPath;
+    if (pdfPath.startsWith('/')) {
+      return '${Environment.apiBaseUrl}$pdfPath';
+    }
+    return '${Environment.apiBaseUrl}/api/v1/files/pdfs/books/$pdfPath';
   }
 }

@@ -1,6 +1,8 @@
 import 'package:flutter/material.dart';
 import 'package:provider/provider.dart';
 import 'package:flutter_shared/flutter_shared.dart';
+import '../../../routing/route_names.dart';
+import '../../../shared/widgets/admin_scaffold.dart';
 import '../providers/product_provider.dart';
 import '../providers/variant_provider.dart';
 import 'product_form_screen.dart';
@@ -174,16 +176,16 @@ class _ProductDetailScreenState extends State<ProductDetailScreen> {
 
   @override
   Widget build(BuildContext context) {
-    return Scaffold(
-      appBar: AppBar(
-        title: const Text('Product Details'),
-        actions: [
-          IconButton(
-            icon: const Icon(Icons.edit),
-            onPressed: _navigateToEditProduct,
-          ),
-        ],
-      ),
+    return AdminScaffold(
+      title: 'Product Details',
+      currentRoute: RouteNames.products,
+      actions: [
+        IconButton(
+          icon: const Icon(Icons.edit),
+          onPressed: _navigateToEditProduct,
+          tooltip: 'Edit Product',
+        ),
+      ],
       body: ListView(
         padding: const EdgeInsets.all(16),
         children: [

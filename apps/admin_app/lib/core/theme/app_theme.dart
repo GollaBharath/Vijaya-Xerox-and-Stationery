@@ -29,25 +29,27 @@ class AppTheme {
 
       // App Bar Theme
       appBarTheme: const AppBarTheme(
-        backgroundColor: AppColors.primary,
-        foregroundColor: AppColors.textWhite,
-        elevation: 2,
+        backgroundColor: AppColors.surface,
+        foregroundColor: AppColors.textPrimary,
+        elevation: 0,
         centerTitle: false,
         titleTextStyle: TextStyle(
           fontSize: 20,
           fontWeight: FontWeight.w600,
-          color: AppColors.textWhite,
+          color: AppColors.textPrimary,
         ),
-        iconTheme: IconThemeData(color: AppColors.textWhite),
+        iconTheme: IconThemeData(color: AppColors.textPrimary),
+        surfaceTintColor: AppColors.surface,
+        shadowColor: AppColors.shadow,
       ),
 
       // Card Theme
       cardTheme: const CardThemeData(
         color: AppColors.surface,
-        elevation: 2,
+        elevation: 1,
         shadowColor: AppColors.shadow,
         shape: RoundedRectangleBorder(
-          borderRadius: BorderRadius.all(Radius.circular(8)),
+          borderRadius: BorderRadius.all(Radius.circular(12)),
         ),
         margin: EdgeInsets.symmetric(vertical: 8, horizontal: 16),
       ),
@@ -211,7 +213,7 @@ class AppTheme {
       appBarTheme: const AppBarTheme(
         backgroundColor: AppColors.darkSurface,
         foregroundColor: AppColors.textWhite,
-        elevation: 2,
+        elevation: 0,
         centerTitle: false,
         titleTextStyle: TextStyle(
           fontSize: 20,
@@ -219,15 +221,16 @@ class AppTheme {
           color: AppColors.textWhite,
         ),
         iconTheme: IconThemeData(color: AppColors.textWhite),
+        surfaceTintColor: AppColors.darkSurface,
       ),
 
       // Card Theme
       cardTheme: const CardThemeData(
         color: AppColors.darkSurface,
-        elevation: 4,
+        elevation: 2,
         shadowColor: Colors.black45,
         shape: RoundedRectangleBorder(
-          borderRadius: BorderRadius.all(Radius.circular(8)),
+          borderRadius: BorderRadius.all(Radius.circular(12)),
         ),
         margin: EdgeInsets.symmetric(vertical: 8, horizontal: 16),
       ),

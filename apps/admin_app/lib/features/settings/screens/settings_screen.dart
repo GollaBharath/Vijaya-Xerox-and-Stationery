@@ -2,7 +2,7 @@ import 'package:flutter/material.dart';
 import 'package:provider/provider.dart';
 import '../../../core/config/constants.dart';
 import '../../../routing/route_names.dart';
-import '../../../shared/widgets/admin_drawer.dart';
+import '../../../shared/widgets/admin_scaffold.dart';
 import '../providers/settings_provider.dart';
 
 class SettingsScreen extends StatefulWidget {
@@ -98,15 +98,12 @@ class _SettingsScreenState extends State<SettingsScreen> {
 
   @override
   Widget build(BuildContext context) {
-    return Scaffold(
-      drawer: const AdminDrawer(currentRoute: RouteNames.settings),
-      appBar: AppBar(
-        title: const Text('Settings'),
-        elevation: 0,
-        actions: [
-          TextButton(onPressed: _saveSettings, child: const Text('Save')),
-        ],
-      ),
+    return AdminScaffold(
+      title: 'Settings',
+      currentRoute: RouteNames.settings,
+      actions: [
+        TextButton(onPressed: _saveSettings, child: const Text('Save')),
+      ],
       body: Consumer<SettingsProvider>(
         builder: (context, settingsProvider, _) {
           if (settingsProvider.isLoading && settingsProvider.settings.isEmpty) {

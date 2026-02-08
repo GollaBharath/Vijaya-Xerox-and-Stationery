@@ -2,6 +2,7 @@ import 'dart:io';
 import 'package:flutter/foundation.dart';
 import 'package:flutter_shared/flutter_shared.dart';
 import 'package:http/http.dart' as http;
+import 'package:http_parser/http_parser.dart' as http_parser;
 import 'dart:convert';
 import '../../../core/config/env.dart';
 
@@ -65,9 +66,21 @@ class ProductProvider with ChangeNotifier {
 
       final response = await _apiClient.get(endpoint);
 
-      final productsList = (response['data'] as List)
-          .map((json) => Product.fromJson(json as Map<String, dynamic>))
-          .toList();
+      // Handle nested response structure
+      List<Product> productsList;
+      if (response['data'] is Map<String, dynamic>) {
+        final data = response['data'] as Map<String, dynamic>;
+        productsList = (data['products'] as List)
+            .map((json) => Product.fromJson(json as Map<String, dynamic>))
+            .toList();
+      } else if (response['data'] is List) {
+        // Fallback for direct list response
+        productsList = (response['data'] as List)
+            .map((json) => Product.fromJson(json as Map<String, dynamic>))
+            .toList();
+      } else {
+        throw Exception('Unexpected response format');
+      }
 
       if (loadMore) {
         _products.addAll(productsList);
@@ -273,8 +286,15 @@ class ProductProvider with ChangeNotifier {
       }
 
       // Add file and productId
+      final mimeType = _getMimeType(imageFile.path);
       request.files.add(
-        await http.MultipartFile.fromPath('file', imageFile.path),
+        await http.MultipartFile.fromPath(
+          'file',
+          imageFile.path,
+          contentType: mimeType != null
+              ? http_parser.MediaType.parse(mimeType)
+              : null,
+        ),
       );
       request.fields['productId'] = productId;
 
@@ -432,5 +452,23 @@ class ProductProvider with ChangeNotifier {
   void clearError() {
     _error = null;
     notifyListeners();
+  }
+
+  // Helper method to get MIME type from file extension
+  String? _getMimeType(String path) {
+    final extension = path.split('.').last.toLowerCase();
+    switch (extension) {
+      case 'jpg':
+      case 'jpeg':
+        return 'image/jpeg';
+      case 'png':
+        return 'image/png';
+      case 'webp':
+        return 'image/webp';
+      case 'pdf':
+        return 'application/pdf';
+      default:
+        return null;
+    }
   }
 }

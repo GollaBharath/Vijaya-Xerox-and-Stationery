@@ -15,9 +15,20 @@ export interface UpdateCartItemInput {
 }
 
 export function validateAddToCart(data: any): AddToCartInput {
-	validateRequired(data, ["productVariantId", "quantity"]);
+	// Support both camelCase and snake_case
+	const variantId = data.productVariantId || data.product_variant_id;
 
-	const productVariantId = String(data.productVariantId);
+	if (!variantId) {
+		throw new ValidationError(
+			"productVariantId is required",
+			"productVariantId",
+		);
+	}
+	if (!data.quantity) {
+		throw new ValidationError("quantity is required", "quantity");
+	}
+
+	const productVariantId = String(variantId);
 	const quantity = Number(data.quantity);
 
 	validatePositiveNumber(quantity, "quantity");

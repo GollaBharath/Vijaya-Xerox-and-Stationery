@@ -28,7 +28,7 @@ export interface CartItem {
 	quantity: number;
 	createdAt: string;
 	updatedAt: string;
-	productVariant?: CartItemVariant;
+	variant?: CartItemVariant;
 }
 
 export interface CartResponse {

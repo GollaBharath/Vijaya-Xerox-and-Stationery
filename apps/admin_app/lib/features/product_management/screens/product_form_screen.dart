@@ -2,6 +2,8 @@ import 'dart:io';
 import 'package:flutter/material.dart';
 import 'package:provider/provider.dart';
 import 'package:flutter_shared/flutter_shared.dart';
+import '../../../routing/route_names.dart';
+import '../../../shared/widgets/admin_scaffold.dart';
 import '../providers/product_provider.dart';
 import '../../subject_management/providers/subject_provider.dart';
 import '../widgets/image_picker_widget.dart';
@@ -158,8 +160,9 @@ class _ProductFormScreenState extends State<ProductFormScreen> {
 
   @override
   Widget build(BuildContext context) {
-    return Scaffold(
-      appBar: AppBar(title: Text(isEditing ? 'Edit Product' : 'Add Product')),
+    return AdminScaffold(
+      title: isEditing ? 'Edit Product' : 'Add Product',
+      currentRoute: RouteNames.products,
       body: Form(
         key: _formKey,
         child: ListView(

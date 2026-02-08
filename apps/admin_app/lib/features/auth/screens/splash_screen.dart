@@ -4,6 +4,7 @@ import '../../../core/theme/colors.dart';
 import '../../../core/config/constants.dart';
 import '../../../routing/route_names.dart';
 import '../../../routing/app_router.dart';
+import '../../../shared/widgets/back_navigation_guard.dart';
 import '../providers/auth_provider.dart';
 
 /// Splash screen - checks authentication and redirects appropriately
@@ -48,58 +49,60 @@ class _SplashScreenState extends State<SplashScreen> {
 
   @override
   Widget build(BuildContext context) {
-    return Scaffold(
-      backgroundColor: AppColors.primary,
-      body: Center(
-        child: Column(
-          mainAxisAlignment: MainAxisAlignment.center,
-          children: [
-            // App icon/logo
-            Container(
-              padding: const EdgeInsets.all(AppConstants.largePadding),
-              decoration: BoxDecoration(
-                color: AppColors.textWhite,
-                borderRadius: BorderRadius.circular(20),
-                boxShadow: [
-                  BoxShadow(
-                    color: Colors.black.withAlpha(51),
-                    blurRadius: 20,
-                    offset: const Offset(0, 10),
-                  ),
-                ],
+    return BackNavigationGuard(
+      child: Scaffold(
+        backgroundColor: AppColors.primary,
+        body: Center(
+          child: Column(
+            mainAxisAlignment: MainAxisAlignment.center,
+            children: [
+              // App icon/logo
+              Container(
+                padding: const EdgeInsets.all(AppConstants.largePadding),
+                decoration: BoxDecoration(
+                  color: AppColors.textWhite,
+                  borderRadius: BorderRadius.circular(20),
+                  boxShadow: [
+                    BoxShadow(
+                      color: Colors.black.withAlpha(51),
+                      blurRadius: 20,
+                      offset: const Offset(0, 10),
+                    ),
+                  ],
+                ),
+                child: const Icon(
+                  Icons.admin_panel_settings,
+                  size: 80,
+                  color: AppColors.primary,
+                ),
               ),
-              child: const Icon(
-                Icons.admin_panel_settings,
-                size: 80,
-                color: AppColors.primary,
-              ),
-            ),
-            const SizedBox(height: AppConstants.largePadding),
+              const SizedBox(height: AppConstants.largePadding),
 
-            // App name
-            Text(
-              AppConstants.appName,
-              style: Theme.of(context).textTheme.headlineLarge?.copyWith(
-                color: AppColors.textWhite,
-                fontWeight: FontWeight.bold,
+              // App name
+              Text(
+                AppConstants.appName,
+                style: Theme.of(context).textTheme.headlineLarge?.copyWith(
+                  color: AppColors.textWhite,
+                  fontWeight: FontWeight.bold,
+                ),
               ),
-            ),
-            const SizedBox(height: AppConstants.smallPadding),
+              const SizedBox(height: AppConstants.smallPadding),
 
-            // Subtitle
-            Text(
-              'Admin Portal',
-              style: Theme.of(context).textTheme.bodyLarge?.copyWith(
-                color: AppColors.textWhite.withAlpha(204),
+              // Subtitle
+              Text(
+                'Official Admin Console',
+                style: Theme.of(context).textTheme.bodyLarge?.copyWith(
+                  color: AppColors.textWhite.withAlpha(204),
+                ),
               ),
-            ),
-            const SizedBox(height: AppConstants.largePadding * 2),
+              const SizedBox(height: AppConstants.largePadding * 2),
 
-            // Loading indicator
-            const CircularProgressIndicator(
-              valueColor: AlwaysStoppedAnimation<Color>(AppColors.textWhite),
-            ),
-          ],
+              // Loading indicator
+              const CircularProgressIndicator(
+                valueColor: AlwaysStoppedAnimation<Color>(AppColors.textWhite),
+              ),
+            ],
+          ),
         ),
       ),
     );

@@ -71,6 +71,23 @@ next-env.d.ts
 .env.docker
 
 # ================================
+# Firebase & Google Services
+# ================================
+# Firebase service account keys (backend)
+firebase-service-account.json
+*firebase-adminsdk*.json
+
+# Google services config (mobile)
+google-services.json
+GoogleService-Info.plist
+
+# Firebase config files
+.firebaserc
+firebase-debug.log
+firestore-debug.log
+ui-debug.log
+
+# ================================
 # Logs
 # ================================
 logs/

@@ -11,6 +11,7 @@ import '../features/checkout/screens/confirmation_screen.dart';
 import '../features/orders/screens/orders_list_screen.dart';
 import '../features/orders/screens/order_detail_screen.dart';
 import '../features/profile/screens/profile_screen.dart';
+import '../features/search/screens/search_screen.dart';
 import 'route_names.dart';
 
 /// Application router configuration using GoRouter
@@ -68,10 +69,6 @@ class AppRouter {
         routes: [
           GoRoute(
             path: RouteNames.home,
-            builder: (context, state) => const HomeScreen(),
-          ),
-          GoRoute(
-            path: RouteNames.catalog,
             builder: (context, state) => const CatalogScreen(),
             routes: [
               GoRoute(
@@ -157,8 +154,8 @@ class AppRouter {
       GoRoute(
         path: RouteNames.search,
         builder: (context, state) {
-          final query = state.uri.queryParameters['q'] ?? '';
-          return SearchScreen(query: query);
+          final query = state.uri.queryParameters['q'];
+          return SearchScreen(initialQuery: query);
         },
       ),
 
@@ -185,15 +182,6 @@ class GoRouterObserver extends NavigatorObserver {
 }
 
 // Placeholder screens - these will be implemented later
-class HomeScreen extends StatelessWidget {
-  const HomeScreen({super.key});
-
-  @override
-  Widget build(BuildContext context) {
-    return const Scaffold(body: Center(child: Text('Home')));
-  }
-}
-
 class CategoryProductsScreen extends StatelessWidget {
   final String categoryId;
 
@@ -252,17 +240,6 @@ class SettingsScreen extends StatelessWidget {
   }
 }
 
-class SearchScreen extends StatelessWidget {
-  final String query;
-
-  const SearchScreen({super.key, required this.query});
-
-  @override
-  Widget build(BuildContext context) {
-    return Scaffold(body: Center(child: Text('Search: $query')));
-  }
-}
-
 class NotFoundScreen extends StatelessWidget {
   const NotFoundScreen({super.key});
 
@@ -294,7 +271,6 @@ class MainShell extends StatelessWidget {
         onDestinationSelected: (index) {
           final routes = [
             RouteNames.home,
-            RouteNames.catalog,
             RouteNames.cart,
             RouteNames.orders,
             RouteNames.profile,
@@ -303,10 +279,6 @@ class MainShell extends StatelessWidget {
         },
         destinations: const [
           NavigationDestination(icon: Icon(Icons.home), label: 'Home'),
-          NavigationDestination(
-            icon: Icon(Icons.shopping_bag),
-            label: 'Catalog',
-          ),
           NavigationDestination(icon: Icon(Icons.shopping_cart), label: 'Cart'),
           NavigationDestination(icon: Icon(Icons.receipt), label: 'Orders'),
           NavigationDestination(icon: Icon(Icons.person), label: 'Profile'),

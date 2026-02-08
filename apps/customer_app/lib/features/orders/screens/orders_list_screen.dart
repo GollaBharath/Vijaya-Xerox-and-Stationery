@@ -218,7 +218,7 @@ class _OrdersListScreenState extends State<OrdersListScreen> {
           ),
           const SizedBox(height: 24),
           ElevatedButton.icon(
-            onPressed: () => context.go(RouteNames.catalog),
+            onPressed: () => context.go(RouteNames.home),
             icon: const Icon(Icons.shopping_bag),
             label: const Text('Browse Catalog'),
           ),

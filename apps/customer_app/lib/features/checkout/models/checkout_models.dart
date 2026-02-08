@@ -9,7 +9,7 @@ class CheckoutRequest {
 
   Map<String, dynamic> toJson() {
     return {
-      'delivery_address': deliveryAddress.toJson(),
+      'address': deliveryAddress.toJson(),
       if (paymentMethod != null) 'payment_method': paymentMethod,
     };
   }

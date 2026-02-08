@@ -1,6 +1,8 @@
 import 'package:flutter/material.dart';
 import 'package:provider/provider.dart';
 import 'package:flutter_shared/flutter_shared.dart';
+import '../../../routing/route_names.dart';
+import '../../../shared/widgets/admin_scaffold.dart';
 import '../providers/variant_provider.dart';
 
 class VariantFormScreen extends StatefulWidget {
@@ -115,8 +117,9 @@ class _VariantFormScreenState extends State<VariantFormScreen> {
 
   @override
   Widget build(BuildContext context) {
-    return Scaffold(
-      appBar: AppBar(title: Text(isEditing ? 'Edit Variant' : 'Add Variant')),
+    return AdminScaffold(
+      title: isEditing ? 'Edit Variant' : 'Add Variant',
+      currentRoute: RouteNames.products,
       body: Form(
         key: _formKey,
         child: ListView(

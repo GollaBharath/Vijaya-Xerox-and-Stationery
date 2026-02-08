@@ -1,7 +1,7 @@
 import 'package:flutter/material.dart';
 import 'package:provider/provider.dart';
 import '../../../routing/route_names.dart';
-import '../../../shared/widgets/admin_drawer.dart';
+import '../../../shared/widgets/admin_scaffold.dart';
 import '../providers/user_provider.dart';
 import 'user_detail_screen.dart';
 
@@ -107,9 +107,9 @@ class _UsersListScreenState extends State<UsersListScreen> {
 
   @override
   Widget build(BuildContext context) {
-    return Scaffold(
-      drawer: const AdminDrawer(currentRoute: RouteNames.users),
-      appBar: AppBar(title: const Text('User Management'), elevation: 0),
+    return AdminScaffold(
+      title: 'User Management',
+      currentRoute: RouteNames.users,
       body: Column(
         children: [
           // Filter bar

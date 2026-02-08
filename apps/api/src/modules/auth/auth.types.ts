@@ -66,8 +66,8 @@ export interface RefreshTokenResponse {
 export interface CreateUserData {
 	name: string;
 	email: string;
-	phone: string;
-	passwordHash: string;
+	phone: string | null;
+	passwordHash: string | null;
 	role: UserRole;
 }
 
@@ -75,8 +75,8 @@ export interface UserWithPassword {
 	id: string;
 	name: string;
 	email: string;
-	phone: string;
-	passwordHash: string;
+	phone: string | null;
+	passwordHash: string | null;
 	role: UserRole;
 	isActive: boolean;
 	createdAt: Date;

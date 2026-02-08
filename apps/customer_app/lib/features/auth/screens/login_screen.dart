@@ -8,7 +8,7 @@ import '../../../core/theme/colors.dart';
 import '../../../core/theme/typography.dart';
 import '../../../core/utils/validators.dart';
 import '../../../routing/route_names.dart';
-import '../providers/auth_provider.dart';
+import '../providers/firebase_auth_provider.dart';
 
 /// Login screen
 class LoginScreen extends StatefulWidget {
@@ -32,33 +32,60 @@ class _LoginScreenState extends State<LoginScreen> {
   }
 
   void _handleLogin() async {
-    print('=== BUTTON PRESSED ===');
-    print('Form valid: ${_formKey.currentState!.validate()}');
-
     if (!_formKey.currentState!.validate()) {
-      print('Form validation failed');
       return;
     }
 
-    print('Getting authProvider...');
-    final authProvider = context.read<AuthProvider>();
-    print('AuthProvider isLoading: ${authProvider.isLoading}');
-
+    final authProvider = context.read<FirebaseAuthProvider>();
     authProvider.clearError();
 
     try {
-      print('Calling login...');
       await authProvider.login(
         _emailController.text.trim(),
         _passwordController.text,
       );
 
-      print('Login successful, navigating...');
       if (mounted) {
         context.go(RouteNames.home);
       }
     } catch (e) {
-      print('Login error caught: $e');
+      if (mounted) {
+        ScaffoldMessenger.of(context).showSnackBar(
+          SnackBar(
+            content: Text(ErrorMapper.mapExceptionToMessage(e)),
+            backgroundColor: AppColors.error,
+            duration: const Duration(seconds: 4),
+          ),
+        );
+      }
+    }
+  }
+
+  void _handleGoogleSignIn() async {
+    print('🔵 Google Sign-In button pressed');
+    final authProvider = context.read<FirebaseAuthProvider>();
+    authProvider.clearError();
+
+    try {
+      print('🔵 Calling signInWithGoogle...');
+      await authProvider.signInWithGoogle();
+
+      print(
+        '🔵 Sign-in completed. isAuthenticated: ${authProvider.isAuthenticated}',
+      );
+      print('🔵 Current user: ${authProvider.currentUser?.email}');
+
+      if (authProvider.isAuthenticated) {
+        print('🔵 Navigating to home...');
+        // Use GoRouter which handles navigation safely even if widget is unmounted
+        if (mounted) {
+          context.go(RouteNames.home);
+        }
+      } else {
+        print('🔴 Not authenticated. auth=${authProvider.isAuthenticated}');
+      }
+    } catch (e) {
+      print('🔴 Google Sign-In error: $e');
       if (mounted) {
         ScaffoldMessenger.of(context).showSnackBar(
           SnackBar(
@@ -156,7 +183,7 @@ class _LoginScreenState extends State<LoginScreen> {
                     const SizedBox(height: 24),
 
                     // Login button
-                    Consumer<AuthProvider>(
+                    Consumer<FirebaseAuthProvider>(
                       builder: (context, authProvider, child) {
                         return SizedBox(
                           width: double.infinity,
@@ -201,6 +228,18 @@ class _LoginScreenState extends State<LoginScreen> {
                   ),
                   Expanded(child: Divider(color: AppColors.border)),
                 ],
+              ),
+
+              const SizedBox(height: 24),
+
+              // Google Sign In Button
+              SizedBox(
+                width: double.infinity,
+                child: OutlinedButton.icon(
+                  onPressed: _handleGoogleSignIn,
+                  icon: const Icon(Icons.g_mobiledata),
+                  label: const Text('Continue with Google'),
+                ),
               ),
 
               const SizedBox(height: 24),

@@ -3,6 +3,7 @@
  */
 
 import { prisma } from "@/lib/prisma";
+import { logger } from "@/lib/logger";
 import { CartItem, CartResponse } from "./cart.types";
 
 function toCartItem(entity: any): CartItem {
@@ -13,7 +14,7 @@ function toCartItem(entity: any): CartItem {
 		quantity: entity.quantity,
 		createdAt: entity.createdAt.toISOString(),
 		updatedAt: entity.updatedAt.toISOString(),
-		productVariant: entity.productVariant
+		variant: entity.productVariant
 			? {
 					id: entity.productVariant.id,
 					productId: entity.productVariant.productId,
@@ -56,7 +57,7 @@ export async function getCartItems(
 export async function getCartByUserId(userId: string): Promise<CartResponse> {
 	const items = await getCartItems(userId);
 	const total = items.reduce(
-		(sum, item) => sum + (item.productVariant?.price ?? 0) * item.quantity,
+		(sum, item) => sum + (item.variant?.price ?? 0) * item.quantity,
 		0,
 	);
 
@@ -68,6 +69,8 @@ export async function addToCart(
 	productVariantId: string,
 	quantity: number,
 ): Promise<CartItem> {
+	logger.info("Adding to cart", { userId, productVariantId, quantity });
+
 	const item = await prisma.cartItem.upsert({
 		where: {
 			userId_productVariantId: {

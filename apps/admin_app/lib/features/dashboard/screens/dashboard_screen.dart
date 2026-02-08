@@ -5,7 +5,7 @@ import '../../../core/theme/colors.dart';
 import '../../../core/config/constants.dart';
 import '../../../routing/route_names.dart';
 import '../../../routing/app_router.dart';
-import '../../../shared/widgets/admin_drawer.dart';
+import '../../../shared/widgets/admin_scaffold.dart';
 import '../../auth/providers/auth_provider.dart';
 import '../providers/dashboard_provider.dart';
 import '../widgets/stat_card.dart';
@@ -65,23 +65,21 @@ class _DashboardScreenState extends State<DashboardScreen> {
   Widget build(BuildContext context) {
     final authProvider = context.watch<AuthProvider>();
 
-    return Scaffold(
-      drawer: const AdminDrawer(currentRoute: RouteNames.dashboard),
-      appBar: AppBar(
-        title: const Text('Dashboard'),
-        actions: [
-          IconButton(
-            icon: const Icon(Icons.refresh),
-            onPressed: _handleRefresh,
-            tooltip: 'Refresh',
-          ),
-          IconButton(
-            icon: const Icon(Icons.logout),
-            onPressed: _handleLogout,
-            tooltip: 'Logout',
-          ),
-        ],
-      ),
+    return AdminScaffold(
+      title: 'Dashboard',
+      currentRoute: RouteNames.dashboard,
+      actions: [
+        IconButton(
+          icon: const Icon(Icons.refresh),
+          onPressed: _handleRefresh,
+          tooltip: 'Refresh',
+        ),
+        IconButton(
+          icon: const Icon(Icons.logout),
+          onPressed: _handleLogout,
+          tooltip: 'Logout',
+        ),
+      ],
       body: RefreshIndicator(
         onRefresh: _handleRefresh,
         child: Consumer<DashboardProvider>(

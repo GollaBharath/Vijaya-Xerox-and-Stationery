@@ -22,7 +22,7 @@ class CartItemCard extends StatelessWidget {
         onTap: () {
           // Navigate to product detail
           if (cartItem.variant?.productId != null) {
-            context.push('/catalog/product/${cartItem.variant!.productId}');
+            context.push('/home/product/${cartItem.variant!.productId}');
           }
         },
         child: Padding(

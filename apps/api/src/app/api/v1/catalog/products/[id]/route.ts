@@ -20,9 +20,11 @@ export const GET = errorHandler(
 		const product = await getProductWithVariants(params.id);
 		if (!product) throw new NotFoundError("Product");
 
-		const response: ApiResponse<typeof product> = {
+		const response: ApiResponse<{ product: typeof product }> = {
 			success: true,
-			data: product,
+			data: {
+				product,
+			},
 		};
 
 		return NextResponse.json(response, { status: 200 });

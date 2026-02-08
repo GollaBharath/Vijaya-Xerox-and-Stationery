@@ -2,6 +2,7 @@ import 'package:flutter/material.dart';
 import 'package:flutter_shared/flutter_shared.dart';
 import 'package:cached_network_image/cached_network_image.dart';
 import 'package:go_router/go_router.dart';
+import '../../../core/config/env.dart';
 
 /// Product card widget for grid display
 class ProductCard extends StatelessWidget {
@@ -17,7 +18,7 @@ class ProductCard extends StatelessWidget {
       child: InkWell(
         onTap: () {
           // Navigate to product detail screen
-          context.push('/catalog/product/${product.id}');
+          context.push('/home/product/${product.id}');
         },
         child: Column(
           crossAxisAlignment: CrossAxisAlignment.start,
@@ -67,12 +68,13 @@ class ProductCard extends StatelessWidget {
   }
 
   Widget _buildProductMedia() {
-    if (product.isStationery && product.imageUrl != null) {
+    final resolvedImageUrl = _resolveImageUrl(product.imageUrl);
+    if (product.isStationery && resolvedImageUrl != null) {
       // Display image for stationery products
       return Hero(
         tag: 'product-${product.id}',
         child: CachedNetworkImage(
-          imageUrl: product.imageUrl!,
+          imageUrl: resolvedImageUrl,
           width: double.infinity,
           fit: BoxFit.cover,
           placeholder: (context, url) => Container(
@@ -123,6 +125,15 @@ class ProductCard extends StatelessWidget {
         child: const Center(child: Icon(Icons.image_not_supported, size: 48)),
       );
     }
+  }
+
+  String? _resolveImageUrl(String? imagePath) {
+    if (imagePath == null || imagePath.isEmpty) return null;
+    if (imagePath.startsWith('http')) return imagePath;
+    if (imagePath.startsWith('/')) {
+      return '${Environment.apiBaseUrl}$imagePath';
+    }
+    return '${Environment.apiBaseUrl}/api/v1/files/images/products/$imagePath';
   }
 
   Widget _buildStockIndicator() {

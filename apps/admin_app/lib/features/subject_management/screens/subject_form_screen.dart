@@ -1,6 +1,8 @@
 import 'package:flutter/material.dart';
 import 'package:provider/provider.dart';
 import '../../../core/config/constants.dart';
+import '../../../routing/route_names.dart';
+import '../../../shared/widgets/admin_scaffold.dart';
 import '../providers/subject_provider.dart';
 
 /// Subject form screen for create/edit
@@ -106,8 +108,9 @@ class _SubjectFormScreenState extends State<SubjectFormScreen> {
 
   @override
   Widget build(BuildContext context) {
-    return Scaffold(
-      appBar: AppBar(title: Text(_isEditing ? 'Edit Subject' : 'Add Subject')),
+    return AdminScaffold(
+      title: _isEditing ? 'Edit Subject' : 'Add Subject',
+      currentRoute: RouteNames.subjects,
       body: _isLoading && _isEditing
           ? const Center(child: CircularProgressIndicator())
           : SingleChildScrollView(

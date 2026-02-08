@@ -69,7 +69,7 @@ class OrderProvider extends ChangeNotifier {
       final queryString = params.entries
           .map((e) => '${e.key}=${e.value}')
           .join('&');
-      final url = '${Endpoints.orders}?$queryString';
+      final url = '${Endpoints.adminOrders}?$queryString';
 
       final response = await _apiClient.get(url);
 
@@ -112,7 +112,7 @@ class OrderProvider extends ChangeNotifier {
       _error = null;
       notifyListeners();
 
-      final response = await _apiClient.get(Endpoints.order(orderId));
+      final response = await _apiClient.get(Endpoints.adminOrder(orderId));
 
       if (response['success'] == true) {
         _selectedOrder = Order.fromJson(response['data']);
@@ -138,7 +138,7 @@ class OrderProvider extends ChangeNotifier {
       notifyListeners();
 
       final response = await _apiClient.patch(
-        Endpoints.order(orderId),
+        Endpoints.adminOrder(orderId),
         body: {'status': status},
       );
 
@@ -175,7 +175,7 @@ class OrderProvider extends ChangeNotifier {
       notifyListeners();
 
       final response = await _apiClient.post(
-        '${Endpoints.order(orderId)}/cancel',
+        Endpoints.adminOrderCancel(orderId),
         body: {},
       );
 

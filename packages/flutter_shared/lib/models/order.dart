@@ -41,15 +41,24 @@ class OrderItem {
   factory OrderItem.fromJson(Map<String, dynamic> json) {
     return OrderItem(
       id: json['id'] as String,
-      orderId: json['order_id'] as String,
-      productVariantId: json['product_variant_id'] as String,
+      // Support both snake_case and camelCase for API compatibility
+      orderId: (json['orderId'] ?? json['order_id']) as String,
+      productVariantId:
+          (json['productVariantId'] ?? json['product_variant_id']) as String,
       quantity: json['quantity'] as int,
-      priceSnapshot: (json['price_snapshot'] as num).toDouble(),
-      product: json['product'] != null
-          ? Product.fromJson(json['product'] as Map<String, dynamic>)
+      priceSnapshot:
+          ((json['priceSnapshot'] ?? json['price_snapshot']) as num).toDouble(),
+      product: (json['product'] ??
+                  (json['productVariant'] != null
+                      ? json['productVariant']['product']
+                      : null)) !=
+              null
+          ? Product.fromJson((json['product'] ??
+              json['productVariant']['product']) as Map<String, dynamic>)
           : null,
-      variant: json['variant'] != null
-          ? ProductVariant.fromJson(json['variant'] as Map<String, dynamic>)
+      variant: (json['variant'] ?? json['productVariant']) != null
+          ? ProductVariant.fromJson((json['variant'] ?? json['productVariant'])
+              as Map<String, dynamic>)
           : null,
     );
   }
@@ -188,18 +197,35 @@ class Order {
   factory Order.fromJson(Map<String, dynamic> json) {
     return Order(
       id: json['id'] as String,
-      userId: json['user_id'] as String,
+      // Support both snake_case and camelCase for API compatibility
+      userId: (json['userId'] ?? json['user_id']) as String,
       status: json['status'] as String,
-      totalPrice: (json['total_price'] as num).toDouble(),
-      subtotal: (json['subtotal'] as num?)?.toDouble() ?? 0.0,
-      discountAmount: (json['discount_amount'] as num?)?.toDouble() ?? 0.0,
-      shippingCost: (json['shipping_cost'] as num?)?.toDouble() ?? 0.0,
-      tax: (json['tax'] as num?)?.toDouble() ?? 0.0,
-      paymentStatus: json['payment_status'] as String,
-      paymentMethod: json['payment_method'] as String? ?? 'RAZORPAY',
-      deliveryAddress: json['delivery_address'] != null
-          ? DeliveryAddress.fromJson(
-              json['delivery_address'] as Map<String, dynamic>)
+      totalPrice:
+          ((json['totalPrice'] ?? json['total_price']) as num).toDouble(),
+      subtotal:
+          ((json['subtotal'] ?? json['subtotal']) as num?)?.toDouble() ?? 0.0,
+      discountAmount:
+          ((json['discountAmount'] ?? json['discount_amount']) as num?)
+                  ?.toDouble() ??
+              0.0,
+      shippingCost: ((json['shippingCost'] ?? json['shipping_cost']) as num?)
+              ?.toDouble() ??
+          0.0,
+      tax: ((json['tax'] ?? json['tax']) as num?)?.toDouble() ?? 0.0,
+      paymentStatus:
+          (json['paymentStatus'] ?? json['payment_status']) as String,
+      paymentMethod: ((json['paymentMethod'] ??
+          json['payment_method'] ??
+          'RAZORPAY') as String?)!,
+      deliveryAddress: (json['deliveryAddress'] ??
+                  json['delivery_address'] ??
+                  json['addressSnapshot'] ??
+                  json['address_snapshot']) !=
+              null
+          ? DeliveryAddress.fromJson((json['deliveryAddress'] ??
+              json['delivery_address'] ??
+              json['addressSnapshot'] ??
+              json['address_snapshot']) as Map<String, dynamic>)
           : DeliveryAddress(
               name: 'N/A',
               phone: 'N/A',
@@ -208,9 +234,10 @@ class Order {
               state: 'N/A',
               pincode: 'N/A',
             ),
-      createdAt: DateTime.parse(json['created_at'] as String),
-      updatedAt: json['updated_at'] != null
-          ? DateTime.parse(json['updated_at'] as String)
+      createdAt:
+          DateTime.parse((json['createdAt'] ?? json['created_at']) as String),
+      updatedAt: (json['updatedAt'] ?? json['updated_at']) != null
+          ? DateTime.parse((json['updatedAt'] ?? json['updated_at']) as String)
           : null,
       items: json['items'] != null
           ? (json['items'] as List)

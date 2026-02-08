@@ -1,7 +1,10 @@
 import 'package:flutter/material.dart';
 import 'package:provider/provider.dart';
 import '../../routing/app_router.dart';
+import '../../core/config/constants.dart';
+import '../../core/theme/colors.dart';
 import '../../routing/route_names.dart';
+import 'admin_nav_items.dart';
 import '../../features/auth/providers/auth_provider.dart';
 
 class AdminDrawer extends StatelessWidget {
@@ -15,58 +18,64 @@ class AdminDrawer extends StatelessWidget {
       child: SafeArea(
         child: Column(
           children: [
-            const ListTile(
-              leading: Icon(Icons.admin_panel_settings),
-              title: Text(
-                'Admin Panel',
-                style: TextStyle(fontWeight: FontWeight.bold),
+            Container(
+              padding: const EdgeInsets.all(16),
+              decoration: BoxDecoration(
+                color: AppColors.primary.withAlpha(20),
+                border: const Border(
+                  bottom: BorderSide(color: AppColors.divider),
+                ),
+              ),
+              child: Row(
+                children: [
+                  CircleAvatar(
+                    radius: 22,
+                    backgroundColor: AppColors.primary,
+                    child: const Icon(
+                      Icons.admin_panel_settings,
+                      color: AppColors.textWhite,
+                    ),
+                  ),
+                  const SizedBox(width: 12),
+                  Expanded(
+                    child: Column(
+                      crossAxisAlignment: CrossAxisAlignment.start,
+                      children: [
+                        Text(
+                          AppConstants.appName,
+                          style: const TextStyle(
+                            fontWeight: FontWeight.bold,
+                            fontSize: 16,
+                          ),
+                        ),
+                        const SizedBox(height: 2),
+                        const Text(
+                          'Admin Console',
+                          style: TextStyle(color: AppColors.textSecondary),
+                        ),
+                      ],
+                    ),
+                  ),
+                ],
               ),
             ),
-            const Divider(),
-            _buildNavItem(
-              context,
-              label: 'Dashboard',
-              icon: Icons.dashboard,
-              route: RouteNames.dashboard,
+            Expanded(
+              child: ListView.separated(
+                padding: const EdgeInsets.symmetric(vertical: 8),
+                itemCount: adminNavItems.length,
+                separatorBuilder: (_, __) => const Divider(height: 1),
+                itemBuilder: (context, index) {
+                  final item = adminNavItems[index];
+                  return _buildNavItem(
+                    context,
+                    label: item.label,
+                    icon: item.icon,
+                    route: item.route,
+                  );
+                },
+              ),
             ),
-            _buildNavItem(
-              context,
-              label: 'Categories',
-              icon: Icons.category,
-              route: RouteNames.categories,
-            ),
-            _buildNavItem(
-              context,
-              label: 'Subjects',
-              icon: Icons.menu_book,
-              route: RouteNames.subjects,
-            ),
-            _buildNavItem(
-              context,
-              label: 'Products',
-              icon: Icons.inventory,
-              route: RouteNames.products,
-            ),
-            _buildNavItem(
-              context,
-              label: 'Orders',
-              icon: Icons.shopping_bag,
-              route: RouteNames.orders,
-            ),
-            _buildNavItem(
-              context,
-              label: 'Users',
-              icon: Icons.people,
-              route: RouteNames.users,
-            ),
-            _buildNavItem(
-              context,
-              label: 'Settings',
-              icon: Icons.settings,
-              route: RouteNames.settings,
-            ),
-            const Spacer(),
-            const Divider(),
+            const Divider(height: 1),
             ListTile(
               leading: const Icon(Icons.logout),
               title: const Text('Logout'),
@@ -114,6 +123,8 @@ class AdminDrawer extends StatelessWidget {
       leading: Icon(icon),
       title: Text(label),
       selected: isSelected,
+      selectedColor: AppColors.primary,
+      selectedTileColor: AppColors.primary.withAlpha(12),
       onTap: () {
         Navigator.pop(context);
         if (isSelected) return;

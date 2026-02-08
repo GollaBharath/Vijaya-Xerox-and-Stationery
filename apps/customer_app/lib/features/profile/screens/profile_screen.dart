@@ -1,7 +1,7 @@
 import 'package:flutter/material.dart';
 import 'package:provider/provider.dart';
 import 'package:go_router/go_router.dart';
-import '../../auth/providers/auth_provider.dart';
+import '../../auth/providers/firebase_auth_provider.dart';
 import '../../../routing/route_names.dart';
 
 /// Profile screen displaying user information and app options
@@ -29,7 +29,10 @@ class ProfileScreen extends StatelessWidget {
     );
 
     if (confirmed == true && context.mounted) {
-      final authProvider = Provider.of<AuthProvider>(context, listen: false);
+      final authProvider = Provider.of<FirebaseAuthProvider>(
+        context,
+        listen: false,
+      );
       await authProvider.logout();
 
       if (context.mounted) {
@@ -42,7 +45,7 @@ class ProfileScreen extends StatelessWidget {
   Widget build(BuildContext context) {
     return Scaffold(
       appBar: AppBar(title: const Text('Profile'), elevation: 0),
-      body: Consumer<AuthProvider>(
+      body: Consumer<FirebaseAuthProvider>(
         builder: (context, authProvider, child) {
           final user = authProvider.currentUser;
 
@@ -153,7 +156,7 @@ class ProfileScreen extends StatelessWidget {
                       icon: Icons.shopping_bag,
                       title: 'Browse Catalog',
                       subtitle: 'Explore products',
-                      onTap: () => context.go(RouteNames.catalog),
+                      onTap: () => context.go(RouteNames.home),
                     ),
                     _buildListTile(
                       context,

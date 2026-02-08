@@ -459,7 +459,10 @@ class _OrderItemCard extends StatelessWidget {
   String _getImageUrl(String? imagePath) {
     if (imagePath == null || imagePath.isEmpty) return '';
     if (imagePath.startsWith('http')) return imagePath;
-    return '${Environment.apiBaseUrl}/files/images/$imagePath';
+    if (imagePath.startsWith('/')) {
+      return '${Environment.apiBaseUrl}$imagePath';
+    }
+    return '${Environment.apiBaseUrl}/api/v1/files/images/products/$imagePath';
   }
 
   bool _hasImage() {
