@@ -14,8 +14,18 @@ class RedisClient {
 	private isConnected: boolean = false;
 
 	private constructor() {
+		// Parse Redis URL to check if it's Upstash (uses rediss:// protocol)
+		const isUpstash = env.REDIS_URL.startsWith("rediss://");
+
 		this.client = createClient({
 			url: env.REDIS_URL,
+			// Enable TLS for Upstash (rediss:// protocol)
+			socket: isUpstash
+				? {
+						tls: true,
+						rejectUnauthorized: true,
+					}
+				: undefined,
 		});
 
 		this.client.on("error", (err) => {
@@ -52,6 +62,12 @@ class RedisClient {
 		}
 	}
 
+	private async ensureConnection(): Promise<void> {
+		if (!this.isConnected) {
+			await this.connect();
+		}
+	}
+
 	public getClient(): RedisClientType {
 		return this.client;
 	}
@@ -59,6 +75,7 @@ class RedisClient {
 	// Cache helpers
 	public async get(key: string): Promise<string | null> {
 		try {
+			await this.ensureConnection();
 			return await this.client.get(key);
 		} catch (error) {
 			logger.error(`Redis GET error for key ${key}:`, error);
@@ -72,6 +89,7 @@ class RedisClient {
 		expirationInSeconds?: number,
 	): Promise<void> {
 		try {
+			await this.ensureConnection();
 			if (expirationInSeconds) {
 				await this.client.setEx(key, expirationInSeconds, value);
 			} else {
@@ -84,6 +102,7 @@ class RedisClient {
 
 	public async del(key: string): Promise<void> {
 		try {
+			await this.ensureConnection();
 			await this.client.del(key);
 		} catch (error) {
 			logger.error(`Redis DEL error for key ${key}:`, error);
@@ -92,6 +111,7 @@ class RedisClient {
 
 	public async exists(key: string): Promise<boolean> {
 		try {
+			await this.ensureConnection();
 			const result = await this.client.exists(key);
 			return result === 1;
 		} catch (error) {
