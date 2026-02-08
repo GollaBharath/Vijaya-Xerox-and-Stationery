@@ -52,15 +52,33 @@ These files ARE committed to version control:
 ### Database Configuration
 
 ```env
-DATABASE_URL="postgresql://vijaya_user:vijaya_password@vijaya_postgres:5432/vijaya_bookstore"
+# Use your external PostgreSQL connection URL
+# Format: postgresql://username:password@host:port/database?schema=public
+DATABASE_URL="postgresql://user:password@your-postgres-host:5432/vijaya_bookstore?schema=public"
 ```
+
+**Options for PostgreSQL:**
+
+- [Supabase](https://supabase.com/) - Free tier available
+- [Neon](https://neon.tech/) - Serverless Postgres
+- [Railway](https://railway.app/) - Platform with Postgres support
+- Self-hosted PostgreSQL
 
 ### Redis Configuration
 
 ```env
-REDIS_URL="redis://localhost:6379"
-REDIS_PASSWORD=""
+# Use Upstash Redis (serverless)
+# Format: rediss://default:password@endpoint.upstash.io:port
+REDIS_URL="rediss://default:your-password@your-endpoint.upstash.io:6379"
 ```
+
+**Upstash Redis Setup:**
+
+1. Sign up at [upstash.com](https://upstash.com/)
+2. Create a new Redis database
+3. Copy the connection URL from the dashboard
+
+📖 **Detailed guide**: See [UPSTASH_REDIS_SETUP.md](./UPSTASH_REDIS_SETUP.md)
 
 ### JWT Configuration
 

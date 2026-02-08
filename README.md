@@ -13,8 +13,8 @@ This is a monorepo containing:
 ## Tech Stack
 
 - **Backend**: Next.js 14, TypeScript, Prisma ORM
-- **Database**: PostgreSQL 15
-- **Cache**: Redis 7
+- **Database**: PostgreSQL 15 (External)
+- **Cache**: Upstash Redis (Serverless)
 - **Auth**: JWT tokens
 - **Payment**: Razorpay (planned)
 
@@ -29,6 +29,7 @@ All project documentation is located in the `/docs` directory:
 - **[Project Overview](docs/PROJECT_README.md)** - Detailed project information
 - **[Quick Start Guide](docs/QUICKSTART.md)** - Setup and installation
 - **[Environment Setup](docs/ENVIRONMENT.md)** - Environment configuration
+- **[Upstash Redis Setup](docs/UPSTASH_REDIS_SETUP.md)** - Configure Upstash Redis
 - **[API Reference](docs/API_QUICK_REFERENCE.md)** - API endpoint documentation
 - **[Backend Review Report](docs/BACKEND_REVIEW_REPORT.md)** - Comprehensive testing report
 - **[Testing Summary](docs/BACKEND_TESTING_SUMMARY.md)** - Test results overview
