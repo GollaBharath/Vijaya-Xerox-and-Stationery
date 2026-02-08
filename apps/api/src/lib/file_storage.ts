@@ -104,6 +104,7 @@ export async function saveImageFile(
 	filename: string,
 	buffer: Buffer,
 ): Promise<string> {
+	initializeUploadDirs();
 	// Validate size
 	const MAX_IMAGE_SIZE = 5 * 1024 * 1024;
 	if (buffer.length > MAX_IMAGE_SIZE) {
@@ -127,6 +128,7 @@ export async function savePDFFile(
 	filename: string,
 	buffer: Buffer,
 ): Promise<string> {
+	initializeUploadDirs();
 	// Validate size
 	const MAX_PDF_SIZE = 10 * 1024 * 1024;
 	if (buffer.length > MAX_PDF_SIZE) {

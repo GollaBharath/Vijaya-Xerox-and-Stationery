@@ -1,3 +1,5 @@
+import "@/lib/init"; // Initialize app on startup
+
 export default function Home() {
 	return (
 		<main>
