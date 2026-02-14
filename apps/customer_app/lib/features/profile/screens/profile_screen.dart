@@ -3,10 +3,31 @@ import 'package:provider/provider.dart';
 import 'package:go_router/go_router.dart';
 import '../../auth/providers/firebase_auth_provider.dart';
 import '../../../routing/route_names.dart';
+import '../providers/profile_provider.dart';
+import 'edit_profile_screen.dart';
+import 'help_support_screen.dart';
 
 /// Profile screen displaying user information and app options
-class ProfileScreen extends StatelessWidget {
+class ProfileScreen extends StatefulWidget {
   const ProfileScreen({super.key});
+
+  @override
+  State<ProfileScreen> createState() => _ProfileScreenState();
+}
+
+class _ProfileScreenState extends State<ProfileScreen> {
+  @override
+  void initState() {
+    super.initState();
+    // Load profile data when screen initializes
+    WidgetsBinding.instance.addPostFrameCallback((_) {
+      final profileProvider = Provider.of<ProfileProvider>(
+        context,
+        listen: false,
+      );
+      profileProvider.fetchProfile();
+    });
+  }
 
   void _onLogout(BuildContext context) async {
     final confirmed = await showDialog<bool>(
@@ -129,10 +150,23 @@ class ProfileScreen extends StatelessWidget {
                       context,
                       icon: Icons.person,
                       title: 'Personal Information',
-                      subtitle: 'Name, Email, Phone',
-                      onTap: () {
-                        // Show user info dialog
-                        _showUserInfoDialog(context, user);
+                      subtitle: 'Name, Email, Phone, Address',
+                      onTap: () async {
+                        // Navigate to edit profile screen
+                        await Navigator.push(
+                          context,
+                          MaterialPageRoute(
+                            builder: (context) => const EditProfileScreen(),
+                          ),
+                        );
+                        // Refresh profile after returning
+                        if (mounted) {
+                          final profileProvider = Provider.of<ProfileProvider>(
+                            context,
+                            listen: false,
+                          );
+                          profileProvider.fetchProfile();
+                        }
                       },
                     ),
                     _buildListTile(
@@ -179,10 +213,11 @@ class ProfileScreen extends StatelessWidget {
                       icon: Icons.help_outline,
                       title: 'Help & Support',
                       subtitle: 'Get help with your order',
-                      onTap: () {
-                        ScaffoldMessenger.of(context).showSnackBar(
-                          const SnackBar(
-                            content: Text('Help & Support - Coming soon'),
+                      onTap: () async {
+                        await Navigator.push(
+                          context,
+                          MaterialPageRoute(
+                            builder: (context) => const HelpSupportScreen(),
                           ),
                         );
                       },
@@ -270,64 +305,22 @@ class ProfileScreen extends StatelessWidget {
     required String subtitle,
     required VoidCallback onTap,
   }) {
+    final isDark = Theme.of(context).brightness == Brightness.dark;
     return ListTile(
-      leading: Icon(icon, color: Theme.of(context).primaryColor),
+      leading: Icon(
+        icon,
+        color: isDark ? Colors.amber : Theme.of(context).primaryColor,
+      ),
       title: Text(title),
       subtitle: Text(
         subtitle,
         style: TextStyle(fontSize: 12, color: Colors.grey.shade600),
       ),
-      trailing: const Icon(Icons.chevron_right),
-      onTap: onTap,
-    );
-  }
-
-  void _showUserInfoDialog(BuildContext context, dynamic user) {
-    showDialog(
-      context: context,
-      builder: (context) => AlertDialog(
-        title: const Text('Personal Information'),
-        content: Column(
-          mainAxisSize: MainAxisSize.min,
-          crossAxisAlignment: CrossAxisAlignment.start,
-          children: [
-            _buildInfoRow('Name', user.name),
-            const SizedBox(height: 12),
-            _buildInfoRow('Email', user.email),
-            const SizedBox(height: 12),
-            _buildInfoRow('Phone', user.phone ?? 'Not provided'),
-            const SizedBox(height: 12),
-            _buildInfoRow('Role', user.role.toUpperCase()),
-          ],
-        ),
-        actions: [
-          TextButton(
-            onPressed: () => Navigator.pop(context),
-            child: const Text('Close'),
-          ),
-        ],
+      trailing: Icon(
+        Icons.chevron_right,
+        color: isDark ? Colors.white70 : Colors.grey.shade600,
       ),
-    );
-  }
-
-  Widget _buildInfoRow(String label, String value) {
-    return Column(
-      crossAxisAlignment: CrossAxisAlignment.start,
-      children: [
-        Text(
-          label,
-          style: TextStyle(
-            fontSize: 12,
-            fontWeight: FontWeight.w600,
-            color: Colors.grey.shade600,
-          ),
-        ),
-        const SizedBox(height: 4),
-        Text(
-          value,
-          style: const TextStyle(fontSize: 16, fontWeight: FontWeight.w500),
-        ),
-      ],
+      onTap: onTap,
     );
   }
 }

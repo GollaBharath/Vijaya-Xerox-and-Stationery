@@ -41,6 +41,11 @@ export interface UserResponse {
 	phone: string;
 	role: UserRole;
 	isActive: boolean;
+	address?: string | null;
+	city?: string | null;
+	state?: string | null;
+	pincode?: string | null;
+	landmark?: string | null;
 	createdAt: string;
 }
 

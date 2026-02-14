@@ -1,3 +1,34 @@
+/// Simple product info embedded in variant
+class ProductInfo {
+  final String id;
+  final String title;
+  final double basePrice;
+  final bool isActive;
+  final String? imageUrl;
+  final String? fileType;
+
+  ProductInfo({
+    required this.id,
+    required this.title,
+    required this.basePrice,
+    required this.isActive,
+    this.imageUrl,
+    this.fileType,
+  });
+
+  factory ProductInfo.fromJson(Map<String, dynamic> json) {
+    return ProductInfo(
+      id: json['id'] as String,
+      title: json['title'] as String,
+      basePrice:
+          ((json['basePrice'] ?? json['base_price'] ?? 0) as num).toDouble(),
+      isActive: (json['isActive'] ?? json['is_active'] ?? true) as bool,
+      imageUrl: json['imageUrl'] ?? json['image_url'] as String?,
+      fileType: json['fileType'] ?? json['file_type'] as String?,
+    );
+  }
+}
+
 /// Product variant model (e.g., color, B&W, size variations)
 class ProductVariant {
   final String id;
@@ -6,6 +37,7 @@ class ProductVariant {
   final double price;
   final bool stock;
   final String sku;
+  final ProductInfo? product;
 
   ProductVariant({
     required this.id,
@@ -14,6 +46,7 @@ class ProductVariant {
     required this.price,
     required this.stock,
     required this.sku,
+    this.product,
   });
 
   /// Check if variant is in stock
@@ -28,6 +61,15 @@ class ProductVariant {
       'price': price,
       'stock': stock,
       'sku': sku,
+      if (product != null)
+        'product': {
+          'id': product!.id,
+          'title': product!.title,
+          'base_price': product!.basePrice,
+          'is_active': product!.isActive,
+          'image_url': product!.imageUrl,
+          'file_type': product!.fileType,
+        },
     };
   }
 
@@ -42,6 +84,9 @@ class ProductVariant {
       price: ((json['price'] as num?) ?? 0).toDouble(),
       stock: (json['stock'] as bool?) ?? true,
       sku: (json['sku'] ?? '') as String,
+      product: json['product'] != null
+          ? ProductInfo.fromJson(json['product'] as Map<String, dynamic>)
+          : null,
     );
   }
 
@@ -53,6 +98,7 @@ class ProductVariant {
     double? price,
     bool? stock,
     String? sku,
+    ProductInfo? product,
   }) {
     return ProductVariant(
       id: id ?? this.id,
@@ -61,6 +107,7 @@ class ProductVariant {
       price: price ?? this.price,
       stock: stock ?? this.stock,
       sku: sku ?? this.sku,
+      product: product ?? this.product,
     );
   }
 

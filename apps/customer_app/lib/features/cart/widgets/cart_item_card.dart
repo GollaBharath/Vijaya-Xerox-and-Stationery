@@ -5,6 +5,7 @@ import 'package:cached_network_image/cached_network_image.dart';
 import 'package:go_router/go_router.dart';
 import '../providers/cart_provider.dart';
 import 'quantity_selector.dart';
+import '../../../core/config/constants.dart';
 
 /// Cart item card widget displaying item details and controls
 class CartItemCard extends StatelessWidget {
@@ -41,7 +42,9 @@ class CartItemCard extends StatelessWidget {
                   children: [
                     // Title
                     Text(
-                      cartItem.variant?.sku ?? 'Product',
+                      cartItem.variant?.product?.title ??
+                          cartItem.variant?.sku ??
+                          'Product',
                       style: Theme.of(context).textTheme.titleMedium,
                       maxLines: 2,
                       overflow: TextOverflow.ellipsis,
@@ -111,16 +114,27 @@ class CartItemCard extends StatelessWidget {
   }
 
   Widget _buildProductMedia() {
-    // For now, show placeholder since CartItem doesn't include product details
-    // In a real implementation, the API should populate product info
-    final fileType = 'NONE'; // Will be populated from API response
+    final product = cartItem.variant?.product;
+    final fileType = product?.fileType ?? 'NONE';
+    final imageUrl = product?.imageUrl;
 
-    if (fileType == 'IMAGE') {
+    // Build full image URL if it's a relative path
+    String? fullImageUrl;
+    if (imageUrl != null && imageUrl.isNotEmpty) {
+      if (imageUrl.startsWith('http')) {
+        fullImageUrl = imageUrl;
+      } else {
+        // Construct full URL from base URL and relative path
+        fullImageUrl = '${AppConstants.apiBaseUrl}$imageUrl';
+      }
+    }
+
+    if (fileType == 'IMAGE' && fullImageUrl != null) {
       // Display image for stationery
       return ClipRRect(
         borderRadius: BorderRadius.circular(8),
         child: CachedNetworkImage(
-          imageUrl: '',
+          imageUrl: fullImageUrl,
           width: 80,
           height: 80,
           fit: BoxFit.cover,

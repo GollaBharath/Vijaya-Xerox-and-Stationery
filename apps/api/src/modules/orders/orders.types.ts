@@ -52,7 +52,7 @@ export interface OrderFilterOptions {
 }
 
 export interface CheckoutRequest {
-	address: Record<string, unknown>;
+	address?: Record<string, unknown>;
 }
 
 export interface CheckoutResponse {

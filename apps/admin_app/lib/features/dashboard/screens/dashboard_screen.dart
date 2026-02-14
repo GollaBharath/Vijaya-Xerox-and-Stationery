@@ -216,7 +216,7 @@ class _DashboardScreenState extends State<DashboardScreen> {
                           mainAxisSpacing: 12,
                           childAspectRatio: 1.2,
                         ),
-                    itemCount: 4,
+                    itemCount: 6,
                     itemBuilder: (context, index) {
                       final cards = [
                         NavigationCard(
@@ -246,6 +246,22 @@ class _DashboardScreenState extends State<DashboardScreen> {
                           color: const Color(0xFFFF5722),
                           onTap: () =>
                               AppRouter.push(context, RouteNames.users),
+                        ),
+                        NavigationCard(
+                          title: 'Feedbacks',
+                          icon: Icons.feedback_outlined,
+                          color: const Color(0xFF9C27B0),
+                          onTap: () =>
+                              AppRouter.push(context, RouteNames.feedback),
+                        ),
+                        NavigationCard(
+                          title: 'Support Info',
+                          icon: Icons.help_outline,
+                          color: const Color(0xFF4CAF50),
+                          onTap: () => AppRouter.push(
+                            context,
+                            RouteNames.supportManagement,
+                          ),
                         ),
                       ];
                       return cards[index];

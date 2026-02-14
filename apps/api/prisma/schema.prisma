@@ -22,6 +22,14 @@ model User {
   role          UserRole   @default(CUSTOMER)
   fcmToken      String?    @map("fcm_token")
   isActive      Boolean    @default(true) @map("is_active")
+  
+  // Profile/Address fields
+  address       String?
+  city          String?
+  state         String?
+  pincode       String?
+  landmark      String?
+  
   createdAt     DateTime   @default(now()) @map("created_at")
   updatedAt     DateTime   @updatedAt @map("updated_at")
 
@@ -279,4 +287,32 @@ model StoreSetting {
   updatedAt DateTime   @updatedAt @map("updated_at")
 
   @@map("store_settings")
+}
+
+// ================================
+// Support Info Model
+// ================================
+model SupportInfo {
+  id               String     @id @default(cuid())
+  
+  // Shop Contact Information
+  shopName         String?    @map("shop_name")
+  shopPhone        String?    @map("shop_phone")
+  shopEmail        String?    @map("shop_email")
+  shopWhatsapp     String?    @map("shop_whatsapp")
+  shopAddress      String?    @map("shop_address") @db.Text
+  
+  // Developer Contact Information
+  developerName    String?    @map("developer_name")
+  developerEmail   String?    @map("developer_email")
+  developerWhatsapp String?   @map("developer_whatsapp")
+  
+  // Additional Information
+  workingHours     String?    @map("working_hours") @db.Text
+  websiteUrl       String?    @map("website_url")
+  
+  createdAt        DateTime   @default(now()) @map("created_at")
+  updatedAt        DateTime   @updatedAt @map("updated_at")
+
+  @@map("support_info")
 }

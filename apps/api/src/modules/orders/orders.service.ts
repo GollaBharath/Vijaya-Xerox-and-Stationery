@@ -10,15 +10,38 @@ import { Order, CheckoutResponse } from "./orders.types";
 import { findOrderById, cancelOrder } from "./orders.repo";
 import { OrderStatus, Prisma } from "@prisma/client";
 import { sendOrderNotificationToAdmins } from "@/modules/notifications/notifications.service";
+import { getUserProfile } from "@/modules/profile/profile.repo";
+import { getUserAddressSnapshot } from "@/modules/profile/profile.service";
 
 export async function checkoutCart(
 	userId: string,
-	address: Record<string, unknown>,
+	address?: Record<string, unknown>,
 ): Promise<CheckoutResponse> {
 	const cartItems = await getCartItems(userId);
 
 	if (cartItems.length === 0) {
 		throw new AppError(ErrorCode.BAD_REQUEST, "Cart is empty", 400);
+	}
+
+	// If address not provided, try to get it from user profile
+	let finalAddress = address;
+	if (!finalAddress) {
+		const userProfile = await getUserProfile(userId);
+		if (userProfile) {
+			const profileAddress = getUserAddressSnapshot(userProfile);
+			if (profileAddress) {
+				finalAddress = profileAddress;
+			}
+		}
+	}
+
+	// Address is still required - either provided or from profile
+	if (!finalAddress) {
+		throw new AppError(
+			ErrorCode.BAD_REQUEST,
+			"Address is required. Please provide delivery address or update your profile.",
+			400,
+		);
 	}
 
 	// Validate stock and active products
@@ -53,7 +76,7 @@ export async function checkoutCart(
 			data: {
 				userId,
 				totalPrice,
-				addressSnapshot: address as Prisma.InputJsonValue,
+				addressSnapshot: finalAddress as Prisma.InputJsonValue,
 				items: {
 					createMany: {
 						data: orderItems,

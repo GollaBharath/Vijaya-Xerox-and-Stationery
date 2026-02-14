@@ -180,7 +180,7 @@ class CartProvider extends ChangeNotifier {
     _error = null;
 
     try {
-      await _apiClient.post(ApiEndpoints.cartClear);
+      await _apiClient.delete(ApiEndpoints.cartClear);
 
       _cartItems = [];
       notifyListeners();

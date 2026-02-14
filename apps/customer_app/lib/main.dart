@@ -14,6 +14,7 @@ import 'features/orders/providers/orders_provider.dart';
 import 'features/notifications/providers/notification_provider.dart';
 import 'features/likes/providers/likes_provider.dart';
 import 'features/feedback/providers/feedback_provider.dart';
+import 'features/profile/providers/profile_provider.dart';
 import 'routing/app_router.dart';
 
 void main() async {
@@ -85,6 +86,9 @@ class MainApp extends StatelessWidget {
           create: (_) => LikesProvider(apiClient: apiClient),
         ),
         ChangeNotifierProvider(create: (_) => FeedbackProvider(apiClient)),
+        ChangeNotifierProvider(
+          create: (_) => ProfileProvider(apiClient: apiClient),
+        ),
       ],
       child: Consumer<FirebaseAuthProvider>(
         builder: (context, authProvider, _) {

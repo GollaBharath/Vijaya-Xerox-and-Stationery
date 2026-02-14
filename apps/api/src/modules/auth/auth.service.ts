@@ -37,6 +37,11 @@ function toUserResponse(user: {
 	phone: string | null;
 	role: UserRole;
 	isActive: boolean;
+	address?: string | null;
+	city?: string | null;
+	state?: string | null;
+	pincode?: string | null;
+	landmark?: string | null;
 	createdAt: Date;
 }): UserResponse {
 	return {
@@ -46,6 +51,11 @@ function toUserResponse(user: {
 		phone: user.phone || "",
 		role: user.role,
 		isActive: user.isActive,
+		address: user.address,
+		city: user.city,
+		state: user.state,
+		pincode: user.pincode,
+		landmark: user.landmark,
 		createdAt: user.createdAt.toISOString(),
 	};
 }
@@ -53,8 +63,8 @@ function toUserResponse(user: {
 /**
  * Generate JWT tokens (access + refresh)
  *//**
-* Generate JWT tokens (access + refresh)
-*/
+ * Generate JWT tokens (access + refresh)
+ */
 export function generateTokens(userId: string, role: UserRole): AuthTokens {
 	const payload: JWTPayload = { userId, role };
 

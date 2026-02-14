@@ -9,6 +9,8 @@ export interface CartItemProduct {
 	title: string;
 	basePrice: number;
 	isActive: boolean;
+	imageUrl?: string | null;
+	fileType?: string;
 }
 
 export interface CartItemVariant {

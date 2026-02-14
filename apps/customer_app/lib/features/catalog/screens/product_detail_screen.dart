@@ -63,9 +63,12 @@ class _ProductDetailScreenState extends State<ProductDetailScreen> {
 
   void _addToCart() async {
     if (_selectedVariant == null) {
-      ScaffoldMessenger.of(
-        context,
-      ).showSnackBar(const SnackBar(content: Text('Please select a variant')));
+      ScaffoldMessenger.of(context).showSnackBar(
+        const SnackBar(
+          content: Text('Please select a variant'),
+          duration: Duration(seconds: 2),
+        ),
+      );
       return;
     }
 
@@ -80,13 +83,7 @@ class _ProductDetailScreenState extends State<ProductDetailScreen> {
         SnackBar(
           content: Text('Added $_quantity item(s) to cart'),
           backgroundColor: Colors.green,
-          action: SnackBarAction(
-            label: 'View Cart',
-            textColor: Colors.white,
-            onPressed: () {
-              Navigator.pushNamed(context, '/cart');
-            },
-          ),
+          duration: const Duration(seconds: 2),
         ),
       );
     } else if (mounted && cartProvider.error != null) {
@@ -94,6 +91,7 @@ class _ProductDetailScreenState extends State<ProductDetailScreen> {
         SnackBar(
           content: Text(cartProvider.error!),
           backgroundColor: Colors.red,
+          duration: const Duration(seconds: 3),
         ),
       );
     }

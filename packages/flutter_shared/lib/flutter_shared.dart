@@ -8,6 +8,7 @@ export 'models/cart_item.dart';
 export 'models/order.dart';
 export 'models/order_feedback.dart';
 export 'models/product_like.dart';
+export 'models/support_info.dart';
 
 // API
 export 'api/api_client.dart';

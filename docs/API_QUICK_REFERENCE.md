@@ -57,6 +57,73 @@ GET /auth/me
 Authorization: Bearer {accessToken}
 ```
 
+## User Profile
+
+### Get Profile
+
+```http
+GET /me/profile
+Authorization: Bearer {accessToken}
+```
+
+**Response**:
+
+```json
+{
+	"success": true,
+	"data": {
+		"user": {
+			"id": "user_id",
+			"name": "John Doe",
+			"email": "john@example.com",
+			"phone": "9876543210",
+			"address": "123 Main St",
+			"city": "Mumbai",
+			"state": "Maharashtra",
+			"pincode": "400001",
+			"landmark": "Near City Mall",
+			"createdAt": "2024-01-01T00:00:00.000Z",
+			"updatedAt": "2024-01-01T00:00:00.000Z"
+		}
+	}
+}
+```
+
+### Update Profile
+
+```http
+PATCH /me/profile
+Authorization: Bearer {accessToken}
+Content-Type: application/json
+
+{
+  "name": "John Doe",
+  "phone": "9876543210",
+  "address": "123 Main St, Apt 4B",
+  "city": "Mumbai",
+  "state": "Maharashtra",
+  "pincode": "400001",
+  "landmark": "Near City Mall"
+}
+```
+
+**Note**: All fields are optional. You can update any combination of fields.
+The pincode must be a 6-digit number. Phone must be a valid format.
+
+**Response**:
+
+```json
+{
+	"success": true,
+	"data": {
+		"user": {
+			/* updated user object */
+		}
+	},
+	"message": "Profile updated successfully"
+}
+```
+
 ## Catalog
 
 ### List Categories
@@ -164,13 +231,33 @@ Content-Type: application/json
   "address": {
     "name": "John Doe",
     "phone": "9876543210",
-    "line1": "123 Main Street",
+    "address": "123 Main Street, Apt 4B",
     "city": "Mumbai",
     "state": "Maharashtra",
-    "pincode": "400001"
+    "pincode": "400001",
+    "landmark": "Near City Mall"
   }
 }
 ```
+
+**Important**:
+
+- The `address` field is **optional** in the request
+- If not provided, the system will automatically use the address from the user's profile (if available)
+- If no address is provided and the user's profile doesn't have address information, the request will fail with an error
+- **Recommendation**: Always update the user's profile with their default address first, then the checkout can be done without providing address every time
+
+**Alternative - No address in request (uses profile)**:
+
+```http
+POST /orders
+Authorization: Bearer {customerToken}
+Content-Type: application/json
+
+{}
+```
+
+This will work if the user has complete address information in their profile.
 
 ### List Orders
 

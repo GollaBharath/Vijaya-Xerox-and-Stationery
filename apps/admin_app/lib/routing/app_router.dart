@@ -14,6 +14,7 @@ import '../features/user_management/screens/users_list_screen.dart';
 import '../features/user_management/screens/user_detail_screen.dart';
 import '../features/feedback/screens/feedback_list_screen.dart';
 import '../features/settings/screens/settings_screen.dart';
+import '../features/support_management/screens/support_management_screen.dart';
 
 /// Simple app router using Navigator 1.0
 /// Routes will be properly configured as features are built
@@ -94,6 +95,12 @@ class AppRouter {
       case RouteNames.feedback:
         return MaterialPageRoute(
           builder: (_) => const AdminGuard(child: FeedbackListScreen()),
+          settings: settings,
+        );
+
+      case RouteNames.supportManagement:
+        return MaterialPageRoute(
+          builder: (_) => const AdminGuard(child: SupportManagementScreen()),
           settings: settings,
         );
 

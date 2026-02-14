@@ -33,6 +33,9 @@ class RouteNames {
   // Feedback
   static const String feedback = '/feedback';
 
+  // Support Management
+  static const String supportManagement = '/support';
+
   // Settings
   static const String settings = '/settings';
 

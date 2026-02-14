@@ -261,11 +261,26 @@ class MainShell extends StatelessWidget {
 
   const MainShell({super.key, required this.child});
 
+  int _getCurrentIndex(BuildContext context) {
+    final location = GoRouterState.of(context).uri.toString();
+
+    if (location.startsWith('/cart')) {
+      return 1;
+    } else if (location.startsWith('/orders')) {
+      return 2;
+    } else if (location.startsWith('/profile')) {
+      return 3;
+    } else {
+      return 0; // Default to home
+    }
+  }
+
   @override
   Widget build(BuildContext context) {
     return Scaffold(
       body: child,
       bottomNavigationBar: NavigationBar(
+        selectedIndex: _getCurrentIndex(context),
         onDestinationSelected: (index) {
           final routes = [
             RouteNames.home,
