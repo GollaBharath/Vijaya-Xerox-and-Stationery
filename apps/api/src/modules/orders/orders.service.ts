@@ -27,10 +27,10 @@ export async function checkoutCart(
 		if (!variant || !variant.product || !variant.product.isActive) {
 			throw new NotFoundError("Product variant");
 		}
-		if (variant.stock < item.quantity) {
+		if (!variant.stock) {
 			throw new AppError(
 				ErrorCode.INSUFFICIENT_STOCK,
-				"Insufficient stock for one or more items",
+				"Product is out of stock",
 				400,
 			);
 		}
@@ -67,27 +67,18 @@ export async function checkoutCart(
 			},
 		});
 
-		// Decrement stock
-		for (const item of orderItems) {
-			await tx.productVariant.update({
-				where: { id: item.productVariantId },
-				data: { stock: { decrement: item.quantity } },
-			});
-		}
-
 		// Clear cart
 		await tx.cartItem.deleteMany({ where: { userId } });
 
 		return created;
 	});
 
-	// Send notification to admins (async, don't wait for completion)
 	sendOrderNotificationToAdmins({
 		orderId: order.id,
 		totalPrice: order.totalPrice,
-		customerName: cartItems[0]?.user?.name || "Customer",
+		customerName: "Customer",
 		itemCount: order.items?.length || 0,
-	}).catch((error: any) => {
+	}).catch((_error: any) => {
 		// Already logged in notification service, just catch to prevent unhandled rejection
 	});
 
@@ -106,31 +97,31 @@ function createOrderToResponse(order: any): Order {
 		updatedAt: order.updatedAt.toISOString(),
 		items: order.items
 			? order.items.map((i: any) => ({
-				id: i.id,
-				orderId: i.orderId,
-				productVariantId: i.productVariantId,
-				quantity: i.quantity,
-				priceSnapshot: i.priceSnapshot,
-				createdAt: i.createdAt.toISOString(),
-				productVariant: i.productVariant
-					? {
-						id: i.productVariant.id,
-						productId: i.productVariant.productId,
-						variantType: i.productVariant.variantType,
-						price: i.productVariant.price,
-						stock: i.productVariant.stock,
-						sku: i.productVariant.sku,
-						product: i.productVariant.product
-							? {
-								id: i.productVariant.product.id,
-								title: i.productVariant.product.title,
-								basePrice: i.productVariant.product.basePrice,
-								isActive: i.productVariant.product.isActive,
+					id: i.id,
+					orderId: i.orderId,
+					productVariantId: i.productVariantId,
+					quantity: i.quantity,
+					priceSnapshot: i.priceSnapshot,
+					createdAt: i.createdAt.toISOString(),
+					productVariant: i.productVariant
+						? {
+								id: i.productVariant.id,
+								productId: i.productVariant.productId,
+								variantType: i.productVariant.variantType,
+								price: i.productVariant.price,
+								stock: i.productVariant.stock,
+								sku: i.productVariant.sku,
+								product: i.productVariant.product
+									? {
+											id: i.productVariant.product.id,
+											title: i.productVariant.product.title,
+											basePrice: i.productVariant.product.basePrice,
+											isActive: i.productVariant.product.isActive,
+										}
+									: undefined,
 							}
-							: undefined,
-					}
-					: undefined,
-			}))
+						: undefined,
+				}))
 			: undefined,
 	};
 }

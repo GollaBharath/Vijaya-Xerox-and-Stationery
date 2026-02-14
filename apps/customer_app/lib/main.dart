@@ -88,6 +88,18 @@ class MainApp extends StatelessWidget {
       ],
       child: Consumer<FirebaseAuthProvider>(
         builder: (context, authProvider, _) {
+          // Fetch likes when user authenticates
+          if (authProvider.isAuthenticated) {
+            WidgetsBinding.instance.addPostFrameCallback((_) {
+              final likesProvider = Provider.of<LikesProvider>(
+                context,
+                listen: false,
+              );
+              // Fetch liked products from backend
+              likesProvider.fetchLikedProducts();
+            });
+          }
+
           // Key forces router to rebuild when auth state changes
           return MaterialApp.router(
             key: ValueKey(

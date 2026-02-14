@@ -20,7 +20,7 @@ export function initializeFirebaseAdmin() {
 			firebaseApp = admin.app();
 			logger.info("Firebase Admin already initialized, reusing existing app");
 			return firebaseApp;
-		} catch (e) {
+		} catch {
 			// App doesn't exist, proceed with initialization
 		}
 

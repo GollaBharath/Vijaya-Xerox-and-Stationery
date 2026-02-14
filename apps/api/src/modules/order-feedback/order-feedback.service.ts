@@ -1,4 +1,4 @@
-import { AppError, NotFoundError } from "@/middleware/error.middleware";
+import { AppError } from "@/middleware/error.middleware";
 import { ErrorCode } from "@/types/global";
 import * as repo from "./order-feedback.repo";
 import { FeedbackResponse } from "./order-feedback.types";
@@ -77,8 +77,47 @@ export async function submitFeedback(
 export async function getFeedbackForOrder(orderId: string) {
 	const feedback = await repo.getFeedbackByOrderId(orderId);
 	if (!feedback) {
-		throw new NotFoundError("Feedback not found for this order");
+		return null;
 	}
+	return toFeedbackResponse(feedback);
+}
+
+export async function updateFeedback(
+	orderId: string,
+	userId: string,
+	rating: number,
+	comment?: string,
+) {
+	// Validate rating
+	if (rating < 1 || rating > 5) {
+		throw new AppError(
+			ErrorCode.BAD_REQUEST,
+			"Rating must be between 1 and 5",
+			400,
+		);
+	}
+
+	// Check if feedback exists
+	const existingFeedback = await repo.getFeedbackByOrderId(orderId);
+	if (!existingFeedback) {
+		throw new AppError(
+			ErrorCode.NOT_FOUND,
+			"Feedback not found for this order",
+			404,
+		);
+	}
+
+	// Check if user owns the feedback
+	if (existingFeedback.userId !== userId) {
+		throw new AppError(
+			ErrorCode.FORBIDDEN,
+			"You can only edit your own feedback",
+			403,
+		);
+	}
+
+	// Update feedback
+	const feedback = await repo.updateFeedback(orderId, rating, comment);
 	return toFeedbackResponse(feedback);
 }
 

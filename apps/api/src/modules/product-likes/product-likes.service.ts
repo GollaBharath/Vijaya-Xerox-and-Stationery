@@ -43,9 +43,22 @@ export async function getProductLikeStats(productId: string, userId?: string) {
 
 export async function getUserLikes(userId: string) {
 	const likes = await repo.getUserLikedProducts(userId);
+
+	// Get like counts for all liked products
+	const productIds = likes.map((l) => l.product.id);
+	const likeCounts = new Map<string, number>();
+
+	for (const productId of productIds) {
+		const count = await repo.getProductLikeCount(productId);
+		likeCounts.set(productId, count);
+	}
+
 	return likes.map((like) => ({
 		id: like.id,
 		createdAt: like.createdAt.toISOString(),
-		product: like.product,
+		product: {
+			...like.product,
+			likeCount: likeCounts.get(like.product.id) || 0,
+		},
 	}));
 }

@@ -46,26 +46,34 @@ class LikesProvider with ChangeNotifier {
       final response = await apiClient.post('/api/v1/products/$productId/like');
 
       if (response is Map<String, dynamic>) {
-        _likeCounts[productId] = response['likeCount'] as int;
-        if (response['liked'] == true) {
-          _likedProductIds.add(productId);
+        // Backend returns { data: { liked, likeCount }, message }
+        final data = response['data'] as Map<String, dynamic>?;
+
+        if (data != null) {
+          final liked = data['liked'] as bool?;
+          final likeCount = data['likeCount'] as int?;
+
+          if (liked != null && likeCount != null) {
+            // Update with server values
+            _likeCounts[productId] = likeCount;
+            if (liked) {
+              _likedProductIds.add(productId);
+            } else {
+              _likedProductIds.remove(productId);
+            }
+            _error = null;
+          } else {
+            throw Exception('Invalid response structure');
+          }
         } else {
-          _likedProductIds.remove(productId);
+          throw Exception('Invalid response structure');
         }
-        _error = null;
       } else {
-        // Revert optimistic update
-        if (wasLiked) {
-          _likedProductIds.add(productId);
-          _likeCounts[productId] = (_likeCounts[productId] ?? 0) + 1;
-        } else {
-          _likedProductIds.remove(productId);
-          _likeCounts[productId] = (_likeCounts[productId] ?? 1) - 1;
-        }
-        _error = 'Failed to update like';
+        throw Exception('Invalid response type');
       }
     } catch (e) {
-      // Revert optimistic update
+      print('Like error: $e');
+      // Revert optimistic update on failure
       if (wasLiked) {
         _likedProductIds.add(productId);
         _likeCounts[productId] = (_likeCounts[productId] ?? 0) + 1;
@@ -90,17 +98,44 @@ class LikesProvider with ChangeNotifier {
     try {
       final response = await apiClient.get('/api/v1/me/likes');
 
-      if (response is List) {
-        _likedProductIds = response.map((p) => p['id'] as String).toSet();
-        for (var product in response) {
-          _likeCounts[product['id']] = product['likeCount'] ?? 0;
+      if (response is Map<String, dynamic>) {
+        // Backend returns { data: [{ id, createdAt, product }, ...] }
+        final data = response['data'] as List?;
+
+        if (data != null) {
+          // Clear previous data
+          _likedProductIds.clear();
+          _likeCounts.clear();
+
+          // Parse the response - each item has: { id, createdAt, product }
+          for (var like in data) {
+            final product = like['product'] as Map<String, dynamic>?;
+            if (product != null) {
+              final productId = product['id'] as String?;
+              final likeCount = product['likeCount'] as int? ?? 0;
+
+              if (productId != null) {
+                _likedProductIds.add(productId);
+                _likeCounts[productId] = likeCount;
+                print(
+                  '✅ Added liked product: $productId with count $likeCount',
+                );
+              }
+            }
+          }
+          _error = null;
+          print('📦 Loaded ${_likedProductIds.length} liked products');
+        } else {
+          _error = 'Failed to fetch liked products';
+          print('❌ Data is null');
         }
-        _error = null;
       } else {
         _error = 'Failed to fetch liked products';
+        print('❌ Response is not a Map: ${response.runtimeType}');
       }
     } catch (e) {
       _error = 'Network error: $e';
+      print('❌ Error fetching liked products: $e');
     } finally {
       _isLoading = false;
       notifyListeners();

@@ -5,6 +5,7 @@ import 'package:flutter_shared/flutter_shared.dart';
 import '../providers/category_provider.dart';
 import '../providers/subject_provider.dart';
 import '../providers/product_provider.dart';
+import '../../likes/providers/likes_provider.dart';
 import '../widgets/product_card.dart';
 import '../widgets/category_chip.dart';
 import '../../../routing/route_names.dart';
@@ -76,6 +77,7 @@ class _CatalogScreenState extends State<CatalogScreen>
       context,
       listen: false,
     );
+    final likesProvider = Provider.of<LikesProvider>(context, listen: false);
 
     // Load categories and subjects
     categoryProvider.fetchCategories();
@@ -83,6 +85,9 @@ class _CatalogScreenState extends State<CatalogScreen>
 
     // Load initial products
     productProvider.fetchProducts(reset: true);
+
+    // Load user's liked products (if authenticated)
+    likesProvider.fetchLikedProducts();
   }
 
   void _onScroll() {

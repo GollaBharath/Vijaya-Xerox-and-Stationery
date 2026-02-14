@@ -44,7 +44,7 @@ export const PATCH = errorHandler(
 		if (!validStatuses.includes(status as OrderStatus)) {
 			throw new ValidationError(
 				`Invalid order status. Must be one of: ${validStatuses.join(", ")}`,
-				"status"
+				"status",
 			);
 		}
 
@@ -55,7 +55,7 @@ export const PATCH = errorHandler(
 			orderId: updated.id,
 			status: updated.status,
 			userId: updated.userId,
-		}).catch((error: any) => {
+		}).catch((_error: any) => {
 			// Already logged in notification service, just catch to prevent unhandled rejection
 		});
 

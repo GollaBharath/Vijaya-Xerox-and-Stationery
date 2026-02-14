@@ -6,7 +6,6 @@ import {
 	validateRequired,
 	validateStringLength,
 	validatePositiveNumber,
-	validateNonNegativeNumber,
 	validateEnum,
 	validateISBN,
 	sanitizeString,
@@ -53,13 +52,13 @@ export interface CreateVariantInput {
 	productId: string;
 	variantType: VariantType;
 	price: number;
-	stock: number;
+	stock: boolean;
 	sku: string;
 }
 
 export interface UpdateVariantInput {
 	price?: number;
-	stock?: number;
+	stock?: boolean;
 }
 
 export function validateCreateCategory(data: any): CreateCategoryInput {
@@ -193,8 +192,7 @@ export function validateCreateVariant(data: any): CreateVariantInput {
 	const price = Number(data.price);
 	validatePositiveNumber(price, "price");
 
-	const stock = Number(data.stock);
-	validateNonNegativeNumber(stock, "stock");
+	const stock = Boolean(data.stock);
 
 	const sku = sanitizeString(String(data.sku));
 	validateStringLength(sku, "sku", 2, 100);
@@ -218,8 +216,7 @@ export function validateUpdateVariant(data: any): UpdateVariantInput {
 	}
 
 	if (data.stock !== undefined) {
-		const stock = Number(data.stock);
-		validateNonNegativeNumber(stock, "stock");
+		const stock = Boolean(data.stock);
 		update.stock = stock;
 	}
 

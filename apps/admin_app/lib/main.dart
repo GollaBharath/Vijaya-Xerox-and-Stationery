@@ -1,7 +1,7 @@
 import 'package:flutter/material.dart';
 import 'package:provider/provider.dart';
 import 'package:firebase_core/firebase_core.dart';
-import 'package:flutter_shared/auth/token_manager.dart';
+import 'package:flutter_shared/flutter_shared.dart';
 import 'core/theme/app_theme.dart';
 import 'core/config/env.dart';
 import 'routing/app_router.dart';
@@ -16,7 +16,7 @@ import 'features/product_management/providers/product_provider.dart';
 import 'features/product_management/providers/variant_provider.dart';
 import 'features/order_management/providers/order_provider.dart';
 import 'features/notifications/providers/notification_provider.dart';
-import 'features/feedback/providers/admin_feedback_provider.dart';
+import 'features/feedback/providers/feedback_provider.dart';
 import 'core/services/notification_service.dart';
 
 void main() async {

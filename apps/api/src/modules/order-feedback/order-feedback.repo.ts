@@ -72,6 +72,44 @@ export async function getFeedbackByOrderId(orderId: string) {
 }
 
 /**
+ * Update feedback for an order
+ */
+export async function updateFeedback(
+	orderId: string,
+	rating: number,
+	comment?: string,
+) {
+	return await prisma.orderFeedback.update({
+		where: { orderId },
+		data: {
+			rating,
+			comment,
+		},
+		include: {
+			user: {
+				select: {
+					id: true,
+					name: true,
+					email: true,
+				},
+			},
+			order: {
+				select: {
+					id: true,
+					totalPrice: true,
+					createdAt: true,
+					items: {
+						select: {
+							id: true,
+						},
+					},
+				},
+			},
+		},
+	});
+}
+
+/**
  * Check if user owns the order
  */
 export async function isOrderOwnedByUser(

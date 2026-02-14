@@ -11,7 +11,7 @@ export async function GET(req: NextRequest) {
 	try {
 		await authenticate(req, { required: true, adminOnly: true });
 		const stats = await getFeedbackStatistics();
-		return NextResponse.json({ data: stats });
+		return NextResponse.json({ success: true, data: stats });
 	} catch (error: any) {
 		return handleError(error);
 	}

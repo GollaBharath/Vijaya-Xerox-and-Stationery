@@ -61,7 +61,7 @@ export const GET = errorHandler(async (request: NextRequest) => {
 
 	// Get like stats for all products
 	const productIds = products.map((p) => p.id);
-	const likeStats = await getProductLikeStats(productIds, user?.id);
+	const likeStats = await getProductLikeStats(productIds, user?.userId);
 
 	// Add like stats to each product
 	const productsWithLikes = products.map((product) => {

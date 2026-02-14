@@ -3,6 +3,7 @@ import { authenticate } from "@/middleware/auth.middleware";
 import {
 	submitFeedback,
 	getFeedbackForOrder,
+	updateFeedback,
 } from "@/modules/order-feedback/order-feedback.service";
 import { handleError } from "@/middleware/error.middleware";
 import { z } from "zod";
@@ -56,6 +57,39 @@ export async function POST(
 				message: "Feedback submitted successfully",
 			},
 			{ status: 201 },
+		);
+	} catch (error: any) {
+		return handleError(error);
+	}
+}
+
+/**
+ * PATCH /api/v1/orders/:id/feedback
+ * Update existing feedback for an order
+ */
+export async function PATCH(
+	req: NextRequest,
+	{ params }: { params: { id: string } },
+) {
+	try {
+		const user = await authenticate(req, { required: true });
+		const body = await req.json();
+
+		const validatedData = feedbackSchema.parse(body);
+
+		const feedback = await updateFeedback(
+			params.id,
+			user!.userId,
+			validatedData.rating,
+			validatedData.comment,
+		);
+
+		return NextResponse.json(
+			{
+				data: feedback,
+				message: "Feedback updated successfully",
+			},
+			{ status: 200 },
 		);
 	} catch (error: any) {
 		return handleError(error);

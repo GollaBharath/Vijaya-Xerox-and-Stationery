@@ -16,7 +16,7 @@ export interface OrderItem {
 		productId: string;
 		variantType: VariantType;
 		price: number;
-		stock: number;
+		stock: boolean;
 		sku: string;
 		product?: {
 			id: string;

@@ -1,8 +1,9 @@
 import 'package:flutter/foundation.dart';
 import 'package:flutter_shared/flutter_shared.dart';
+import '../../../core/config/env.dart';
 
 class AdminFeedbackProvider extends ChangeNotifier {
-  final ApiClient _apiClient;
+  late final ApiClient _apiClient;
 
   List<OrderFeedback> _feedbacks = [];
   bool _isLoading = false;
@@ -15,7 +16,10 @@ class AdminFeedbackProvider extends ChangeNotifier {
   double _averageRating = 0.0;
   Map<int, int> _ratingDistribution = {};
 
-  AdminFeedbackProvider(this._apiClient);
+  AdminFeedbackProvider() {
+    final tokenManager = TokenManager();
+    _apiClient = ApiClient(tokenManager: tokenManager, baseUrl: Env.baseUrl);
+  }
 
   // Getters
   List<OrderFeedback> get feedbacks => _feedbacks;
@@ -45,8 +49,7 @@ class AdminFeedbackProvider extends ChangeNotifier {
 
     try {
       final response = await _apiClient.get(
-        '/admin/feedbacks',
-        queryParams: {'page': page.toString(), 'limit': limit.toString()},
+        '/admin/feedbacks?page=${page.toString()}&limit=${limit.toString()}',
       );
 
       if (response['data'] != null) {

@@ -1,9 +1,6 @@
 import { NextRequest, NextResponse } from "next/server";
 import { authenticate } from "@/middleware/auth.middleware";
-import {
-	listAllFeedbacks,
-	getFeedbackStatistics,
-} from "@/modules/order-feedback/order-feedback.service";
+import { listAllFeedbacks } from "@/modules/order-feedback/order-feedback.service";
 import { handleError } from "@/middleware/error.middleware";
 
 /**

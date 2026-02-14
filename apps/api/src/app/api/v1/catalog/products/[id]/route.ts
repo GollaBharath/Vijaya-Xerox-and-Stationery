@@ -26,7 +26,7 @@ export const GET = errorHandler(
 		const user = await optionalAuth(request);
 
 		// Get like stats for this product
-		const likeStatsMap = await getProductLikeStats([params.id], user?.id);
+		const likeStatsMap = await getProductLikeStats([params.id], user?.userId);
 		const stats = likeStatsMap.get(params.id) || { count: 0, isLiked: false };
 
 		const productWithLikes = {

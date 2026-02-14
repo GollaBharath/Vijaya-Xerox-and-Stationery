@@ -24,7 +24,37 @@ class FeedbackProvider extends ChangeNotifier {
 
     try {
       await _apiClient.post(
-        '/orders/$orderId/feedback',
+        '/api/v1/orders/$orderId/feedback',
+        body: {
+          'rating': rating,
+          if (comment != null && comment.isNotEmpty) 'comment': comment,
+        },
+      );
+
+      _error = null;
+      return true;
+    } catch (e) {
+      _error = e.toString();
+      return false;
+    } finally {
+      _isSubmitting = false;
+      notifyListeners();
+    }
+  }
+
+  /// Update existing feedback for an order
+  Future<bool> updateFeedback({
+    required String orderId,
+    required int rating,
+    String? comment,
+  }) async {
+    _isSubmitting = true;
+    _error = null;
+    notifyListeners();
+
+    try {
+      await _apiClient.patch(
+        '/api/v1/orders/$orderId/feedback',
         body: {
           'rating': rating,
           if (comment != null && comment.isNotEmpty) 'comment': comment,
@@ -45,7 +75,7 @@ class FeedbackProvider extends ChangeNotifier {
   /// Get feedback for an order
   Future<OrderFeedback?> getFeedbackForOrder(String orderId) async {
     try {
-      final response = await _apiClient.get('/orders/$orderId/feedback');
+      final response = await _apiClient.get('/api/v1/orders/$orderId/feedback');
       if (response['data'] != null) {
         return OrderFeedback.fromJson(response['data']);
       }
