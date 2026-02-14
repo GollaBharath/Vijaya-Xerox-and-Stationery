@@ -11,6 +11,7 @@ import 'features/catalog/providers/product_provider.dart';
 import 'features/cart/providers/cart_provider.dart';
 import 'features/checkout/providers/checkout_provider.dart';
 import 'features/orders/providers/orders_provider.dart';
+import 'features/notifications/providers/notification_provider.dart';
 import 'routing/app_router.dart';
 
 void main() async {
@@ -33,11 +34,21 @@ void main() async {
   final authProvider = FirebaseAuthProvider(apiClient: apiClient);
   await authProvider.initialize();
 
+  // Create notification provider and initialize
+  final notificationProvider = NotificationProvider();
+  // Initialize notifications after auth is ready
+  authProvider.addListener(() {
+    if (authProvider.isAuthenticated) {
+      notificationProvider.initialize();
+    }
+  });
+
   runApp(
     MainApp(
       tokenManager: tokenManager,
       authProvider: authProvider,
       apiClient: apiClient,
+      notificationProvider: notificationProvider,
     ),
   );
 }
@@ -46,12 +57,14 @@ class MainApp extends StatelessWidget {
   final TokenManager tokenManager;
   final FirebaseAuthProvider authProvider;
   final ApiClient apiClient;
+  final NotificationProvider notificationProvider;
 
   const MainApp({
     super.key,
     required this.tokenManager,
     required this.authProvider,
     required this.apiClient,
+    required this.notificationProvider,
   });
 
   @override
@@ -59,6 +72,7 @@ class MainApp extends StatelessWidget {
     return MultiProvider(
       providers: [
         ChangeNotifierProvider.value(value: authProvider),
+        ChangeNotifierProvider.value(value: notificationProvider),
         ChangeNotifierProvider(create: (_) => CategoryProvider(apiClient)),
         ChangeNotifierProvider(create: (_) => SubjectProvider(apiClient)),
         ChangeNotifierProvider(create: (_) => ProductProvider(apiClient)),

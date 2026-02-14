@@ -6,7 +6,7 @@ import * as admin from "firebase-admin";
 import { prisma } from "@/lib/prisma";
 import { logger } from "@/lib/logger";
 import { initializeFirebaseAdmin } from "@/lib/firebase-admin";
-import { NotificationPayload, OrderNotificationData } from "./notifications.types";
+import { NotificationPayload, OrderNotificationData, OrderStatusNotificationData } from "./notifications.types";
 import { UserRole } from "@prisma/client";
 
 /**
@@ -29,6 +29,18 @@ async function getAdminFcmTokens(): Promise<string[]> {
     return admins
         .map((admin) => admin.fcmToken)
         .filter((token): token is string => token !== null);
+}
+
+/**
+ * Get FCM token for a specific user
+ */
+async function getUserFcmToken(userId: string): Promise<string | null> {
+    const user = await prisma.user.findUnique({
+        where: { id: userId },
+        select: { fcmToken: true },
+    });
+
+    return user?.fcmToken || null;
 }
 
 /**
@@ -83,6 +95,36 @@ async function sendMulticastNotification(
 }
 
 /**
+ * Send notification to a single FCM token
+ */
+async function sendSingleNotification(
+    token: string,
+    payload: NotificationPayload,
+): Promise<void> {
+    // Initialize Firebase Admin if not already done
+    initializeFirebaseAdmin();
+
+    const message: admin.messaging.Message = {
+        notification: {
+            title: payload.title,
+            body: payload.body,
+        },
+        data: payload.data,
+        token: token,
+    };
+
+    try {
+        await admin.messaging().send(message);
+        logger.info("Single notification sent successfully");
+    } catch (error: any) {
+        logger.error("Failed to send single notification", {
+            error: error?.message,
+        });
+        throw error;
+    }
+}
+
+/**
  * Send order notification to all admin users
  */
 export async function sendOrderNotificationToAdmins(
@@ -118,6 +160,55 @@ export async function sendOrderNotificationToAdmins(
         // Log error but don't throw - notification failure shouldn't block order creation
         logger.error("Failed to send order notification to admins", {
             orderId: orderData.orderId,
+            error: error?.message,
+        });
+    }
+}
+
+/**
+ * Send order status update notification to user
+ */
+export async function sendOrderStatusNotificationToUser(
+    orderData: OrderStatusNotificationData,
+): Promise<void> {
+    try {
+        const token = await getUserFcmToken(orderData.userId);
+
+        if (!token) {
+            logger.info("No FCM token available for user, skipping notification", {
+                userId: orderData.userId,
+            });
+            return;
+        }
+
+        // Format status for display
+        const statusDisplay = orderData.status
+            .toLowerCase()
+            .replace(/_/g, " ")
+            .replace(/\b\w/g, (l) => l.toUpperCase());
+
+        const payload: NotificationPayload = {
+            title: "Order Status Updated 📦",
+            body: `Your order status has been updated to: ${statusDisplay}`,
+            data: {
+                type: "order_status_update",
+                orderId: orderData.orderId,
+                status: orderData.status,
+            },
+        };
+
+        await sendSingleNotification(token, payload);
+
+        logger.info("Order status notification sent to user", {
+            orderId: orderData.orderId,
+            userId: orderData.userId,
+            status: orderData.status,
+        });
+    } catch (error: any) {
+        // Log error but don't throw - notification failure shouldn't block status update
+        logger.error("Failed to send order status notification to user", {
+            orderId: orderData.orderId,
+            userId: orderData.userId,
             error: error?.message,
         });
     }

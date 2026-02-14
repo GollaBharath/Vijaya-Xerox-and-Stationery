@@ -14,3 +14,9 @@ export interface OrderNotificationData {
     customerName: string;
     itemCount: number;
 }
+
+export interface OrderStatusNotificationData {
+    orderId: string;
+    status: string;
+    userId: string;
+}

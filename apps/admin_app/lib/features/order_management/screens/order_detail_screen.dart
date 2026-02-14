@@ -34,7 +34,7 @@ class _OrderDetailScreenState extends State<OrderDetailScreen> {
       'PENDING',
       'CONFIRMED',
       'PROCESSING',
-      'DISPATCHED',
+      'SHIPPED',
       'DELIVERED',
       'CANCELLED',
     ];
@@ -179,7 +179,7 @@ class _OrderDetailScreenState extends State<OrderDetailScreen> {
         return Colors.blue;
       case 'PROCESSING':
         return Colors.red;
-      case 'DISPATCHED':
+      case 'SHIPPED':
         return Colors.purple;
       case 'DELIVERED':
         return Colors.green;

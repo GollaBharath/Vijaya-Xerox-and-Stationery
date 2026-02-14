@@ -42,16 +42,6 @@ void main() async {
   final tokenManager = TokenManager();
   await tokenManager.initialize();
 
-  // Initialize notification service only if Firebase is available
-  if (firebaseInitialized) {
-    try {
-      final notificationService = NotificationService();
-      await notificationService.initialize();
-    } catch (e) {
-      debugPrint('Notification service initialization error: $e');
-    }
-  }
-
   runApp(const AdminApp());
 }
 

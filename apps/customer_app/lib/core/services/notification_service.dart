@@ -96,7 +96,7 @@ class NotificationService {
       }
 
       final response = await http.put(
-        Uri.parse('${Env.apiBaseUrl}/api/v1/auth/fcm-token'),
+        Uri.parse('${Environment.apiBaseUrl}/auth/fcm-token'),
         headers: {
           'Content-Type': 'application/json',
           'Authorization': 'Bearer $accessToken',
@@ -137,7 +137,7 @@ class NotificationService {
   void _handleNotificationTap(RemoteMessage message) {
     final data = message.data;
     
-    if (data['type'] == 'new_order' && data['orderId'] != null) {
+    if (data['type'] == 'order_status_update' && data['orderId'] != null) {
       // Navigate to order details
       debugPrint('Navigate to order: ${data['orderId']}');
       // Navigation will be handled by NotificationProvider
