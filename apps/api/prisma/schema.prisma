@@ -113,7 +113,7 @@ model ProductVariant {
   productId   String     @map("product_id")
   variantType VariantType @map("variant_type")
   price       Float
-  stock       Int
+  stock       Boolean    @default(true)
   sku         String     @unique
   createdAt   DateTime   @default(now()) @map("created_at")
   updatedAt   DateTime   @updatedAt @map("updated_at")
@@ -129,6 +129,7 @@ model ProductVariant {
 enum VariantType {
   COLOR
   BW
+  DEFAULT
 }
 
 enum FileType {

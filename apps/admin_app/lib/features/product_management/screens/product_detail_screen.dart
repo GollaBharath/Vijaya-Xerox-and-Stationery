@@ -328,7 +328,25 @@ class _ProductDetailScreenState extends State<ProductDetailScreen> {
                                 Text(
                                   'Price: ₹${variant.price.toStringAsFixed(2)}',
                                 ),
-                                Text('Stock: ${variant.stock}'),
+                                Row(
+                                  children: [
+                                    Icon(
+                                      variant.stock
+                                          ? Icons.check_circle
+                                          : Icons.cancel,
+                                      size: 16,
+                                      color: variant.stock
+                                          ? Colors.green
+                                          : Colors.red,
+                                    ),
+                                    const SizedBox(width: 4),
+                                    Text(
+                                      variant.stock
+                                          ? 'In Stock'
+                                          : 'Out of Stock',
+                                    ),
+                                  ],
+                                ),
                                 Text('SKU: ${variant.sku}'),
                               ],
                             ),

@@ -30,7 +30,7 @@ class VariantSelector extends StatelessWidget {
           runSpacing: 8,
           children: variants.map((variant) {
             final isSelected = selectedVariant?.id == variant.id;
-            final isAvailable = variant.stock > 0;
+            final isAvailable = variant.stock;
 
             return ChoiceChip(
               label: Text(_getVariantLabel(variant)),

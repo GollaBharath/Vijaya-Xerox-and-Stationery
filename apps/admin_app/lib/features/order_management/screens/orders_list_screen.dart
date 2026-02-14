@@ -6,7 +6,7 @@ import '../providers/order_provider.dart';
 import 'order_detail_screen.dart';
 
 /// Admin Orders List Screen
-/// Displays all orders with filtering by status and date
+/// Displays orders in two tabs: Ongoing and Completed
 /// Supports infinite scroll pagination
 class OrdersListScreen extends StatefulWidget {
   const OrdersListScreen({Key? key}) : super(key: key);
@@ -15,20 +15,36 @@ class OrdersListScreen extends StatefulWidget {
   State<OrdersListScreen> createState() => _OrdersListScreenState();
 }
 
-class _OrdersListScreenState extends State<OrdersListScreen> {
+class _OrdersListScreenState extends State<OrdersListScreen>
+    with SingleTickerProviderStateMixin {
   late ScrollController _scrollController;
-  String _selectedStatus = 'ALL';
+  late TabController _tabController;
   DateTime? _selectedDate;
+  
+  // Define order statuses for each tab
+  static const List<String> _ongoingStatuses = [
+    'PENDING',
+    'CONFIRMED',
+    'PROCESSING',
+    'DISPATCHED',
+  ];
+  
+  static const List<String> _completedStatuses = [
+    'DELIVERED',
+    'CANCELLED',
+  ];
 
   @override
   void initState() {
     super.initState();
     _scrollController = ScrollController();
     _scrollController.addListener(_onScroll);
+    _tabController = TabController(length: 2, vsync: this);
+    _tabController.addListener(_onTabChanged);
 
-    // Load initial orders
+    // Load initial orders (ongoing by default)
     WidgetsBinding.instance.addPostFrameCallback((_) {
-      context.read<OrderProvider>().fetchAllOrders();
+      _fetchOrdersForCurrentTab();
     });
   }
 
@@ -38,12 +54,24 @@ class _OrdersListScreenState extends State<OrdersListScreen> {
       context.read<OrderProvider>().loadMoreOrders();
     }
   }
-
-  void _handleStatusFilter(String status) {
-    setState(() => _selectedStatus = status);
+  
+  void _onTabChanged() {
+    if (!_tabController.indexIsChanging) {
+      _fetchOrdersForCurrentTab();
+    }
+  }
+  
+  void _fetchOrdersForCurrentTab() {
+    final statuses = _tabController.index == 0 
+        ? _ongoingStatuses 
+        : _completedStatuses;
+    
+    // Fetch orders with multiple status filters
+    // Since the backend doesn't support multiple statuses in one call,
+    // we'll need to fetch all and filter client-side
+    // For now, we'll fetch all orders and filter in the UI
     context.read<OrderProvider>().fetchAllOrders(
       page: 1,
-      statusFilter: status != 'ALL' ? status : null,
       dateFilter: _selectedDate,
     );
   }
@@ -57,20 +85,21 @@ class _OrdersListScreenState extends State<OrdersListScreen> {
     );
     if (picked != null) {
       setState(() => _selectedDate = picked);
-      context.read<OrderProvider>().fetchAllOrders(
-        page: 1,
-        statusFilter: _selectedStatus != 'ALL' ? _selectedStatus : null,
-        dateFilter: picked,
-      );
+      _fetchOrdersForCurrentTab();
     }
   }
 
-  void _clearFilters() {
-    setState(() {
-      _selectedStatus = 'ALL';
-      _selectedDate = null;
-    });
-    context.read<OrderProvider>().clearFilters();
+  void _clearDateFilter() {
+    setState(() => _selectedDate = null);
+    _fetchOrdersForCurrentTab();
+  }
+  
+  List<dynamic> _getFilteredOrders(List<dynamic> allOrders) {
+    final statuses = _tabController.index == 0 
+        ? _ongoingStatuses 
+        : _completedStatuses;
+    
+    return allOrders.where((order) => statuses.contains(order.status)).toList();
   }
 
   String _getStatusColor(String status) {
@@ -103,6 +132,7 @@ class _OrdersListScreenState extends State<OrdersListScreen> {
   @override
   void dispose() {
     _scrollController.dispose();
+    _tabController.dispose();
     super.dispose();
   }
 
@@ -111,316 +141,279 @@ class _OrdersListScreenState extends State<OrdersListScreen> {
     return AdminScaffold(
       title: 'Orders Management',
       currentRoute: RouteNames.orders,
-      body: Consumer<OrderProvider>(
-        builder: (context, orderProvider, _) {
-          if (orderProvider.isLoading && orderProvider.orders.isEmpty) {
-            return const Center(child: CircularProgressIndicator());
-          }
-
-          if (orderProvider.error != null && orderProvider.orders.isEmpty) {
-            return Center(
-              child: Column(
-                mainAxisAlignment: MainAxisAlignment.center,
-                children: [
-                  Icon(Icons.error_outline, size: 48, color: Colors.red[300]),
-                  const SizedBox(height: 16),
-                  Text(
-                    orderProvider.error!,
-                    textAlign: TextAlign.center,
-                    style: const TextStyle(fontSize: 16),
+      body: Column(
+        children: [
+          // TabBar
+          Container(
+            color: Colors.white,
+            child: TabBar(
+              controller: _tabController,
+              labelColor: Theme.of(context).primaryColor,
+              unselectedLabelColor: Colors.grey,
+              indicatorColor: Theme.of(context).primaryColor,
+              tabs: const [
+                Tab(
+                  icon: Icon(Icons.pending_actions),
+                  text: 'Ongoing',
+                ),
+                Tab(
+                  icon: Icon(Icons.check_circle_outline),
+                  text: 'Completed',
+                ),
+              ],
+            ),
+          ),
+          
+          // Date Filter
+          Container(
+            color: Colors.white,
+            padding: const EdgeInsets.all(16),
+            child: Row(
+              children: [
+                Expanded(
+                  child: OutlinedButton.icon(
+                    onPressed: _handleDateFilter,
+                    icon: const Icon(Icons.calendar_today, size: 18),
+                    label: Text(
+                      _selectedDate == null
+                          ? 'Filter by Date'
+                          : 'Date: ${_selectedDate!.toString().split(' ')[0]}',
+                      style: const TextStyle(fontSize: 14),
+                    ),
                   ),
-                  const SizedBox(height: 24),
+                ),
+                if (_selectedDate != null) ...[
+                  const SizedBox(width: 8),
                   ElevatedButton.icon(
-                    onPressed: () => orderProvider.fetchAllOrders(),
-                    icon: const Icon(Icons.refresh),
-                    label: const Text('Retry'),
+                    onPressed: _clearDateFilter,
+                    icon: const Icon(Icons.clear, size: 18),
+                    label: const Text('Clear', style: TextStyle(fontSize: 14)),
+                    style: ElevatedButton.styleFrom(
+                      padding: const EdgeInsets.symmetric(horizontal: 12, vertical: 8),
+                    ),
                   ),
                 ],
-              ),
-            );
-          }
+              ],
+            ),
+          ),
+          
+          const Divider(height: 1),
+          
+          // TabBarView
+          Expanded(
+            child: TabBarView(
+              controller: _tabController,
+              children: [
+                _buildOrdersList(isOngoing: true),
+                _buildOrdersList(isOngoing: false),
+              ],
+            ),
+          ),
+        ],
+      ),
+    );
+  }
+  
+  Widget _buildOrdersList({required bool isOngoing}) {
+    return Consumer<OrderProvider>(
+      builder: (context, orderProvider, _) {
+        // Filter orders based on tab
+        final filteredOrders = _getFilteredOrders(orderProvider.orders);
+        
+        if (orderProvider.isLoading && orderProvider.orders.isEmpty) {
+          return const Center(child: CircularProgressIndicator());
+        }
 
-          if (orderProvider.orders.isEmpty) {
-            return Center(
-              child: SingleChildScrollView(
-                child: Column(
-                  mainAxisAlignment: MainAxisAlignment.center,
-                  children: [
-                    Icon(
-                      Icons.inbox_outlined,
-                      size: 64,
-                      color: Colors.grey[400],
-                    ),
-                    const SizedBox(height: 20),
-                    const Text(
-                      'No orders found',
-                      style: TextStyle(
-                        fontSize: 18,
-                        fontWeight: FontWeight.w600,
-                        color: Colors.grey,
-                      ),
-                    ),
-                    const SizedBox(height: 12),
-                    Text(
-                      _selectedStatus != 'ALL' || _selectedDate != null
-                          ? 'Try adjusting your filters'
-                          : 'Orders will appear here once customers place them',
-                      style: TextStyle(fontSize: 14, color: Colors.grey[600]),
-                      textAlign: TextAlign.center,
-                    ),
-                    const SizedBox(height: 32),
-                    Wrap(
-                      spacing: 12,
-                      runSpacing: 12,
-                      alignment: WrapAlignment.center,
-                      children: [
-                        ElevatedButton.icon(
-                          onPressed: () => orderProvider.fetchAllOrders(),
-                          icon: const Icon(Icons.refresh),
-                          label: const Text('Refresh'),
-                        ),
-                        if (_selectedStatus != 'ALL' || _selectedDate != null)
-                          ElevatedButton.icon(
-                            onPressed: _clearFilters,
-                            icon: const Icon(Icons.filter_alt_off),
-                            label: const Text('Clear Filters'),
-                          ),
-                        OutlinedButton.icon(
-                          onPressed: () => Navigator.pushReplacementNamed(
-                            context,
-                            RouteNames.dashboard,
-                          ),
-                          icon: const Icon(Icons.dashboard),
-                          label: const Text('Go to Dashboard'),
-                        ),
-                      ],
-                    ),
-                  ],
+        if (orderProvider.error != null && orderProvider.orders.isEmpty) {
+          return Center(
+            child: Column(
+              mainAxisAlignment: MainAxisAlignment.center,
+              children: [
+                Icon(Icons.error_outline, size: 48, color: Colors.red[300]),
+                const SizedBox(height: 16),
+                Text(
+                  orderProvider.error!,
+                  textAlign: TextAlign.center,
+                  style: const TextStyle(fontSize: 16),
                 ),
-              ),
-            );
-          }
-
-          return RefreshIndicator(
-            onRefresh: () => orderProvider.fetchAllOrders(page: 1),
-            child: CustomScrollView(
-              controller: _scrollController,
-              slivers: [
-                // Filter chips
-                SliverToBoxAdapter(
-                  child: Padding(
-                    padding: const EdgeInsets.all(16),
-                    child: Column(
-                      crossAxisAlignment: CrossAxisAlignment.start,
-                      children: [
-                        const Text(
-                          'Filter by Status',
-                          style: TextStyle(
-                            fontSize: 14,
-                            fontWeight: FontWeight.w600,
-                            color: Colors.black87,
-                          ),
-                        ),
-                        const SizedBox(height: 8),
-                        SingleChildScrollView(
-                          scrollDirection: Axis.horizontal,
-                          child: Row(
-                            children: [
-                              FilterChip(
-                                label: const Text('All'),
-                                selected: _selectedStatus == 'ALL',
-                                onSelected: (_) => _handleStatusFilter('ALL'),
-                              ),
-                              const SizedBox(width: 8),
-                              FilterChip(
-                                label: const Text('Pending'),
-                                selected: _selectedStatus == 'PENDING',
-                                onSelected: (_) =>
-                                    _handleStatusFilter('PENDING'),
-                              ),
-                              const SizedBox(width: 8),
-                              FilterChip(
-                                label: const Text('Confirmed'),
-                                selected: _selectedStatus == 'CONFIRMED',
-                                onSelected: (_) =>
-                                    _handleStatusFilter('CONFIRMED'),
-                              ),
-                              const SizedBox(width: 8),
-                              FilterChip(
-                                label: const Text('Processing'),
-                                selected: _selectedStatus == 'PROCESSING',
-                                onSelected: (_) =>
-                                    _handleStatusFilter('PROCESSING'),
-                              ),
-                              const SizedBox(width: 8),
-                              FilterChip(
-                                label: const Text('Dispatched'),
-                                selected: _selectedStatus == 'DISPATCHED',
-                                onSelected: (_) =>
-                                    _handleStatusFilter('DISPATCHED'),
-                              ),
-                              const SizedBox(width: 8),
-                              FilterChip(
-                                label: const Text('Delivered'),
-                                selected: _selectedStatus == 'DELIVERED',
-                                onSelected: (_) =>
-                                    _handleStatusFilter('DELIVERED'),
-                              ),
-                              const SizedBox(width: 8),
-                              FilterChip(
-                                label: const Text('Cancelled'),
-                                selected: _selectedStatus == 'CANCELLED',
-                                onSelected: (_) =>
-                                    _handleStatusFilter('CANCELLED'),
-                              ),
-                            ],
-                          ),
-                        ),
-                        const SizedBox(height: 16),
-                        Row(
-                          children: [
-                            Expanded(
-                              child: OutlinedButton.icon(
-                                onPressed: _handleDateFilter,
-                                icon: const Icon(Icons.calendar_today),
-                                label: Text(
-                                  _selectedDate == null
-                                      ? 'Select Date'
-                                      : 'Date: ${_selectedDate!.toString().split(' ')[0]}',
-                                ),
-                              ),
-                            ),
-                            if (_selectedDate != null ||
-                                _selectedStatus != 'ALL')
-                              const SizedBox(width: 8),
-                            if (_selectedDate != null ||
-                                _selectedStatus != 'ALL')
-                              ElevatedButton.icon(
-                                onPressed: _clearFilters,
-                                icon: const Icon(Icons.clear),
-                                label: const Text('Clear'),
-                              ),
-                          ],
-                        ),
-                      ],
-                    ),
-                  ),
+                const SizedBox(height: 24),
+                ElevatedButton.icon(
+                  onPressed: () => _fetchOrdersForCurrentTab(),
+                  icon: const Icon(Icons.refresh),
+                  label: const Text('Retry'),
                 ),
-
-                // Orders list
-                SliverList(
-                  delegate: SliverChildBuilderDelegate((context, index) {
-                    final order = orderProvider.orders[index];
-                    return Card(
-                      margin: const EdgeInsets.symmetric(
-                        horizontal: 16,
-                        vertical: 8,
-                      ),
-                      child: ListTile(
-                        onTap: () {
-                          Navigator.push(
-                            context,
-                            MaterialPageRoute(
-                              builder: (_) =>
-                                  OrderDetailScreen(orderId: order.id),
-                            ),
-                          );
-                        },
-                        leading: Container(
-                          width: 8,
-                          height: 56,
-                          decoration: BoxDecoration(
-                            color: Color(
-                              int.parse(
-                                _getStatusColor(
-                                  order.status,
-                                ).replaceFirst('#', '0xff'),
-                              ),
-                            ),
-                            borderRadius: BorderRadius.circular(4),
-                          ),
-                        ),
-                        title: Text(
-                          'Order #${order.id.substring(0, 8).toUpperCase()}',
-                          style: const TextStyle(
-                            fontWeight: FontWeight.w600,
-                            fontSize: 14,
-                          ),
-                        ),
-                        subtitle: Column(
-                          crossAxisAlignment: CrossAxisAlignment.start,
-                          children: [
-                            const SizedBox(height: 4),
-                            Text(
-                              'Items: ${order.items.length} | Total: ${_formatPrice(order.totalPrice)}',
-                              style: TextStyle(
-                                fontSize: 12,
-                                color: Colors.grey[600],
-                              ),
-                            ),
-                            const SizedBox(height: 4),
-                            Text(
-                              _formatDateTime(order.createdAt),
-                              style: TextStyle(
-                                fontSize: 11,
-                                color: Colors.grey[500],
-                              ),
-                            ),
-                          ],
-                        ),
-                        trailing: Chip(
-                          label: Text(order.status),
-                          backgroundColor: Color(
-                            int.parse(
-                              _getStatusColor(
-                                order.status,
-                              ).replaceFirst('#', '0xff'),
-                            ),
-                          ),
-                          labelStyle: const TextStyle(
-                            color: Colors.white,
-                            fontSize: 11,
-                            fontWeight: FontWeight.w500,
-                          ),
-                        ),
-                      ),
-                    );
-                  }, childCount: orderProvider.orders.length),
-                ),
-
-                // Loading indicator for pagination
-                if (orderProvider.isLoading && orderProvider.orders.isNotEmpty)
-                  const SliverToBoxAdapter(
-                    child: Padding(
-                      padding: EdgeInsets.all(16),
-                      child: CircularProgressIndicator(),
-                    ),
-                  ),
-
-                // No more orders message
-                if (!orderProvider.hasMore && orderProvider.orders.isNotEmpty)
-                  SliverToBoxAdapter(
-                    child: Padding(
-                      padding: const EdgeInsets.all(16),
-                      child: Center(
-                        child: Text(
-                          'No more orders',
-                          style: TextStyle(
-                            color: Colors.grey[500],
-                            fontSize: 12,
-                          ),
-                        ),
-                      ),
-                    ),
-                  ),
-
-                // Bottom padding
-                const SliverToBoxAdapter(child: SizedBox(height: 16)),
               ],
             ),
           );
-        },
-      ),
+        }
+
+        if (filteredOrders.isEmpty) {
+          return Center(
+            child: SingleChildScrollView(
+              child: Column(
+                mainAxisAlignment: MainAxisAlignment.center,
+                children: [
+                  Icon(
+                    Icons.inbox_outlined,
+                    size: 64,
+                    color: Colors.grey[400],
+                  ),
+                  const SizedBox(height: 20),
+                  Text(
+                    isOngoing ? 'No ongoing orders' : 'No completed orders',
+                    style: const TextStyle(
+                      fontSize: 18,
+                      fontWeight: FontWeight.w600,
+                      color: Colors.grey,
+                    ),
+                  ),
+                  const SizedBox(height: 12),
+                  Text(
+                    _selectedDate != null
+                        ? 'Try adjusting your date filter'
+                        : isOngoing 
+                            ? 'Active orders will appear here'
+                            : 'Delivered and cancelled orders will appear here',
+                    style: TextStyle(fontSize: 14, color: Colors.grey[600]),
+                    textAlign: TextAlign.center,
+                  ),
+                  const SizedBox(height: 32),
+                  Wrap(
+                    spacing: 12,
+                    runSpacing: 12,
+                    alignment: WrapAlignment.center,
+                    children: [
+                      ElevatedButton.icon(
+                        onPressed: () => _fetchOrdersForCurrentTab(),
+                        icon: const Icon(Icons.refresh),
+                        label: const Text('Refresh'),
+                      ),
+                      if (_selectedDate != null)
+                        ElevatedButton.icon(
+                          onPressed: _clearDateFilter,
+                          icon: const Icon(Icons.filter_alt_off),
+                          label: const Text('Clear Filter'),
+                        ),
+                      OutlinedButton.icon(
+                        onPressed: () => Navigator.pushReplacementNamed(
+                          context,
+                          RouteNames.dashboard,
+                        ),
+                        icon: const Icon(Icons.dashboard),
+                        label: const Text('Go to Dashboard'),
+                      ),
+                    ],
+                  ),
+                ],
+              ),
+            ),
+          );
+        }
+
+        return RefreshIndicator(
+          onRefresh: () async => _fetchOrdersForCurrentTab(),
+          child: ListView.builder(
+            controller: _scrollController,
+            padding: const EdgeInsets.all(16),
+            itemCount: filteredOrders.length + 
+                (orderProvider.isLoading ? 1 : 0) + 
+                (!orderProvider.hasMore && filteredOrders.isNotEmpty ? 1 : 0),
+            itemBuilder: (context, index) {
+              // Loading indicator
+              if (index == filteredOrders.length && orderProvider.isLoading) {
+                return const Padding(
+                  padding: EdgeInsets.all(16),
+                  child: Center(child: CircularProgressIndicator()),
+                );
+              }
+              
+              // No more orders message
+              if (index == filteredOrders.length && !orderProvider.hasMore) {
+                return Padding(
+                  padding: const EdgeInsets.all(16),
+                  child: Center(
+                    child: Text(
+                      'No more orders',
+                      style: TextStyle(
+                        color: Colors.grey[500],
+                        fontSize: 12,
+                      ),
+                    ),
+                  ),
+                );
+              }
+              
+              final order = filteredOrders[index];
+              return Card(
+                margin: const EdgeInsets.only(bottom: 12),
+                child: ListTile(
+                  onTap: () {
+                    Navigator.push(
+                      context,
+                      MaterialPageRoute(
+                        builder: (_) => OrderDetailScreen(orderId: order.id),
+                      ),
+                    );
+                  },
+                  leading: Container(
+                    width: 8,
+                    height: 56,
+                    decoration: BoxDecoration(
+                      color: Color(
+                        int.parse(
+                          _getStatusColor(order.status).replaceFirst('#', '0xff'),
+                        ),
+                      ),
+                      borderRadius: BorderRadius.circular(4),
+                    ),
+                  ),
+                  title: Text(
+                    'Order #${order.id.substring(0, 8).toUpperCase()}',
+                    style: const TextStyle(
+                      fontWeight: FontWeight.w600,
+                      fontSize: 14,
+                    ),
+                  ),
+                  subtitle: Column(
+                    crossAxisAlignment: CrossAxisAlignment.start,
+                    children: [
+                      const SizedBox(height: 4),
+                      Text(
+                        'Items: ${order.items.length} | Total: ${_formatPrice(order.totalPrice)}',
+                        style: TextStyle(
+                          fontSize: 12,
+                          color: Colors.grey[600],
+                        ),
+                      ),
+                      const SizedBox(height: 4),
+                      Text(
+                        _formatDateTime(order.createdAt),
+                        style: TextStyle(
+                          fontSize: 11,
+                          color: Colors.grey[500],
+                        ),
+                      ),
+                    ],
+                  ),
+                  trailing: Chip(
+                    label: Text(order.status),
+                    backgroundColor: Color(
+                      int.parse(
+                        _getStatusColor(order.status).replaceFirst('#', '0xff'),
+                      ),
+                    ),
+                    labelStyle: const TextStyle(
+                      color: Colors.white,
+                      fontSize: 11,
+                      fontWeight: FontWeight.w500,
+                    ),
+                  ),
+                ),
+              );
+            },
+          ),
+        );
+      },
     );
   }
 }

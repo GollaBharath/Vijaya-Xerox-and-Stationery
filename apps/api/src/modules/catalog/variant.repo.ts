@@ -40,9 +40,9 @@ export async function findVariantsByProduct(
 
 export async function createVariant(data: {
 	productId: string;
-	variantType: "COLOR" | "BW";
+	variantType: "COLOR" | "BW" | "DEFAULT";
 	price: number;
-	stock: number;
+	stock: boolean;
 	sku: string;
 }): Promise<ProductVariant> {
 	const variant = await prisma.productVariant.create({
@@ -60,7 +60,7 @@ export async function createVariant(data: {
 
 export async function updateVariant(
 	id: string,
-	data: { price?: number; stock?: number },
+	data: { price?: number; stock?: boolean },
 ): Promise<ProductVariant> {
 	const variant = await prisma.productVariant.update({
 		where: { id },
@@ -73,29 +73,12 @@ export async function updateVariant(
 	return toVariant(variant);
 }
 
-export async function updateStock(
-	variantId: string,
-	quantityChange: number,
-): Promise<ProductVariant> {
-	const variant = await prisma.productVariant.update({
-		where: { id: variantId },
-		data: {
-			stock: { increment: quantityChange },
-		},
-	});
-
-	return toVariant(variant);
-}
-
-export async function checkStock(
-	variantId: string,
-	quantity: number,
-): Promise<boolean> {
+export async function checkStock(variantId: string): Promise<boolean> {
 	const variant = await prisma.productVariant.findUnique({
 		where: { id: variantId },
 		select: { stock: true },
 	});
 
 	if (!variant) return false;
-	return variant.stock >= quantity;
+	return variant.stock;
 }

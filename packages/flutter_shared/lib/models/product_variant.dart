@@ -4,7 +4,7 @@ class ProductVariant {
   final String productId;
   final String variantType;
   final double price;
-  final int stock;
+  final bool stock;
   final String sku;
 
   ProductVariant({
@@ -17,7 +17,7 @@ class ProductVariant {
   });
 
   /// Check if variant is in stock
-  bool get isInStock => stock > 0;
+  bool get isInStock => stock;
 
   /// Convert ProductVariant to JSON
   Map<String, dynamic> toJson() {
@@ -40,7 +40,7 @@ class ProductVariant {
       variantType:
           (json['variantType'] ?? json['variant_type'] ?? '') as String,
       price: ((json['price'] as num?) ?? 0).toDouble(),
-      stock: (json['stock'] as int?) ?? 0,
+      stock: (json['stock'] as bool?) ?? true,
       sku: (json['sku'] ?? '') as String,
     );
   }
@@ -51,7 +51,7 @@ class ProductVariant {
     String? productId,
     String? variantType,
     double? price,
-    int? stock,
+    bool? stock,
     String? sku,
   }) {
     return ProductVariant(

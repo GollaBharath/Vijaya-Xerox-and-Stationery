@@ -58,7 +58,7 @@ class VariantProvider with ChangeNotifier {
     required String productId,
     required String variantType,
     required double price,
-    required int stock,
+    required bool stock,
     String? sku,
   }) async {
     try {
@@ -98,7 +98,7 @@ class VariantProvider with ChangeNotifier {
     required String variantId,
     String? variantType,
     double? price,
-    int? stock,
+    bool? stock,
     String? sku,
   }) async {
     try {

@@ -92,6 +92,19 @@ class AppRouter {
             builder: (context, state) => const CartScreen(),
           ),
           GoRoute(
+            path: RouteNames.orders,
+            builder: (context, state) => const OrdersListScreen(),
+            routes: [
+              GoRoute(
+                path: ':orderId',
+                builder: (context, state) {
+                  final orderId = state.pathParameters['orderId']!;
+                  return OrderDetailScreen(orderId: orderId);
+                },
+              ),
+            ],
+          ),
+          GoRoute(
             path: RouteNames.profile,
             builder: (context, state) => const ProfileScreen(),
             routes: [
@@ -133,21 +146,6 @@ class AppRouter {
       GoRoute(
         path: RouteNames.orderConfirmation,
         builder: (context, state) => const ConfirmationScreen(),
-      ),
-
-      // Orders
-      GoRoute(
-        path: RouteNames.orders,
-        builder: (context, state) => const OrdersListScreen(),
-        routes: [
-          GoRoute(
-            path: ':orderId',
-            builder: (context, state) {
-              final orderId = state.pathParameters['orderId']!;
-              return OrderDetailScreen(orderId: orderId);
-            },
-          ),
-        ],
       ),
 
       // Search

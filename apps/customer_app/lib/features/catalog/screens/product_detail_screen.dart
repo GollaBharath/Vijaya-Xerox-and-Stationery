@@ -7,6 +7,7 @@ import '../providers/product_provider.dart';
 import '../../cart/providers/cart_provider.dart';
 import '../widgets/variant_selector.dart';
 import '../widgets/pdf_viewer_widget.dart';
+import '../widgets/product_thumbnail.dart';
 
 /// Product detail screen with image/PDF display and add to cart
 class ProductDetailScreen extends StatefulWidget {
@@ -204,7 +205,8 @@ class _ProductDetailScreenState extends State<ProductDetailScreen> {
                       // Description
                       Text(
                         'Description',
-                        style: Theme.of(context).textTheme.titleMedium,
+                        style: Theme.of(context).textTheme.titleMedium
+                            ?.copyWith(fontWeight: FontWeight.w600),
                       ),
                       const SizedBox(height: 8),
                       Text(
@@ -219,7 +221,7 @@ class _ProductDetailScreenState extends State<ProductDetailScreen> {
           );
         },
       ),
-      bottomNavigationBar: _buildBottomBar(),
+      bottomNavigationBar: _buildAddToCartButton(),
     );
   }
 
@@ -227,56 +229,21 @@ class _ProductDetailScreenState extends State<ProductDetailScreen> {
     final resolvedImageUrl = _resolveImageUrl(product.imageUrl);
     final resolvedPdfUrl = _resolvePdfUrl(product.pdfUrl);
 
+    // Determine the tap handler based on product type
+    VoidCallback? onTap;
     if (product.isStationery && resolvedImageUrl != null) {
-      // Display image for stationery
-      return Hero(
-        tag: 'product-${product.id}',
-        child: GestureDetector(
-          onTap: () => _showImageZoom(resolvedImageUrl),
-          child: CachedNetworkImage(
-            imageUrl: resolvedImageUrl,
-            height: 300,
-            width: double.infinity,
-            fit: BoxFit.cover,
-            placeholder: (context, url) => Container(
-              height: 300,
-              color: Colors.grey[200],
-              child: const Center(child: CircularProgressIndicator()),
-            ),
-            errorWidget: (context, url, error) => Container(
-              height: 300,
-              color: Colors.grey[200],
-              child: const Icon(Icons.broken_image, size: 64),
-            ),
-          ),
-        ),
-      );
+      onTap = () => _showImageZoom(resolvedImageUrl);
     } else if (product.isBook && resolvedPdfUrl != null) {
-      // Display PDF badge and preview button for books
-      return Container(
-        height: 300,
-        color: Colors.grey[200],
-        child: Column(
-          mainAxisAlignment: MainAxisAlignment.center,
-          children: [
-            const Icon(Icons.picture_as_pdf, size: 100, color: Colors.red),
-            const SizedBox(height: 16),
-            ElevatedButton.icon(
-              onPressed: () => _showPdfViewer(resolvedPdfUrl),
-              icon: const Icon(Icons.visibility),
-              label: const Text('Preview PDF'),
-            ),
-          ],
-        ),
-      );
-    } else {
-      // No media available
-      return Container(
-        height: 300,
-        color: Colors.grey[200],
-        child: const Center(child: Icon(Icons.image_not_supported, size: 64)),
-      );
+      onTap = () => _showPdfViewer(resolvedPdfUrl);
     }
+
+    return ProductThumbnail(
+      product: product,
+      height: 300,
+      heroTag: 'product-${product.id}',
+      fit: BoxFit.cover,
+      onTap: onTap,
+    );
   }
 
   Widget _buildStockStatus(ProductVariant? variant) {
@@ -284,8 +251,7 @@ class _ProductDetailScreenState extends State<ProductDetailScreen> {
       return const SizedBox.shrink();
     }
 
-    final stock = variant.stock;
-    final isInStock = stock > 0;
+    final isInStock = variant.stock;
 
     return Row(
       children: [
@@ -296,7 +262,7 @@ class _ProductDetailScreenState extends State<ProductDetailScreen> {
         ),
         const SizedBox(width: 8),
         Text(
-          isInStock ? 'In Stock ($stock available)' : 'Out of Stock',
+          isInStock ? 'In Stock' : 'Out of Stock',
           style: TextStyle(
             color: isInStock ? Colors.green : Colors.red,
             fontWeight: FontWeight.w500,
@@ -340,11 +306,13 @@ class _ProductDetailScreenState extends State<ProductDetailScreen> {
     );
   }
 
-  Widget _buildBottomBar() {
+  Widget _buildAddToCartButton() {
+    final isInStock = _selectedVariant?.stock ?? false;
+
     return Container(
       padding: const EdgeInsets.all(16),
       decoration: BoxDecoration(
-        color: Colors.white,
+        color: Theme.of(context).cardColor,
         boxShadow: [
           BoxShadow(
             color: Colors.black.withOpacity(0.1),
@@ -354,13 +322,25 @@ class _ProductDetailScreenState extends State<ProductDetailScreen> {
         ],
       ),
       child: SafeArea(
-        child: ElevatedButton(
-          onPressed: (_selectedVariant?.stock ?? 0) > 0 ? _addToCart : null,
-          style: ElevatedButton.styleFrom(
-            padding: const EdgeInsets.symmetric(vertical: 16),
-            minimumSize: const Size.fromHeight(50),
+        child: ElevatedButton.icon(
+          onPressed: isInStock ? _addToCart : null,
+          icon: const Icon(Icons.shopping_cart_outlined, size: 20),
+          label: const Text(
+            'Add to Cart',
+            style: TextStyle(fontSize: 18, fontWeight: FontWeight.w600),
           ),
-          child: const Text('Add to Cart', style: TextStyle(fontSize: 18)),
+          style: ElevatedButton.styleFrom(
+            padding: const EdgeInsets.symmetric(vertical: 16, horizontal: 24),
+            minimumSize: const Size.fromHeight(54),
+            shape: RoundedRectangleBorder(
+              borderRadius: BorderRadius.circular(12),
+            ),
+            elevation: 0,
+            backgroundColor: Theme.of(context).colorScheme.primary,
+            foregroundColor: Colors.white,
+            disabledBackgroundColor: Colors.grey[300],
+            disabledForegroundColor: Colors.grey[600],
+          ),
         ),
       ),
     );

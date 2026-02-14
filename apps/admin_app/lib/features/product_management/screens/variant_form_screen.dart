@@ -20,9 +20,9 @@ class _VariantFormScreenState extends State<VariantFormScreen> {
   final _formKey = GlobalKey<FormState>();
   final _variantTypeController = TextEditingController();
   final _priceController = TextEditingController();
-  final _stockController = TextEditingController();
   final _skuController = TextEditingController();
 
+  bool _isInStock = true;
   bool _isLoading = false;
 
   bool get isEditing => widget.variant != null;
@@ -39,7 +39,7 @@ class _VariantFormScreenState extends State<VariantFormScreen> {
     final variant = widget.variant!;
     _variantTypeController.text = variant.variantType;
     _priceController.text = variant.price.toString();
-    _stockController.text = variant.stock.toString();
+    _isInStock = variant.stock;
     _skuController.text = variant.sku;
   }
 
@@ -47,7 +47,6 @@ class _VariantFormScreenState extends State<VariantFormScreen> {
   void dispose() {
     _variantTypeController.dispose();
     _priceController.dispose();
-    _stockController.dispose();
     _skuController.dispose();
     super.dispose();
   }
@@ -66,7 +65,7 @@ class _VariantFormScreenState extends State<VariantFormScreen> {
           variantId: widget.variant!.id,
           variantType: _variantTypeController.text.trim(),
           price: double.parse(_priceController.text.trim()),
-          stock: int.parse(_stockController.text.trim()),
+          stock: _isInStock,
           sku: _skuController.text.trim().isEmpty
               ? null
               : _skuController.text.trim(),
@@ -83,7 +82,7 @@ class _VariantFormScreenState extends State<VariantFormScreen> {
           productId: widget.productId,
           variantType: _variantTypeController.text.trim(),
           price: double.parse(_priceController.text.trim()),
-          stock: int.parse(_stockController.text.trim()),
+          stock: _isInStock,
           sku: _skuController.text.trim().isEmpty
               ? null
               : _skuController.text.trim(),
@@ -167,25 +166,17 @@ class _VariantFormScreenState extends State<VariantFormScreen> {
             ),
             const SizedBox(height: 16),
 
-            // Stock
-            TextFormField(
-              controller: _stockController,
-              decoration: const InputDecoration(
-                labelText: 'Stock Quantity *',
-                border: OutlineInputBorder(),
-                prefixIcon: Icon(Icons.inventory),
+            // Stock Toggle
+            Card(
+              elevation: 0,
+              color: Colors.grey.shade100,
+              child: SwitchListTile(
+                title: const Text('In Stock'),
+                subtitle: const Text('Toggle to mark product availability'),
+                secondary: const Icon(Icons.inventory),
+                value: _isInStock,
+                onChanged: (value) => setState(() => _isInStock = value),
               ),
-              keyboardType: TextInputType.number,
-              validator: (value) {
-                if (value == null || value.trim().isEmpty) {
-                  return 'Stock quantity is required';
-                }
-                final stock = int.tryParse(value.trim());
-                if (stock == null || stock < 0) {
-                  return 'Enter a valid stock quantity (0 or more)';
-                }
-                return null;
-              },
             ),
             const SizedBox(height: 16),
 

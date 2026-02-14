@@ -37,38 +37,64 @@ export async function findProductById(id: string): Promise<Product | null> {
 export async function findProductsByCategory(
 	categoryId: string,
 	pagination: { skip: number; take: number },
-): Promise<Product[]> {
+): Promise<ProductWithVariants[]> {
 	const products = await prisma.product.findMany({
 		where: {
 			isActive: true,
 			categories: { some: { categoryId } },
 		},
+		include: { variants: true },
 		skip: pagination.skip,
 		take: pagination.take,
 		orderBy: { createdAt: "desc" },
 	});
 
-	return products.map(toProduct);
+	return products.map((p) => ({
+		...toProduct(p),
+		variants: p.variants.map((v) => ({
+			id: v.id,
+			productId: v.productId,
+			variantType: v.variantType,
+			price: v.price,
+			stock: v.stock,
+			sku: v.sku,
+			createdAt: v.createdAt.toISOString(),
+			updatedAt: v.updatedAt.toISOString(),
+		})),
+	}));
 }
 
 export async function findProductsBySubject(
 	subjectId: string,
 	pagination: { skip: number; take: number },
-): Promise<Product[]> {
+): Promise<ProductWithVariants[]> {
 	const products = await prisma.product.findMany({
 		where: { isActive: true, subjectId },
+		include: { variants: true },
 		skip: pagination.skip,
 		take: pagination.take,
 		orderBy: { createdAt: "desc" },
 	});
 
-	return products.map(toProduct);
+	return products.map((p) => ({
+		...toProduct(p),
+		variants: p.variants.map((v) => ({
+			id: v.id,
+			productId: v.productId,
+			variantType: v.variantType,
+			price: v.price,
+			stock: v.stock,
+			sku: v.sku,
+			createdAt: v.createdAt.toISOString(),
+			updatedAt: v.updatedAt.toISOString(),
+		})),
+	}));
 }
 
 export async function findAllProducts(
 	pagination: { skip: number; take: number },
 	filters: ProductFilterOptions = {},
-): Promise<Product[]> {
+): Promise<ProductWithVariants[]> {
 	console.log("[Product Repo] Filters received:", filters);
 
 	const whereClause = {
@@ -89,6 +115,7 @@ export async function findAllProducts(
 
 	const products = await prisma.product.findMany({
 		where: whereClause,
+		include: { variants: true },
 		skip: pagination.skip,
 		take: pagination.take,
 		orderBy: { createdAt: "desc" },
@@ -97,9 +124,25 @@ export async function findAllProducts(
 	console.log(`[Product Repo] Found ${products.length} products`);
 	if (products.length > 0) {
 		console.log("[Product Repo] First product isActive:", products[0].isActive);
+		console.log(
+			"[Product Repo] First product variants:",
+			products[0].variants.length,
+		);
 	}
 
-	return products.map(toProduct);
+	return products.map((p) => ({
+		...toProduct(p),
+		variants: p.variants.map((v) => ({
+			id: v.id,
+			productId: v.productId,
+			variantType: v.variantType,
+			price: v.price,
+			stock: v.stock,
+			sku: v.sku,
+			createdAt: v.createdAt.toISOString(),
+			updatedAt: v.updatedAt.toISOString(),
+		})),
+	}));
 }
 
 export async function createProduct(data: {
@@ -132,6 +175,17 @@ export async function createProduct(data: {
 						},
 					}
 				: undefined,
+		},
+	});
+
+	// Auto-create default variant
+	await prisma.productVariant.create({
+		data: {
+			productId: product.id,
+			variantType: "DEFAULT",
+			price: data.basePrice,
+			stock: true,
+			sku: `${product.id}-DEFAULT`,
 		},
 	});
 
