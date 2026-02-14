@@ -1,5 +1,6 @@
 import 'product.dart';
 import 'product_variant.dart';
+import 'order_feedback.dart';
 
 /// Order model representing a customer purchase
 class OrderItem {
@@ -146,6 +147,7 @@ class Order {
   final DateTime createdAt;
   final DateTime? updatedAt;
   final List<OrderItem> items;
+  final OrderFeedback? feedback;
 
   Order({
     required this.id,
@@ -162,6 +164,7 @@ class Order {
     required this.createdAt,
     this.updatedAt,
     required this.items,
+    this.feedback,
   });
 
   /// Check if order is delivered
@@ -172,6 +175,12 @@ class Order {
 
   /// Check if payment is completed
   bool get isPaid => paymentStatus == 'PAID';
+
+  /// Check if order can submit feedback
+  bool get canSubmitFeedback => status == 'DELIVERED' && feedback == null;
+
+  /// Check if order has feedback
+  bool get hasFeedback => feedback != null;
 
   /// Convert Order to JSON
   Map<String, dynamic> toJson() {
@@ -244,6 +253,9 @@ class Order {
               .map((i) => OrderItem.fromJson(i as Map<String, dynamic>))
               .toList()
           : [],
+      feedback: json['feedback'] != null
+          ? OrderFeedback.fromJson(json['feedback'] as Map<String, dynamic>)
+          : null,
     );
   }
 
@@ -263,6 +275,7 @@ class Order {
     DateTime? createdAt,
     DateTime? updatedAt,
     List<OrderItem>? items,
+    OrderFeedback? feedback,
   }) {
     return Order(
       id: id ?? this.id,
@@ -279,6 +292,7 @@ class Order {
       createdAt: createdAt ?? this.createdAt,
       updatedAt: updatedAt ?? this.updatedAt,
       items: items ?? this.items,
+      feedback: feedback ?? this.feedback,
     );
   }
 

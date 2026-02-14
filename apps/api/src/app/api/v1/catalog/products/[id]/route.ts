@@ -7,6 +7,7 @@
 import { NextRequest, NextResponse } from "next/server";
 import { errorHandler, NotFoundError } from "@/middleware/error.middleware";
 import { requireAdmin } from "@/middleware/admin.middleware";
+import { optionalAuth } from "@/middleware/auth.middleware";
 import { ApiResponse } from "@/types/global";
 import {
 	getProductWithVariants,
@@ -14,16 +15,30 @@ import {
 	deleteProduct,
 } from "@/modules/catalog/product.repo";
 import { validateUpdateProduct } from "@/modules/catalog/catalog.validator";
+import { getProductLikeStats } from "@/modules/product-likes/product-likes.repo";
 
 export const GET = errorHandler(
-	async (_request: NextRequest, { params }: { params: { id: string } }) => {
+	async (request: NextRequest, { params }: { params: { id: string } }) => {
 		const product = await getProductWithVariants(params.id);
 		if (!product) throw new NotFoundError("Product");
 
-		const response: ApiResponse<{ product: typeof product }> = {
+		// Get optional user for like stats
+		const user = await optionalAuth(request);
+
+		// Get like stats for this product
+		const likeStatsMap = await getProductLikeStats([params.id], user?.id);
+		const stats = likeStatsMap.get(params.id) || { count: 0, isLiked: false };
+
+		const productWithLikes = {
+			...product,
+			likeCount: stats.count,
+			isLikedByUser: stats.isLiked,
+		};
+
+		const response: ApiResponse<{ product: typeof productWithLikes }> = {
 			success: true,
 			data: {
-				product,
+				product: productWithLikes,
 			},
 		};
 

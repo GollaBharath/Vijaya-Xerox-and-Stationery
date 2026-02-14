@@ -30,6 +30,9 @@ class RouteNames {
   static const String users = '/users';
   static const String userDetail = '/users/detail';
 
+  // Feedback
+  static const String feedback = '/feedback';
+
   // Settings
   static const String settings = '/settings';
 

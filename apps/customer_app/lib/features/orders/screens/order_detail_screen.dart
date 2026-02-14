@@ -7,6 +7,7 @@ import 'package:flutter_shared/models/order.dart';
 import '../providers/orders_provider.dart';
 import '../../../core/config/env.dart';
 import '../../../routing/route_names.dart';
+import '../../feedback/widgets/feedback_dialog.dart';
 
 /// Screen displaying detailed information about a specific order
 class OrderDetailScreen extends StatefulWidget {
@@ -370,7 +371,12 @@ class _OrderDetailScreenState extends State<OrderDetailScreen> {
                     ),
                   ),
                 ),
-                const SizedBox(height: 24),
+                const SizedBox(height: 16),
+
+                // Feedback Section (for delivered orders)
+                if (order.status.toUpperCase() == 'DELIVERED')
+                  _buildFeedbackSection(order),
+                const SizedBox(height: 8),
 
                 // Cancel Order Button
                 if (canCancel)
@@ -438,6 +444,116 @@ class _OrderDetailScreenState extends State<OrderDetailScreen> {
         ),
       ],
     );
+  }
+
+  Widget _buildFeedbackSection(Order order) {
+    if (order.hasFeedback) {
+      // Show existing feedback
+      return Card(
+        elevation: 2,
+        child: Padding(
+          padding: const EdgeInsets.all(16),
+          child: Column(
+            crossAxisAlignment: CrossAxisAlignment.start,
+            children: [
+              const Text(
+                'Your Feedback',
+                style: TextStyle(fontSize: 18, fontWeight: FontWeight.bold),
+              ),
+              const Divider(height: 24),
+              Row(
+                children: [
+                  ...List.generate(5, (index) {
+                    return Icon(
+                      index < order.feedback!.rating
+                          ? Icons.star
+                          : Icons.star_border,
+                      color: Colors.amber,
+                      size: 20,
+                    );
+                  }),
+                  const SizedBox(width: 8),
+                  Text(
+                    '${order.feedback!.rating}/5',
+                    style: const TextStyle(fontWeight: FontWeight.w600),
+                  ),
+                ],
+              ),
+              if (order.feedback!.comment != null &&
+                  order.feedback!.comment!.isNotEmpty) ...[
+                const SizedBox(height: 12),
+                Text(
+                  order.feedback!.comment!,
+                  style: TextStyle(color: Colors.grey[700]),
+                ),
+              ],
+              const SizedBox(height: 8),
+              Text(
+                'Submitted on ${DateFormat('MMM dd, yyyy').format(order.feedback!.createdAt)}',
+                style: TextStyle(fontSize: 12, color: Colors.grey[600]),
+              ),
+            ],
+          ),
+        ),
+      );
+    } else {
+      // Show button to submit feedback
+      return Card(
+        elevation: 2,
+        child: Padding(
+          padding: const EdgeInsets.all(16),
+          child: Column(
+            crossAxisAlignment: CrossAxisAlignment.stretch,
+            children: [
+              Row(
+                children: [
+                  Icon(Icons.feedback_outlined, color: Colors.grey[700]),
+                  const SizedBox(width: 12),
+                  const Expanded(
+                    child: Text(
+                      'How was your order?',
+                      style: TextStyle(
+                        fontSize: 16,
+                        fontWeight: FontWeight.w600,
+                      ),
+                    ),
+                  ),
+                ],
+              ),
+              const SizedBox(height: 8),
+              Text(
+                'Share your experience with us',
+                style: TextStyle(fontSize: 14, color: Colors.grey[600]),
+              ),
+              const SizedBox(height: 16),
+              ElevatedButton.icon(
+                onPressed: () => _showFeedbackDialog(order.id),
+                icon: const Icon(Icons.rate_review),
+                label: const Text('Give Feedback'),
+                style: ElevatedButton.styleFrom(
+                  padding: const EdgeInsets.symmetric(vertical: 12),
+                  shape: RoundedRectangleBorder(
+                    borderRadius: BorderRadius.circular(8),
+                  ),
+                ),
+              ),
+            ],
+          ),
+        ),
+      );
+    }
+  }
+
+  Future<void> _showFeedbackDialog(String orderId) async {
+    final result = await showDialog<bool>(
+      context: context,
+      builder: (context) => FeedbackDialog(orderId: orderId),
+    );
+
+    if (result == true) {
+      // Refresh order details to show submitted feedback
+      _loadOrderDetails();
+    }
   }
 }
 

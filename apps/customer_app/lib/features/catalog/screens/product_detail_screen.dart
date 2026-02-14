@@ -5,6 +5,7 @@ import 'package:cached_network_image/cached_network_image.dart';
 import '../../../core/config/env.dart';
 import '../providers/product_provider.dart';
 import '../../cart/providers/cart_provider.dart';
+import '../../likes/providers/likes_provider.dart';
 import '../widgets/variant_selector.dart';
 import '../widgets/pdf_viewer_widget.dart';
 import '../widgets/product_thumbnail.dart';
@@ -100,128 +101,190 @@ class _ProductDetailScreenState extends State<ProductDetailScreen> {
 
   @override
   Widget build(BuildContext context) {
-    return Scaffold(
-      appBar: AppBar(title: const Text('Product Details')),
-      body: Consumer<ProductProvider>(
-        builder: (context, productProvider, child) {
-          if (productProvider.isLoading) {
-            return const Center(child: CircularProgressIndicator());
-          }
+    return Consumer<ProductProvider>(
+      builder: (context, productProvider, child) {
+        final product = productProvider.selectedProduct;
 
-          if (productProvider.error != null) {
-            return Center(
-              child: Column(
-                mainAxisAlignment: MainAxisAlignment.center,
-                children: [
-                  Text(
-                    productProvider.error!,
-                    style: const TextStyle(color: Colors.red),
-                    textAlign: TextAlign.center,
+        return Scaffold(
+          appBar: AppBar(
+            title: const Text('Product Details'),
+            actions: [if (product != null) _buildLikeButton(context, product)],
+          ),
+          body: _buildBody(productProvider, product),
+          bottomNavigationBar: _buildAddToCartButton(),
+        );
+      },
+    );
+  }
+
+  Widget _buildLikeButton(BuildContext context, Product product) {
+    return Consumer<LikesProvider>(
+      builder: (context, likesProvider, child) {
+        final isLiked = likesProvider.isLiked(product.id);
+        final likeCount = likesProvider.getLikeCount(product.id);
+
+        return Padding(
+          padding: const EdgeInsets.only(right: 8.0),
+          child: Center(
+            child: Material(
+              color: Colors.transparent,
+              child: InkWell(
+                onTap: () {
+                  likesProvider.toggleLike(product);
+                },
+                borderRadius: BorderRadius.circular(20),
+                child: Container(
+                  padding: const EdgeInsets.symmetric(
+                    horizontal: 12,
+                    vertical: 6,
                   ),
-                  const SizedBox(height: 16),
-                  ElevatedButton(
-                    onPressed: _loadProductDetails,
-                    child: const Text('Retry'),
+                  decoration: BoxDecoration(
+                    color: Colors.white.withOpacity(0.15),
+                    borderRadius: BorderRadius.circular(20),
                   ),
-                ],
-              ),
-            );
-          }
-
-          final product = productProvider.selectedProduct;
-          if (product == null) {
-            return const Center(child: Text('Product not found'));
-          }
-
-          // Set default variant if not selected
-          if (_selectedVariant == null &&
-              product.variants != null &&
-              product.variants!.isNotEmpty) {
-            WidgetsBinding.instance.addPostFrameCallback((_) {
-              setState(() {
-                _selectedVariant = product.variants!.first;
-              });
-            });
-          }
-
-          return SingleChildScrollView(
-            child: Column(
-              crossAxisAlignment: CrossAxisAlignment.start,
-              children: [
-                // Product media (image or PDF)
-                _buildProductMedia(product),
-
-                Padding(
-                  padding: const EdgeInsets.all(16.0),
-                  child: Column(
-                    crossAxisAlignment: CrossAxisAlignment.start,
+                  child: Row(
+                    mainAxisSize: MainAxisSize.min,
                     children: [
-                      // Title
-                      Text(
-                        product.title,
-                        style: Theme.of(context).textTheme.headlineSmall,
+                      Icon(
+                        isLiked ? Icons.favorite : Icons.favorite_border,
+                        size: 22,
+                        color: Colors.red,
                       ),
-                      const SizedBox(height: 8),
-
-                      // ISBN (if book)
-                      if (product.isbn != null) ...[
+                      if (likeCount > 0) ...[
+                        const SizedBox(width: 6),
                         Text(
-                          'ISBN: ${product.isbn}',
-                          style: Theme.of(context).textTheme.bodySmall,
+                          '$likeCount',
+                          style: const TextStyle(
+                            fontSize: 14,
+                            fontWeight: FontWeight.w600,
+                          ),
                         ),
-                        const SizedBox(height: 8),
                       ],
-
-                      // Price
-                      Text(
-                        '₹${_selectedVariant?.price ?? product.displayPrice}',
-                        style: Theme.of(context).textTheme.headlineMedium
-                            ?.copyWith(
-                              color: Theme.of(context).primaryColor,
-                              fontWeight: FontWeight.bold,
-                            ),
-                      ),
-                      const SizedBox(height: 16),
-
-                      // Stock status
-                      _buildStockStatus(_selectedVariant),
-                      const SizedBox(height: 16),
-
-                      // Variant selector
-                      if (product.variants != null &&
-                          product.variants!.isNotEmpty) ...[
-                        VariantSelector(
-                          variants: product.variants!,
-                          selectedVariant: _selectedVariant,
-                          onVariantSelected: _onVariantSelected,
-                        ),
-                        const SizedBox(height: 16),
-                      ],
-
-                      // Quantity selector
-                      _buildQuantitySelector(),
-                      const SizedBox(height: 24),
-
-                      // Description
-                      Text(
-                        'Description',
-                        style: Theme.of(context).textTheme.titleMedium
-                            ?.copyWith(fontWeight: FontWeight.w600),
-                      ),
-                      const SizedBox(height: 8),
-                      Text(
-                        product.description,
-                        style: Theme.of(context).textTheme.bodyMedium,
-                      ),
                     ],
                   ),
                 ),
+              ),
+            ),
+          ),
+        );
+      },
+    );
+  }
+
+  Widget _buildBody(ProductProvider productProvider, Product? product) {
+    if (productProvider.isLoading) {
+      return const Center(child: CircularProgressIndicator());
+    }
+
+    if (productProvider.error != null) {
+      return Center(
+        child: Column(
+          mainAxisAlignment: MainAxisAlignment.center,
+          children: [
+            Text(
+              productProvider.error!,
+              style: const TextStyle(color: Colors.red),
+              textAlign: TextAlign.center,
+            ),
+            const SizedBox(height: 16),
+            ElevatedButton(
+              onPressed: _loadProductDetails,
+              child: const Text('Retry'),
+            ),
+          ],
+        ),
+      );
+    }
+
+    if (product == null) {
+      return const Center(child: Text('Product not found'));
+    }
+
+    // Set default variant if not selected
+    if (_selectedVariant == null &&
+        product.variants != null &&
+        product.variants!.isNotEmpty) {
+      WidgetsBinding.instance.addPostFrameCallback((_) {
+        setState(() {
+          _selectedVariant = product.variants!.first;
+        });
+      });
+    }
+
+    return SingleChildScrollView(
+      child: Column(
+        crossAxisAlignment: CrossAxisAlignment.start,
+        children: [
+          // Product media (image or PDF)
+          _buildProductMedia(product),
+
+          Padding(
+            padding: const EdgeInsets.all(16.0),
+            child: Column(
+              crossAxisAlignment: CrossAxisAlignment.start,
+              children: [
+                // Title
+                Text(
+                  product.title,
+                  style: Theme.of(context).textTheme.headlineSmall,
+                ),
+                const SizedBox(height: 8),
+
+                // ISBN (if book)
+                if (product.isbn != null) ...[
+                  Text(
+                    'ISBN: ${product.isbn}',
+                    style: Theme.of(context).textTheme.bodySmall,
+                  ),
+                  const SizedBox(height: 8),
+                ],
+
+                // Price
+                Text(
+                  '₹${_selectedVariant?.price ?? product.displayPrice}',
+                  style: Theme.of(context).textTheme.headlineMedium?.copyWith(
+                    color: Theme.of(context).primaryColor,
+                    fontWeight: FontWeight.bold,
+                  ),
+                ),
+                const SizedBox(height: 16),
+
+                // Stock status
+                _buildStockStatus(_selectedVariant),
+                const SizedBox(height: 16),
+
+                // Variant selector
+                if (product.variants != null &&
+                    product.variants!.isNotEmpty) ...[
+                  VariantSelector(
+                    variants: product.variants!,
+                    selectedVariant: _selectedVariant,
+                    onVariantSelected: _onVariantSelected,
+                  ),
+                  const SizedBox(height: 16),
+                ],
+
+                // Quantity selector
+                _buildQuantitySelector(),
+                const SizedBox(height: 24),
+
+                // Description
+                Text(
+                  'Description',
+                  style: Theme.of(context).textTheme.titleMedium?.copyWith(
+                    fontWeight: FontWeight.w600,
+                  ),
+                ),
+                const SizedBox(height: 8),
+                Text(
+                  product.description,
+                  style: Theme.of(context).textTheme.bodyMedium,
+                ),
               ],
             ),
-          );
-        },
+          ),
+        ],
       ),
-      bottomNavigationBar: _buildAddToCartButton(),
     );
   }
 

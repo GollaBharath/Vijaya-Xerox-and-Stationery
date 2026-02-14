@@ -119,3 +119,42 @@ export async function optionalAuth(
 
 	return verifyToken(token);
 }
+
+/**
+ * Flexible authentication middleware with options
+ *
+ * @param request - The Next.js request object
+ * @param options - Authentication options
+ * @returns The authenticated user or null if not required
+ */
+export async function authenticate(
+	request: NextRequest,
+	options: { required?: boolean; adminOnly?: boolean } = {},
+): Promise<JWTPayload | null> {
+	const { required = false, adminOnly = false } = options;
+
+	const token = extractToken(request);
+
+	if (!token) {
+		if (required) {
+			throw new Error("Authentication required. Please provide a valid token.");
+		}
+		return null;
+	}
+
+	const payload = verifyToken(token);
+
+	if (!payload) {
+		if (required) {
+			throw new Error("Invalid or expired token. Please login again.");
+		}
+		return null;
+	}
+
+	// Check admin role if required
+	if (adminOnly && payload.role !== "ADMIN") {
+		throw new Error("Admin access required.");
+	}
+
+	return payload;
+}

@@ -221,3 +221,13 @@ export async function catchAsync<T>(
 		);
 	}
 }
+
+/**
+ * Handle error and return appropriate error response
+ * Useful for try-catch blocks in route handlers
+ */
+export function handleError(error: any): NextResponse {
+	logger.error("Error:", error);
+	const { error: apiError, statusCode } = errorToApiError(error);
+	return NextResponse.json(apiError, { status: statusCode });
+}

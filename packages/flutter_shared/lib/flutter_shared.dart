@@ -6,6 +6,8 @@ export 'models/product.dart';
 export 'models/product_variant.dart';
 export 'models/cart_item.dart';
 export 'models/order.dart';
+export 'models/order_feedback.dart';
+export 'models/product_like.dart';
 
 // API
 export 'api/api_client.dart';

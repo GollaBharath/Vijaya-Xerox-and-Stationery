@@ -14,6 +14,8 @@ class Product {
   final bool isActive;
   final DateTime createdAt;
   final List<ProductVariant>? variants;
+  final int likeCount;
+  final bool isLikedByUser;
 
   Product({
     required this.id,
@@ -28,6 +30,8 @@ class Product {
     required this.isActive,
     required this.createdAt,
     this.variants,
+    this.likeCount = 0,
+    this.isLikedByUser = false,
   });
 
   /// Check if product is a stationery (has image)
@@ -62,6 +66,8 @@ class Product {
       'is_active': isActive,
       'created_at': createdAt.toIso8601String(),
       'variants': variants?.map((v) => v.toJson()).toList(),
+      'likeCount': likeCount,
+      'isLikedByUser': isLikedByUser,
     };
   }
 
@@ -72,19 +78,23 @@ class Product {
       title: (json['title'] as String?) ?? '',
       description: (json['description'] as String?) ?? '',
       isbn: json['isbn'] as String?,
-      basePrice: ((json['basePrice'] ?? json['base_price'] as num?) ?? 0).toDouble(),
+      basePrice:
+          ((json['basePrice'] ?? json['base_price'] as num?) ?? 0).toDouble(),
       subjectId: (json['subjectId'] ?? json['subject_id'] as String?) ?? '',
       imageUrl: (json['imageUrl'] ?? json['image_url']) as String?,
       pdfUrl: (json['pdfUrl'] ?? json['pdf_url']) as String?,
       fileType: (json['fileType'] ?? json['file_type'] as String?) ?? 'NONE',
       isActive: (json['isActive'] ?? json['is_active'] as bool?) ?? true,
       createdAt: DateTime.parse(
-          (json['createdAt'] ?? json['created_at'] as String?) ?? DateTime.now().toIso8601String()),
+          (json['createdAt'] ?? json['created_at'] as String?) ??
+              DateTime.now().toIso8601String()),
       variants: json['variants'] != null
           ? (json['variants'] as List)
               .map((v) => ProductVariant.fromJson(v as Map<String, dynamic>))
               .toList()
           : null,
+      likeCount: (json['likeCount'] as int?) ?? 0,
+      isLikedByUser: (json['isLikedByUser'] as bool?) ?? false,
     );
   }
 
@@ -102,6 +112,8 @@ class Product {
     bool? isActive,
     DateTime? createdAt,
     List<ProductVariant>? variants,
+    int? likeCount,
+    bool? isLikedByUser,
   }) {
     return Product(
       id: id ?? this.id,
@@ -116,6 +128,8 @@ class Product {
       isActive: isActive ?? this.isActive,
       createdAt: createdAt ?? this.createdAt,
       variants: variants ?? this.variants,
+      likeCount: likeCount ?? this.likeCount,
+      isLikedByUser: isLikedByUser ?? this.isLikedByUser,
     );
   }
 

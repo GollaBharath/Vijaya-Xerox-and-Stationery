@@ -16,6 +16,7 @@ import 'features/product_management/providers/product_provider.dart';
 import 'features/product_management/providers/variant_provider.dart';
 import 'features/order_management/providers/order_provider.dart';
 import 'features/notifications/providers/notification_provider.dart';
+import 'features/feedback/providers/admin_feedback_provider.dart';
 import 'core/services/notification_service.dart';
 
 void main() async {
@@ -76,9 +77,12 @@ class AdminApp extends StatelessWidget {
 
         // Order management provider
         ChangeNotifierProvider(create: (_) => OrderProvider()),
-        
+
         // Notification provider
         ChangeNotifierProvider(create: (_) => NotificationProvider()),
+
+        // Feedback provider
+        ChangeNotifierProvider(create: (_) => AdminFeedbackProvider()),
       ],
       child: MaterialApp(
         title: Env.appName,

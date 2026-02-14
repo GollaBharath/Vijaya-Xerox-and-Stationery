@@ -12,6 +12,7 @@ import '../features/product_management/screens/products_list_screen.dart';
 import '../features/order_management/screens/orders_list_screen.dart';
 import '../features/user_management/screens/users_list_screen.dart';
 import '../features/user_management/screens/user_detail_screen.dart';
+import '../features/feedback/screens/feedback_list_screen.dart';
 import '../features/settings/screens/settings_screen.dart';
 
 /// Simple app router using Navigator 1.0
@@ -87,6 +88,12 @@ class AppRouter {
         final userId = settings.arguments as String;
         return MaterialPageRoute(
           builder: (_) => AdminGuard(child: UserDetailScreen(userId: userId)),
+          settings: settings,
+        );
+
+      case RouteNames.feedback:
+        return MaterialPageRoute(
+          builder: (_) => const AdminGuard(child: FeedbackListScreen()),
           settings: settings,
         );
 

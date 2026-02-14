@@ -45,6 +45,11 @@ const List<AdminNavItem> adminNavItems = [
     route: RouteNames.users,
   ),
   AdminNavItem(
+    label: 'Feedback',
+    icon: Icons.star_outline,
+    route: RouteNames.feedback,
+  ),
+  AdminNavItem(
     label: 'Settings',
     icon: Icons.settings_outlined,
     route: RouteNames.settings,

@@ -6,6 +6,7 @@
 import { NextRequest, NextResponse } from "next/server";
 import { errorHandler } from "@/middleware/error.middleware";
 import { requireAdmin } from "@/middleware/admin.middleware";
+import { optionalAuth } from "@/middleware/auth.middleware";
 import { ApiResponse } from "@/types/global";
 import {
 	getPaginationFromUrl,
@@ -16,6 +17,7 @@ import { parseBoolean } from "@/utils/helpers";
 import { prisma } from "@/lib/prisma";
 import { findAllProducts, createProduct } from "@/modules/catalog/product.repo";
 import { validateCreateProduct } from "@/modules/catalog/catalog.validator";
+import { getProductLikeStats } from "@/modules/product-likes/product-likes.repo";
 
 export const GET = errorHandler(async (request: NextRequest) => {
 	const url = new URL(request.url);
@@ -38,6 +40,9 @@ export const GET = errorHandler(async (request: NextRequest) => {
 
 	const filters = { search, subjectId, categoryId, isActive };
 
+	// Get optional user for like stats
+	const user = await optionalAuth(request);
+
 	const [products, total] = await Promise.all([
 		findAllProducts({ skip, take: limit }, filters),
 		prisma.product.count({
@@ -54,10 +59,24 @@ export const GET = errorHandler(async (request: NextRequest) => {
 		}),
 	]);
 
-	const response: ApiResponse<{ products: typeof products }> = {
+	// Get like stats for all products
+	const productIds = products.map((p) => p.id);
+	const likeStats = await getProductLikeStats(productIds, user?.id);
+
+	// Add like stats to each product
+	const productsWithLikes = products.map((product) => {
+		const stats = likeStats.get(product.id) || { count: 0, isLiked: false };
+		return {
+			...product,
+			likeCount: stats.count,
+			isLikedByUser: stats.isLiked,
+		};
+	});
+
+	const response: ApiResponse<{ products: typeof productsWithLikes }> = {
 		success: true,
 		data: {
-			products,
+			products: productsWithLikes,
 		},
 		pagination: createPaginationMeta(page, limit, total),
 	};

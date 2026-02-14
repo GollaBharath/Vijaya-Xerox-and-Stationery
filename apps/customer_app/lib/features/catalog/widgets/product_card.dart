@@ -4,6 +4,7 @@ import 'package:go_router/go_router.dart';
 import 'package:provider/provider.dart';
 import 'product_thumbnail.dart';
 import '../../cart/providers/cart_provider.dart';
+import '../../likes/providers/likes_provider.dart';
 
 /// Product card widget for grid display with action buttons
 class ProductCard extends StatelessWidget {
@@ -35,11 +36,11 @@ class ProductCard extends StatelessWidget {
                     fit: BoxFit.cover,
                   ),
 
-                  // Wishlist button overlay (top-right)
+                  // Like button overlay (top-right)
                   Positioned(
                     top: 8,
                     right: 8,
-                    child: _buildWishlistButton(context),
+                    child: _buildLikeButton(context),
                   ),
                 ],
               ),
@@ -87,11 +88,15 @@ class ProductCard extends StatelessWidget {
     );
   }
 
-  Widget _buildWishlistButton(BuildContext context) {
+  Widget _buildLikeButton(BuildContext context) {
+    final likesProvider = Provider.of<LikesProvider>(context);
+    final isLiked = likesProvider.isLiked(product.id);
+    final likeCount = likesProvider.getLikeCount(product.id);
+
     return Container(
       decoration: BoxDecoration(
         color: Colors.white.withOpacity(0.9),
-        shape: BoxShape.circle,
+        borderRadius: BorderRadius.circular(20),
         boxShadow: [
           BoxShadow(
             color: Colors.black.withOpacity(0.1),
@@ -104,18 +109,32 @@ class ProductCard extends StatelessWidget {
         color: Colors.transparent,
         child: InkWell(
           onTap: () {
-            // TODO: Implement wishlist functionality
-            ScaffoldMessenger.of(context).showSnackBar(
-              const SnackBar(
-                content: Text('Wishlist feature coming soon!'),
-                duration: Duration(seconds: 2),
-              ),
-            );
+            likesProvider.toggleLike(product);
           },
-          customBorder: const CircleBorder(),
-          child: const Padding(
-            padding: EdgeInsets.all(8.0),
-            child: Icon(Icons.favorite_border, size: 20, color: Colors.red),
+          borderRadius: BorderRadius.circular(20),
+          child: Padding(
+            padding: const EdgeInsets.symmetric(horizontal: 10, vertical: 6),
+            child: Row(
+              mainAxisSize: MainAxisSize.min,
+              children: [
+                Icon(
+                  isLiked ? Icons.favorite : Icons.favorite_border,
+                  size: 18,
+                  color: Colors.red,
+                ),
+                if (likeCount > 0) ...[
+                  const SizedBox(width: 4),
+                  Text(
+                    '$likeCount',
+                    style: const TextStyle(
+                      fontSize: 12,
+                      fontWeight: FontWeight.w600,
+                      color: Colors.black87,
+                    ),
+                  ),
+                ],
+              ],
+            ),
           ),
         ),
       ),
@@ -129,7 +148,7 @@ class ProductCard extends StatelessWidget {
     return SizedBox(
       width: double.infinity,
       child: ElevatedButton.icon(
-        onPressed: isInStock ? () => _addToCart(context, variant!) : null,
+        onPressed: isInStock ? () => _addToCart(context, variant) : null,
         icon: const Icon(Icons.shopping_cart_outlined, size: 16),
         label: const Text('Add to Cart', style: TextStyle(fontSize: 13)),
         style: ElevatedButton.styleFrom(
