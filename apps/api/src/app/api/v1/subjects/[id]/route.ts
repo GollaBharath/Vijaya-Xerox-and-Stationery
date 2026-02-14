@@ -14,6 +14,8 @@ import {
 	deleteSubject,
 } from "@/modules/subjects/subjects.repo";
 import { validateUpdateSubject } from "@/modules/subjects/subjects.validator";
+import { redisClient } from "@/lib/redis";
+import { logger } from "@/lib/logger";
 
 export const GET = errorHandler(
 	async (_request: NextRequest, { params }: { params: { id: string } }) => {
@@ -39,6 +41,14 @@ export const PATCH = errorHandler(
 
 		const subject = await updateSubject(params.id, payload);
 
+		// Invalidate subject tree cache
+		try {
+			await redisClient.connect();
+			await redisClient.del("subjects:tree:v1");
+		} catch (error) {
+			logger.warn("Failed to invalidate subject cache", error);
+		}
+
 		const response: ApiResponse<typeof subject> = {
 			success: true,
 			data: subject,
@@ -55,6 +65,14 @@ export const DELETE = errorHandler(
 		if (!adminResult.authorized) return adminResult.response;
 
 		const subject = await deleteSubject(params.id);
+
+		// Invalidate subject tree cache
+		try {
+			await redisClient.connect();
+			await redisClient.del("subjects:tree:v1");
+		} catch (error) {
+			logger.warn("Failed to invalidate subject cache", error);
+		}
 
 		const response: ApiResponse<typeof subject> = {
 			success: true,

@@ -13,6 +13,8 @@ import {
 	findAllCategories,
 } from "@/modules/catalog/category.repo";
 import { validateCreateCategory } from "@/modules/catalog/catalog.validator";
+import { redisClient } from "@/lib/redis";
+import { logger } from "@/lib/logger";
 
 export const GET = errorHandler(async (request: NextRequest) => {
 	const { searchParams } = new URL(request.url);
@@ -42,6 +44,14 @@ export const POST = errorHandler(async (request: NextRequest) => {
 		payload.parentId ?? null,
 		payload.metadata ?? null,
 	);
+
+	// Invalidate category tree cache
+	try {
+		await redisClient.connect();
+		await redisClient.del("categories:tree:v1");
+	} catch (error) {
+		logger.warn("Failed to invalidate category cache", error);
+	}
 
 	const response: ApiResponse<typeof category> = {
 		success: true,

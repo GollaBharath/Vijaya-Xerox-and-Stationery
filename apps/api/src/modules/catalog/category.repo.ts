@@ -77,6 +77,20 @@ export async function updateCategory(
 }
 
 export async function deleteCategory(id: string): Promise<Category> {
+	// Find all direct children of this category
+	const children = await prisma.category.findMany({
+		where: {
+			parentId: id,
+			isActive: true,
+		},
+	});
+
+	// Recursively delete all children first
+	for (const child of children) {
+		await deleteCategory(child.id);
+	}
+
+	// Now delete the parent category (soft delete)
 	const category = await prisma.category.update({
 		where: { id },
 		data: { isActive: false },

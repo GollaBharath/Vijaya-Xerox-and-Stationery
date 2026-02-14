@@ -4,6 +4,7 @@ import '../../../core/theme/colors.dart';
 import '../../../core/config/constants.dart';
 import '../../../routing/route_names.dart';
 import '../../../shared/widgets/admin_scaffold.dart';
+import '../../category_management/providers/category_provider.dart';
 import '../providers/subject_provider.dart';
 
 /// Subjects list screen with tree view
@@ -20,11 +21,15 @@ class _SubjectsListScreenState extends State<SubjectsListScreen> {
     super.initState();
     WidgetsBinding.instance.addPostFrameCallback((_) {
       context.read<SubjectProvider>().fetchSubjects();
+      context.read<CategoryProvider>().fetchCategories();
     });
   }
 
   Future<void> _handleRefresh() async {
-    await context.read<SubjectProvider>().fetchSubjects();
+    await Future.wait([
+      context.read<SubjectProvider>().fetchSubjects(),
+      context.read<CategoryProvider>().fetchCategories(),
+    ]);
   }
 
   void _navigateToForm({String? subjectId}) {
@@ -79,13 +84,26 @@ class _SubjectsListScreenState extends State<SubjectsListScreen> {
     }
   }
 
-  Widget _buildSubjectTree(dynamic subject, List<dynamic> allSubjects) {
+  String _getCategoryName(String categoryId, CategoryProvider categoryProvider) {
+    final category = categoryProvider.categories.firstWhere(
+      (cat) => cat.id == categoryId,
+      orElse: () => categoryProvider.categories.first,
+    );
+    return category.name;
+  }
+
+  Widget _buildSubjectTree(
+    dynamic subject,
+    List<dynamic> allSubjects,
+    CategoryProvider categoryProvider,
+  ) {
     // Get children of this subject
     final children = allSubjects
         .where((s) => s.parentSubjectId == subject.id)
         .toList();
 
     final hasChildren = children.isNotEmpty;
+    final categoryName = _getCategoryName(subject.categoryId, categoryProvider);
 
     return Card(
       margin: const EdgeInsets.only(bottom: 8),
@@ -115,8 +133,39 @@ class _SubjectsListScreenState extends State<SubjectsListScreen> {
                 ),
                 subtitle: Container(
                   margin: const EdgeInsets.only(top: 4),
-                  child: Row(
+                  child: Wrap(
+                    spacing: 8,
+                    runSpacing: 4,
                     children: [
+                      Container(
+                        padding: const EdgeInsets.symmetric(
+                          horizontal: 8,
+                          vertical: 2,
+                        ),
+                        decoration: BoxDecoration(
+                          color: const Color(0xFF9C27B0).withOpacity(0.1),
+                          borderRadius: BorderRadius.circular(12),
+                        ),
+                        child: Row(
+                          mainAxisSize: MainAxisSize.min,
+                          children: [
+                            Icon(
+                              Icons.category,
+                              size: 12,
+                              color: const Color(0xFF9C27B0),
+                            ),
+                            const SizedBox(width: 4),
+                            Text(
+                              categoryName,
+                              style: const TextStyle(
+                                fontSize: 11,
+                                color: Color(0xFF9C27B0),
+                                fontWeight: FontWeight.w500,
+                              ),
+                            ),
+                          ],
+                        ),
+                      ),
                       Container(
                         padding: const EdgeInsets.symmetric(
                           horizontal: 8,
@@ -135,7 +184,6 @@ class _SubjectsListScreenState extends State<SubjectsListScreen> {
                           ),
                         ),
                       ),
-                      const SizedBox(width: 8),
                       Text(
                         '${children.length} sub-subject${children.length != 1 ? 's' : ''}',
                         style: TextStyle(
@@ -164,7 +212,7 @@ class _SubjectsListScreenState extends State<SubjectsListScreen> {
                   ],
                 ),
                 children: children
-                    .map((child) => _buildSubjectTree(child, allSubjects))
+                    .map((child) => _buildSubjectTree(child, allSubjects, categoryProvider))
                     .toList(),
               ),
             )
@@ -186,8 +234,39 @@ class _SubjectsListScreenState extends State<SubjectsListScreen> {
               ),
               subtitle: Container(
                 margin: const EdgeInsets.only(top: 4),
-                child: Row(
+                child: Wrap(
+                  spacing: 8,
+                  runSpacing: 4,
                   children: [
+                    Container(
+                      padding: const EdgeInsets.symmetric(
+                        horizontal: 8,
+                        vertical: 2,
+                      ),
+                      decoration: BoxDecoration(
+                        color: const Color(0xFF9C27B0).withOpacity(0.1),
+                        borderRadius: BorderRadius.circular(12),
+                      ),
+                      child: Row(
+                        mainAxisSize: MainAxisSize.min,
+                        children: [
+                          Icon(
+                            Icons.category,
+                            size: 12,
+                            color: const Color(0xFF9C27B0),
+                          ),
+                          const SizedBox(width: 4),
+                          Text(
+                            categoryName,
+                            style: const TextStyle(
+                              fontSize: 11,
+                              color: Color(0xFF9C27B0),
+                              fontWeight: FontWeight.w500,
+                            ),
+                          ),
+                        ],
+                      ),
+                    ),
                     Container(
                       padding: const EdgeInsets.symmetric(
                         horizontal: 8,
@@ -235,9 +314,10 @@ class _SubjectsListScreenState extends State<SubjectsListScreen> {
     return AdminScaffold(
       title: 'Subjects',
       currentRoute: RouteNames.subjects,
-      body: Consumer<SubjectProvider>(
-        builder: (context, subjectProvider, _) {
-          if (subjectProvider.isLoading && subjectProvider.subjects.isEmpty) {
+      body: Consumer2<SubjectProvider, CategoryProvider>(
+        builder: (context, subjectProvider, categoryProvider, _) {
+          if ((subjectProvider.isLoading && subjectProvider.subjects.isEmpty) ||
+              (categoryProvider.isLoading && categoryProvider.categories.isEmpty)) {
             return const Center(child: CircularProgressIndicator());
           }
 
@@ -298,6 +378,37 @@ class _SubjectsListScreenState extends State<SubjectsListScreen> {
             );
           }
 
+          if (categoryProvider.categories.isEmpty) {
+            return Center(
+              child: Padding(
+                padding: const EdgeInsets.all(AppConstants.defaultPadding),
+                child: Column(
+                  mainAxisAlignment: MainAxisAlignment.center,
+                  children: [
+                    Icon(
+                      Icons.category_outlined,
+                      size: 64,
+                      color: AppColors.textHint,
+                    ),
+                    const SizedBox(height: AppConstants.defaultPadding),
+                    Text(
+                      'No categories found',
+                      style: Theme.of(context).textTheme.titleMedium,
+                    ),
+                    const SizedBox(height: AppConstants.smallPadding),
+                    Text(
+                      'Please create categories first',
+                      style: Theme.of(context).textTheme.bodyMedium?.copyWith(
+                        color: AppColors.textSecondary,
+                      ),
+                      textAlign: TextAlign.center,
+                    ),
+                  ],
+                ),
+              ),
+            );
+          }
+
           final subjects = subjectProvider.subjectTree;
           final allSubjects = subjectProvider.subjects;
 
@@ -313,7 +424,7 @@ class _SubjectsListScreenState extends State<SubjectsListScreen> {
               itemCount: rootSubjects.length,
               itemBuilder: (context, index) {
                 final subject = rootSubjects[index];
-                return _buildSubjectTree(subject, allSubjects);
+                return _buildSubjectTree(subject, allSubjects, categoryProvider);
               },
             ),
           );

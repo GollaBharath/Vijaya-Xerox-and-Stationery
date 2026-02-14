@@ -119,7 +119,7 @@ class CategoryProvider extends ChangeNotifier {
 
       final body = {
         'name': name,
-        if (parentId != null) 'parent_id': parentId,
+        if (parentId != null) 'parentId': parentId,
         if (metadata != null) 'metadata': metadata,
       };
 

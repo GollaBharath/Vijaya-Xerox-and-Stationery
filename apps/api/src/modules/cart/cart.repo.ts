@@ -16,21 +16,21 @@ function toCartItem(entity: any): CartItem {
 		updatedAt: entity.updatedAt.toISOString(),
 		variant: entity.productVariant
 			? {
-					id: entity.productVariant.id,
-					productId: entity.productVariant.productId,
-					variantType: entity.productVariant.variantType,
-					price: entity.productVariant.price,
-					stock: entity.productVariant.stock,
-					sku: entity.productVariant.sku,
-					product: entity.productVariant.product
-						? {
-								id: entity.productVariant.product.id,
-								title: entity.productVariant.product.title,
-								basePrice: entity.productVariant.product.basePrice,
-								isActive: entity.productVariant.product.isActive,
-							}
-						: undefined,
-				}
+				id: entity.productVariant.id,
+				productId: entity.productVariant.productId,
+				variantType: entity.productVariant.variantType,
+				price: entity.productVariant.price,
+				stock: entity.productVariant.stock,
+				sku: entity.productVariant.sku,
+				product: entity.productVariant.product
+					? {
+						id: entity.productVariant.product.id,
+						title: entity.productVariant.product.title,
+						basePrice: entity.productVariant.product.basePrice,
+						isActive: entity.productVariant.product.isActive,
+					}
+					: undefined,
+			}
 			: undefined,
 	};
 }
@@ -42,6 +42,7 @@ export async function getCartItems(
 	const items = await prisma.cartItem.findMany({
 		where: { userId },
 		include: {
+			user: true,
 			productVariant: {
 				include: { product: true },
 			},

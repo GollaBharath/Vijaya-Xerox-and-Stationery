@@ -5,6 +5,7 @@
 export interface Subject {
 	id: string;
 	name: string;
+	categoryId: string;
 	parentSubjectId: string | null;
 	createdAt: string;
 	updatedAt: string;

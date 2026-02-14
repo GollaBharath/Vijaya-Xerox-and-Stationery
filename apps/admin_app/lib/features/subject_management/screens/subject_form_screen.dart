@@ -3,6 +3,7 @@ import 'package:provider/provider.dart';
 import '../../../core/config/constants.dart';
 import '../../../routing/route_names.dart';
 import '../../../shared/widgets/admin_scaffold.dart';
+import '../../category_management/providers/category_provider.dart';
 import '../providers/subject_provider.dart';
 
 /// Subject form screen for create/edit
@@ -18,6 +19,7 @@ class SubjectFormScreen extends StatefulWidget {
 class _SubjectFormScreenState extends State<SubjectFormScreen> {
   final _formKey = GlobalKey<FormState>();
   final _nameController = TextEditingController();
+  String? _selectedCategoryId;
   String? _selectedParentId;
   bool _isLoading = false;
   bool _isEditing = false;
@@ -26,6 +28,12 @@ class _SubjectFormScreenState extends State<SubjectFormScreen> {
   void initState() {
     super.initState();
     _isEditing = widget.subjectId != null;
+    
+    // Fetch categories
+    WidgetsBinding.instance.addPostFrameCallback((_) {
+      context.read<CategoryProvider>().fetchCategories();
+    });
+    
     if (_isEditing) {
       _loadSubject();
     }
@@ -46,6 +54,7 @@ class _SubjectFormScreenState extends State<SubjectFormScreen> {
 
     if (subject != null && mounted) {
       _nameController.text = subject.name;
+      _selectedCategoryId = subject.categoryId;
       _selectedParentId = subject.parentSubjectId;
     }
 
@@ -59,6 +68,13 @@ class _SubjectFormScreenState extends State<SubjectFormScreen> {
       return;
     }
 
+    if (_selectedCategoryId == null) {
+      ScaffoldMessenger.of(context).showSnackBar(
+        const SnackBar(content: Text('Please select a category')),
+      );
+      return;
+    }
+
     setState(() => _isLoading = true);
 
     final subjectProvider = context.read<SubjectProvider>();
@@ -68,11 +84,13 @@ class _SubjectFormScreenState extends State<SubjectFormScreen> {
       success = await subjectProvider.updateSubject(
         id: widget.subjectId!,
         name: _nameController.text.trim(),
+        categoryId: _selectedCategoryId,
         parentSubjectId: _selectedParentId,
       );
     } else {
       success = await subjectProvider.createSubject(
         name: _nameController.text.trim(),
+        categoryId: _selectedCategoryId!,
         parentSubjectId: _selectedParentId,
       );
     }
@@ -141,15 +159,56 @@ class _SubjectFormScreenState extends State<SubjectFormScreen> {
                     ),
                     const SizedBox(height: AppConstants.defaultPadding),
 
-                    // Parent subject dropdown
+                    // Category dropdown
+                    Consumer<CategoryProvider>(
+                      builder: (context, categoryProvider, _) {
+                        final categories = categoryProvider.categories;
+
+                        return DropdownButtonFormField<String>(
+                          value: _selectedCategoryId,
+                          decoration: const InputDecoration(
+                            labelText: 'Category *',
+                            hintText: 'Select category',
+                            prefixIcon: Icon(Icons.category),
+                          ),
+                          items: categories.map((category) {
+                            return DropdownMenuItem(
+                              value: category.id,
+                              child: Text(category.name),
+                            );
+                          }).toList(),
+                          onChanged: (value) {
+                            setState(() {
+                              _selectedCategoryId = value;
+                              // Reset parent selection when category changes
+                              _selectedParentId = null;
+                            });
+                          },
+                          validator: (value) {
+                            if (value == null) {
+                              return 'Category is required';
+                            }
+                            return null;
+                          },
+                        );
+                      },
+                    ),
+                    const SizedBox(height: AppConstants.defaultPadding),
+
+                    // Parent subject dropdown (only show root subjects)
                     Consumer<SubjectProvider>(
                       builder: (context, subjectProvider, _) {
+                        // Filter: only show subjects from the selected category
+                        // AND only show root subjects (no parent)
                         final availableParents = subjectProvider.subjects
-                            .where((subj) => subj.id != widget.subjectId)
+                            .where((subj) =>
+                                subj.id != widget.subjectId &&
+                                subj.categoryId == _selectedCategoryId &&
+                                subj.parentSubjectId == null) // Only root subjects
                             .toList();
 
                         return DropdownButtonFormField<String>(
-                          initialValue: _selectedParentId,
+                          value: _selectedParentId,
                           decoration: const InputDecoration(
                             labelText: 'Parent Subject (Optional)',
                             hintText: 'Select parent subject',
@@ -167,11 +226,13 @@ class _SubjectFormScreenState extends State<SubjectFormScreen> {
                               );
                             }),
                           ],
-                          onChanged: (value) {
-                            setState(() {
-                              _selectedParentId = value;
-                            });
-                          },
+                          onChanged: _selectedCategoryId == null
+                              ? null
+                              : (value) {
+                                  setState(() {
+                                    _selectedParentId = value;
+                                  });
+                                },
                         );
                       },
                     ),

@@ -9,6 +9,7 @@ import { getCartItems } from "@/modules/cart/cart.repo";
 import { Order, CheckoutResponse } from "./orders.types";
 import { findOrderById, cancelOrder } from "./orders.repo";
 import { OrderStatus, Prisma } from "@prisma/client";
+import { sendOrderNotificationToAdmins } from "@/modules/notifications/notifications.service";
 
 export async function checkoutCart(
 	userId: string,
@@ -80,6 +81,16 @@ export async function checkoutCart(
 		return created;
 	});
 
+	// Send notification to admins (async, don't wait for completion)
+	sendOrderNotificationToAdmins({
+		orderId: order.id,
+		totalPrice: order.totalPrice,
+		customerName: cartItems[0]?.user?.name || "Customer",
+		itemCount: order.items?.length || 0,
+	}).catch((error: any) => {
+		// Already logged in notification service, just catch to prevent unhandled rejection
+	});
+
 	return { order: createOrderToResponse(order) };
 }
 
@@ -95,31 +106,31 @@ function createOrderToResponse(order: any): Order {
 		updatedAt: order.updatedAt.toISOString(),
 		items: order.items
 			? order.items.map((i: any) => ({
-					id: i.id,
-					orderId: i.orderId,
-					productVariantId: i.productVariantId,
-					quantity: i.quantity,
-					priceSnapshot: i.priceSnapshot,
-					createdAt: i.createdAt.toISOString(),
-					productVariant: i.productVariant
-						? {
-								id: i.productVariant.id,
-								productId: i.productVariant.productId,
-								variantType: i.productVariant.variantType,
-								price: i.productVariant.price,
-								stock: i.productVariant.stock,
-								sku: i.productVariant.sku,
-								product: i.productVariant.product
-									? {
-											id: i.productVariant.product.id,
-											title: i.productVariant.product.title,
-											basePrice: i.productVariant.product.basePrice,
-											isActive: i.productVariant.product.isActive,
-										}
-									: undefined,
+				id: i.id,
+				orderId: i.orderId,
+				productVariantId: i.productVariantId,
+				quantity: i.quantity,
+				priceSnapshot: i.priceSnapshot,
+				createdAt: i.createdAt.toISOString(),
+				productVariant: i.productVariant
+					? {
+						id: i.productVariant.id,
+						productId: i.productVariant.productId,
+						variantType: i.productVariant.variantType,
+						price: i.productVariant.price,
+						stock: i.productVariant.stock,
+						sku: i.productVariant.sku,
+						product: i.productVariant.product
+							? {
+								id: i.productVariant.product.id,
+								title: i.productVariant.product.title,
+								basePrice: i.productVariant.product.basePrice,
+								isActive: i.productVariant.product.isActive,
 							}
-						: undefined,
-				}))
+							: undefined,
+					}
+					: undefined,
+			}))
 			: undefined,
 	};
 }

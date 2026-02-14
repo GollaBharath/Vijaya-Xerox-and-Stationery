@@ -1,5 +1,6 @@
 import 'package:flutter/material.dart';
 import 'package:provider/provider.dart';
+import 'package:firebase_core/firebase_core.dart';
 import 'package:flutter_shared/auth/token_manager.dart';
 import 'core/theme/app_theme.dart';
 import 'core/config/env.dart';
@@ -14,6 +15,8 @@ import 'features/settings/providers/settings_provider.dart';
 import 'features/product_management/providers/product_provider.dart';
 import 'features/product_management/providers/variant_provider.dart';
 import 'features/order_management/providers/order_provider.dart';
+import 'features/notifications/providers/notification_provider.dart';
+import 'core/services/notification_service.dart';
 
 void main() async {
   // Ensure Flutter bindings are initialized
@@ -24,9 +27,30 @@ void main() async {
     throw Exception('Invalid environment configuration');
   }
 
+  // Initialize Firebase (optional - app will work without it)
+  bool firebaseInitialized = false;
+  try {
+    await Firebase.initializeApp();
+    firebaseInitialized = true;
+    debugPrint('Firebase initialized successfully');
+  } catch (e) {
+    debugPrint('Firebase initialization error: $e');
+    debugPrint('App will continue without Firebase features');
+  }
+
   // Initialize TokenManager before creating any providers
   final tokenManager = TokenManager();
   await tokenManager.initialize();
+
+  // Initialize notification service only if Firebase is available
+  if (firebaseInitialized) {
+    try {
+      final notificationService = NotificationService();
+      await notificationService.initialize();
+    } catch (e) {
+      debugPrint('Notification service initialization error: $e');
+    }
+  }
 
   runApp(const AdminApp());
 }
@@ -62,6 +86,9 @@ class AdminApp extends StatelessWidget {
 
         // Order management provider
         ChangeNotifierProvider(create: (_) => OrderProvider()),
+        
+        // Notification provider
+        ChangeNotifierProvider(create: (_) => NotificationProvider()),
       ],
       child: MaterialApp(
         title: Env.appName,

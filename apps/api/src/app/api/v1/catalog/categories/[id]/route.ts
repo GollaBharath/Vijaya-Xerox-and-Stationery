@@ -14,6 +14,8 @@ import {
 	deleteCategory,
 } from "@/modules/catalog/category.repo";
 import { validateUpdateCategory } from "@/modules/catalog/catalog.validator";
+import { redisClient } from "@/lib/redis";
+import { logger } from "@/lib/logger";
 
 export const GET = errorHandler(
 	async (request: NextRequest, { params }: { params: { id: string } }) => {
@@ -39,6 +41,14 @@ export const PATCH = errorHandler(
 
 		const category = await updateCategory(params.id, payload);
 
+		// Invalidate category tree cache
+		try {
+			await redisClient.connect();
+			await redisClient.del("categories:tree:v1");
+		} catch (error) {
+			logger.warn("Failed to invalidate category cache", error);
+		}
+
 		const response: ApiResponse<typeof category> = {
 			success: true,
 			data: category,
@@ -55,6 +65,14 @@ export const DELETE = errorHandler(
 		if (!adminResult.authorized) return adminResult.response;
 
 		const category = await deleteCategory(params.id);
+
+		// Invalidate category tree cache
+		try {
+			await redisClient.connect();
+			await redisClient.del("categories:tree:v1");
+		} catch (error) {
+			logger.warn("Failed to invalidate category cache", error);
+		}
 
 		const response: ApiResponse<typeof category> = {
 			success: true,

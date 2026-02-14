@@ -12,6 +12,8 @@ import {
 	createSubject,
 } from "@/modules/subjects/subjects.repo";
 import { validateCreateSubject } from "@/modules/subjects/subjects.validator";
+import { redisClient } from "@/lib/redis";
+import { logger } from "@/lib/logger";
 
 export const GET = errorHandler(async (_request: NextRequest) => {
 	const subjects = await findAllSubjects();
@@ -33,8 +35,17 @@ export const POST = errorHandler(async (request: NextRequest) => {
 
 	const subject = await createSubject(
 		payload.name,
+		payload.categoryId,
 		payload.parentSubjectId ?? null,
 	);
+
+	// Invalidate subject tree cache
+	try {
+		await redisClient.connect();
+		await redisClient.del("subjects:tree:v1");
+	} catch (error) {
+		logger.warn("Failed to invalidate subject cache", error);
+	}
 
 	const response: ApiResponse<typeof subject> = {
 		success: true,

@@ -53,8 +53,8 @@ function toUserResponse(user: {
 /**
  * Generate JWT tokens (access + refresh)
  *//**
- * Generate JWT tokens (access + refresh)
- */
+* Generate JWT tokens (access + refresh)
+*/
 export function generateTokens(userId: string, role: UserRole): AuthTokens {
 	const payload: JWTPayload = { userId, role };
 
@@ -343,4 +343,21 @@ export async function firebaseLogin(idToken: string): Promise<LoginResponse> {
 		logger.error("Firebase login error", { error });
 		throw new UnauthorizedError("Invalid Firebase token");
 	}
+}
+
+/**
+ * Update user's FCM token
+ */
+export async function updateFcmToken(
+	userId: string,
+	fcmToken: string,
+): Promise<void> {
+	const { prisma } = await import("@/lib/prisma");
+
+	await prisma.user.update({
+		where: { id: userId },
+		data: { fcmToken },
+	});
+
+	logger.info("FCM token updated", { userId });
 }

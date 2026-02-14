@@ -20,6 +20,7 @@ model User {
   email         String     @unique
   passwordHash  String?    @map("password_hash")
   role          UserRole   @default(CUSTOMER)
+  fcmToken      String?    @map("fcm_token")
   isActive      Boolean    @default(true) @map("is_active")
   createdAt     DateTime   @default(now()) @map("created_at")
   updatedAt     DateTime   @updatedAt @map("updated_at")
@@ -54,6 +55,7 @@ model Category {
 
   // Relations
   products      ProductCategory[]
+  subjects      Subject[]
 
   @@map("categories")
 }
@@ -64,15 +66,15 @@ model Category {
 model Subject {
   id              String     @id @default(cuid())
   name            String     @unique
+  categoryId      String     @map("category_id")
   parentSubjectId String?    @map("parent_subject_id")
   createdAt       DateTime   @default(now()) @map("created_at")
   updatedAt       DateTime   @updatedAt @map("updated_at")
 
-  // Self-referencing relation
+  // Relations
+  category        Category   @relation(fields: [categoryId], references: [id], onDelete: Cascade)
   parentSubject   Subject?   @relation("SubjectChildren", fields: [parentSubjectId], references: [id], onDelete: SetNull)
   childSubjects   Subject[]  @relation("SubjectChildren")
-
-  // Relations
   products        Product[]
 
   @@map("subjects")

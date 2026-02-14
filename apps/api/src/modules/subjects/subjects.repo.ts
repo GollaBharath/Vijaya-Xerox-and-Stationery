@@ -9,6 +9,7 @@ function toSubject(entity: any): Subject {
 	return {
 		id: entity.id,
 		name: entity.name,
+		categoryId: entity.categoryId,
 		parentSubjectId: entity.parentSubjectId ?? null,
 		createdAt: entity.createdAt.toISOString(),
 		updatedAt: entity.updatedAt.toISOString(),
@@ -31,11 +32,13 @@ export async function findAllSubjects(): Promise<Subject[]> {
 
 export async function createSubject(
 	name: string,
+	categoryId: string,
 	parentSubjectId: string | null,
 ): Promise<Subject> {
 	const subject = await prisma.subject.create({
 		data: {
 			name,
+			categoryId,
 			parentSubjectId: parentSubjectId ?? null,
 		},
 	});
@@ -45,12 +48,13 @@ export async function createSubject(
 
 export async function updateSubject(
 	id: string,
-	data: { name?: string; parentSubjectId?: string | null },
+	data: { name?: string; categoryId?: string; parentSubjectId?: string | null },
 ): Promise<Subject> {
 	const subject = await prisma.subject.update({
 		where: { id },
 		data: {
 			name: data.name,
+			categoryId: data.categoryId,
 			parentSubjectId: data.parentSubjectId,
 		},
 	});
@@ -59,9 +63,23 @@ export async function updateSubject(
 }
 
 export async function deleteSubject(id: string): Promise<Subject> {
+	// Find all direct children of this subject
+	const children = await prisma.subject.findMany({
+		where: {
+			parentSubjectId: id,
+		},
+	});
+
+	// Recursively delete all children first
+	for (const child of children) {
+		await deleteSubject(child.id);
+	}
+
+	// Now delete the parent subject
 	const subject = await prisma.subject.delete({
 		where: { id },
 	});
+
 	return toSubject(subject);
 }
 

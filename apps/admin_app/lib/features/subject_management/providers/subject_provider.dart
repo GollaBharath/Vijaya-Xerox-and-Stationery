@@ -99,6 +99,7 @@ class SubjectProvider extends ChangeNotifier {
   /// Create new subject
   Future<bool> createSubject({
     required String name,
+    required String categoryId,
     String? parentSubjectId,
   }) async {
     try {
@@ -108,7 +109,8 @@ class SubjectProvider extends ChangeNotifier {
 
       final body = {
         'name': name,
-        if (parentSubjectId != null) 'parent_subject_id': parentSubjectId,
+        'categoryId': categoryId,
+        if (parentSubjectId != null) 'parentSubjectId': parentSubjectId,
       };
 
       final response = await _apiClient.post(
@@ -136,6 +138,7 @@ class SubjectProvider extends ChangeNotifier {
   Future<bool> updateSubject({
     required String id,
     String? name,
+    String? categoryId,
     String? parentSubjectId,
   }) async {
     try {
@@ -145,7 +148,8 @@ class SubjectProvider extends ChangeNotifier {
 
       final body = <String, dynamic>{};
       if (name != null) body['name'] = name;
-      if (parentSubjectId != null) body['parent_subject_id'] = parentSubjectId;
+      if (categoryId != null) body['categoryId'] = categoryId;
+      if (parentSubjectId != null) body['parentSubjectId'] = parentSubjectId;
 
       final response = await _apiClient.patch(
         '${ApiEndpoints.subjectsRoot}/$id',

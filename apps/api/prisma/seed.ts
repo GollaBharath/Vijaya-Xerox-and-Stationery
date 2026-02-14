@@ -33,7 +33,6 @@ async function upsertCategory(
 	parentId: string | null = null,
 	metadata: Record<string, unknown> = {},
 ) {
-	// Try to find existing category by name
 	const existing = await prisma.category.findFirst({ where: { name } });
 
 	if (existing) {
@@ -50,52 +49,91 @@ async function upsertCategory(
 
 async function upsertSubject(
 	name: string,
+	categoryId: string,
 	parentSubjectId: string | null = null,
 ) {
 	return prisma.subject.upsert({
 		where: { name },
-		update: { parentSubjectId },
-		create: { name, parentSubjectId },
+		update: { categoryId, parentSubjectId },
+		create: { name, categoryId, parentSubjectId },
 	});
 }
 
 type UpsertProductInput = {
 	title: string;
 	description?: string;
-	isbn: string;
+	isbn?: string;
 	basePrice: number;
 	subjectId: string;
 	categoryIds?: string[];
 };
 
-async function upsertProductByIsbn(data: UpsertProductInput) {
-	return prisma.product.upsert({
-		where: { isbn: data.isbn },
-		update: {
-			title: data.title,
-			description: data.description,
-			basePrice: data.basePrice,
-			subjectId: data.subjectId,
-			isActive: true,
-		},
-		create: {
-			title: data.title,
-			description: data.description,
-			isbn: data.isbn,
-			basePrice: data.basePrice,
-			subjectId: data.subjectId,
-			isActive: true,
-			categories: data.categoryIds?.length
-				? {
+async function upsertProduct(data: UpsertProductInput) {
+	if (data.isbn) {
+		return prisma.product.upsert({
+			where: { isbn: data.isbn },
+			update: {
+				title: data.title,
+				description: data.description,
+				basePrice: data.basePrice,
+				subjectId: data.subjectId,
+				isActive: true,
+			},
+			create: {
+				title: data.title,
+				description: data.description,
+				isbn: data.isbn,
+				basePrice: data.basePrice,
+				subjectId: data.subjectId,
+				isActive: true,
+				categories: data.categoryIds?.length
+					? {
 						createMany: {
 							data: data.categoryIds.map((categoryId: string) => ({
 								categoryId,
 							})),
 						},
 					}
-				: undefined,
-		},
-	});
+					: undefined,
+			},
+		});
+	} else {
+		// For products without ISBN, find by title
+		const existing = await prisma.product.findFirst({
+			where: { title: data.title },
+		});
+
+		if (existing) {
+			return prisma.product.update({
+				where: { id: existing.id },
+				data: {
+					description: data.description,
+					basePrice: data.basePrice,
+					subjectId: data.subjectId,
+					isActive: true,
+				},
+			});
+		}
+
+		return prisma.product.create({
+			data: {
+				title: data.title,
+				description: data.description,
+				basePrice: data.basePrice,
+				subjectId: data.subjectId,
+				isActive: true,
+				categories: data.categoryIds?.length
+					? {
+						createMany: {
+							data: data.categoryIds.map((categoryId: string) => ({
+								categoryId,
+							})),
+						},
+					}
+					: undefined,
+			},
+		});
+	}
 }
 
 type UpsertVariantInput = {
@@ -120,12 +158,13 @@ async function upsertVariant(data: UpsertVariantInput) {
 }
 
 async function main() {
-	// Initialize upload directories first
 	initializeUploadDirs();
 
 	console.log("🌱 Starting database seed...");
 
-	// Create Admin User
+	// ============================================
+	// USERS
+	// ============================================
 	const adminEmail = process.env.ADMIN_EMAIL || "admin@vijaya.local";
 	const adminPassword = process.env.ADMIN_PASSWORD || "Admin@12345";
 	const passwordHash = await bcrypt.hash(adminPassword, 10);
@@ -150,7 +189,6 @@ async function main() {
 	});
 	console.log("✓ Admin user created:", admin.email);
 
-	// Create Test Customer Users
 	const testPassword = await bcrypt.hash("Test@12345", 10);
 
 	const customer1 = await prisma.user.upsert({
@@ -181,24 +219,24 @@ async function main() {
 	});
 	console.log("✓ Test customer 2 created:", customer2.email);
 
-	console.log("✓ Test customer 2 created:", customer2.email);
-
-	// Create Categories
+	// ============================================
+	// CATEGORIES
+	// ============================================
 	console.log("\n📚 Creating categories...");
+
+	// Medical categories
 	const medical = await upsertCategory("Medical", null, { type: "books" });
-	const stationery = await upsertCategory("Stationery", null, {
-		type: "stationery",
-	});
 	const medicalBooks = await upsertCategory("Medical Books", medical.id, {
 		parent: "Medical",
 	});
-	const officeSupplies = await upsertCategory(
-		"Office Supplies",
-		stationery.id,
-		{
-			parent: "Stationery",
-		},
-	);
+
+	// Stationery categories
+	const stationery = await upsertCategory("Stationery", null, {
+		type: "stationery",
+	});
+	const officeSupplies = await upsertCategory("Office Supplies", stationery.id, {
+		parent: "Stationery",
+	});
 	const writingInstruments = await upsertCategory(
 		"Writing Instruments",
 		stationery.id,
@@ -206,21 +244,81 @@ async function main() {
 			parent: "Stationery",
 		},
 	);
+
 	console.log("✓ Categories created");
 
-	// Create Subjects
+	// ============================================
+	// SUBJECTS (with proper category relationships)
+	// ============================================
 	console.log("\n📖 Creating subjects...");
-	const anatomy = await upsertSubject("Anatomy", null);
-	const physiology = await upsertSubject("Physiology", null);
-	const biochemistry = await upsertSubject("Biochemistry", null);
-	const pharmacology = await upsertSubject("Pharmacology", null);
-	const general = await upsertSubject("General", null);
+
+	// Medical subjects under Medical Books category
+	const anatomy = await upsertSubject("Anatomy", medicalBooks.id, null);
+	const upperLimb = await upsertSubject(
+		"Upper Limb",
+		medicalBooks.id,
+		anatomy.id,
+	);
+	const lowerLimb = await upsertSubject(
+		"Lower Limb",
+		medicalBooks.id,
+		anatomy.id,
+	);
+	const headNeck = await upsertSubject("Head & Neck", medicalBooks.id, anatomy.id);
+
+	const physiology = await upsertSubject("Physiology", medicalBooks.id, null);
+	const cardiovascular = await upsertSubject(
+		"Cardiovascular",
+		medicalBooks.id,
+		physiology.id,
+	);
+	const respiratory = await upsertSubject(
+		"Respiratory",
+		medicalBooks.id,
+		physiology.id,
+	);
+
+	const biochemistry = await upsertSubject("Biochemistry", medicalBooks.id, null);
+	const pharmacology = await upsertSubject("Pharmacology", medicalBooks.id, null);
+	const pathology = await upsertSubject("Pathology", medicalBooks.id, null);
+
+	// Stationery subjects
+	const paperProducts = await upsertSubject(
+		"Paper Products",
+		officeSupplies.id,
+		null,
+	);
+	const notebooks = await upsertSubject(
+		"Notebooks",
+		officeSupplies.id,
+		paperProducts.id,
+	);
+	const notepads = await upsertSubject(
+		"Notepads",
+		officeSupplies.id,
+		paperProducts.id,
+	);
+
+	const pens = await upsertSubject("Pens", writingInstruments.id, null);
+	const ballpoint = await upsertSubject(
+		"Ballpoint",
+		writingInstruments.id,
+		pens.id,
+	);
+	const gelPens = await upsertSubject("Gel Pens", writingInstruments.id, pens.id);
+
+	const markers = await upsertSubject("Markers", writingInstruments.id, null);
+
 	console.log("✓ Subjects created");
 
-	// Create Products
+	// ============================================
+	// PRODUCTS
+	// ============================================
 	console.log("\n📦 Creating products...");
-	const product1 = await upsertProductByIsbn({
-		title: "BD Chaurasia Anatomy - Volume 1",
+
+	// Medical books
+	const product1 = await upsertProduct({
+		title: "BD Chaurasia Anatomy - Volume 1 (Upper & Lower Limbs)",
 		description:
 			"Comprehensive anatomy textbook covering upper and lower limbs. Essential for medical students.",
 		isbn: "9788131902021",
@@ -229,7 +327,7 @@ async function main() {
 		categoryIds: [medicalBooks.id],
 	});
 
-	const product2 = await upsertProductByIsbn({
+	const product2 = await upsertProduct({
 		title: "Guyton and Hall Textbook of Medical Physiology",
 		description:
 			"The gold standard physiology textbook. Detailed explanations with clinical correlations.",
@@ -239,7 +337,7 @@ async function main() {
 		categoryIds: [medicalBooks.id],
 	});
 
-	const product3 = await upsertProductByIsbn({
+	const product3 = await upsertProduct({
 		title: "Harper's Illustrated Biochemistry",
 		description:
 			"Comprehensive biochemistry reference with clear illustrations and clinical applications.",
@@ -249,7 +347,7 @@ async function main() {
 		categoryIds: [medicalBooks.id],
 	});
 
-	const product4 = await upsertProductByIsbn({
+	const product4 = await upsertProduct({
 		title: "Lippincott Pharmacology",
 		description:
 			"Illustrated pharmacology textbook with case studies and self-assessment questions.",
@@ -259,80 +357,66 @@ async function main() {
 		categoryIds: [medicalBooks.id],
 	});
 
-	const product5 = await upsertProductByIsbn({
-		title: "Gray's Anatomy for Students",
+	const product5 = await upsertProduct({
+		title: "Robbins Basic Pathology",
 		description:
-			"The classic anatomy reference book with detailed illustrations and clinical notes.",
-		isbn: "9780323393041",
-		basePrice: 2500,
-		subjectId: anatomy.id,
+			"Comprehensive pathology textbook with excellent illustrations and clinical correlations.",
+		isbn: "9780323353175",
+		basePrice: 1600,
+		subjectId: pathology.id,
 		categoryIds: [medicalBooks.id],
 	});
 
-	const notebook = await prisma.product.findFirst({
-		where: { title: "Notebook A4 - 200 Pages" },
+	// Stationery products
+	const product6 = await upsertProduct({
+		title: "A4 Ruled Notebook - 200 Pages",
+		description:
+			"Premium quality A4 size ruled notebook with 200 pages, perfect for note-taking",
+		basePrice: 120,
+		subjectId: notebooks.id,
+		categoryIds: [officeSupplies.id],
 	});
-	const product6 =
-		notebook ||
-		(await prisma.product.create({
-			data: {
-				title: "Notebook A4 - 200 Pages",
-				description:
-					"A4 size ruled notebook with 200 pages, perfect for note-taking",
-				basePrice: 120,
-				subjectId: general.id,
-				isActive: true,
-				categories: {
-					createMany: {
-						data: [{ categoryId: officeSupplies.id }],
-					},
-				},
-			},
-		}));
 
-	const pen = await prisma.product.findFirst({
-		where: { title: "Blue Ballpoint Pen" },
+	const product7 = await upsertProduct({
+		title: "Blue Ballpoint Pen (Pack of 10)",
+		description: "Smooth writing blue ballpoint pens, pack of 10",
+		basePrice: 50,
+		subjectId: ballpoint.id,
+		categoryIds: [writingInstruments.id],
 	});
-	const product7 =
-		pen ||
-		(await prisma.product.create({
-			data: {
-				title: "Blue Ballpoint Pen",
-				description: "Smooth writing blue ballpoint pen, pack of 10",
-				basePrice: 50,
-				subjectId: general.id,
-				isActive: true,
-				categories: {
-					createMany: {
-						data: [{ categoryId: writingInstruments.id }],
-					},
-				},
-			},
-		}));
 
-	const marker = await prisma.product.findFirst({
-		where: { title: "Permanent Marker Set" },
+	const product8 = await upsertProduct({
+		title: "Gel Pen Set - Assorted Colors (12 pcs)",
+		description: "Set of 12 gel pens in assorted colors, smooth writing",
+		basePrice: 180,
+		subjectId: gelPens.id,
+		categoryIds: [writingInstruments.id],
 	});
-	const product8 =
-		marker ||
-		(await prisma.product.create({
-			data: {
-				title: "Permanent Marker Set",
-				description: "Set of 12 assorted color permanent markers",
-				basePrice: 180,
-				subjectId: general.id,
-				isActive: true,
-				categories: {
-					createMany: {
-						data: [{ categoryId: writingInstruments.id }],
-					},
-				},
-			},
-		}));
+
+	const product9 = await upsertProduct({
+		title: "Permanent Marker Set (12 colors)",
+		description: "Set of 12 assorted color permanent markers",
+		basePrice: 200,
+		subjectId: markers.id,
+		categoryIds: [writingInstruments.id],
+	});
+
+	const product10 = await upsertProduct({
+		title: "Sticky Notes - 3x3 inches (Pack of 12)",
+		description: "Colorful sticky notes, 3x3 inches, pack of 12 pads",
+		basePrice: 150,
+		subjectId: notepads.id,
+		categoryIds: [officeSupplies.id],
+	});
+
 	console.log("✓ Products created");
 
-	// Create Product Variants
+	// ============================================
+	// PRODUCT VARIANTS
+	// ============================================
 	console.log("\n🎨 Creating product variants...");
+
+	// Medical books - COLOR and BW variants
 	await upsertVariant({
 		productId: product1.id,
 		variantType: "COLOR",
@@ -400,19 +484,20 @@ async function main() {
 	await upsertVariant({
 		productId: product5.id,
 		variantType: "COLOR",
-		price: 2750,
-		stock: 5,
-		sku: "GRAY-ANAT-COLOR",
+		price: 1750,
+		stock: 6,
+		sku: "ROBBINS-PATH-COLOR",
 	});
 
 	await upsertVariant({
 		productId: product5.id,
 		variantType: "BW",
-		price: 2500,
-		stock: 7,
-		sku: "GRAY-ANAT-BW",
+		price: 1600,
+		stock: 9,
+		sku: "ROBBINS-PATH-BW",
 	});
 
+	// Stationery - single variants
 	await upsertVariant({
 		productId: product6.id,
 		variantType: "BW",
@@ -433,9 +518,26 @@ async function main() {
 		productId: product8.id,
 		variantType: "COLOR",
 		price: 180,
+		stock: 80,
+		sku: "GEL-PEN-12",
+	});
+
+	await upsertVariant({
+		productId: product9.id,
+		variantType: "COLOR",
+		price: 200,
 		stock: 50,
 		sku: "MARKER-PERM-12",
 	});
+
+	await upsertVariant({
+		productId: product10.id,
+		variantType: "COLOR",
+		price: 150,
+		stock: 120,
+		sku: "STICKY-NOTES-12",
+	});
+
 	console.log("✓ Product variants created");
 
 	console.log("\n✅ Database seeded successfully!");

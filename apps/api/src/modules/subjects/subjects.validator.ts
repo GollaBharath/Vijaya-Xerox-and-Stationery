@@ -11,22 +11,28 @@ import { ValidationError } from "@/middleware/error.middleware";
 
 export interface CreateSubjectInput {
 	name: string;
+	categoryId: string;
 	parentSubjectId?: string | null;
 }
 
 export interface UpdateSubjectInput {
 	name?: string;
+	categoryId?: string;
 	parentSubjectId?: string | null;
 }
 
 export function validateCreateSubject(data: any): CreateSubjectInput {
-	validateRequired(data, ["name"]);
+	validateRequired(data, ["name", "categoryId"]);
 
 	const name = sanitizeString(String(data.name));
-	validateStringLength(name, "name", 2, 200);
+	validateStringLength(name, "name", 2, 100);
+
+	const categoryId = String(data.categoryId);
+	validateStringLength(categoryId, "categoryId", 1, 200);
 
 	return {
 		name,
+		categoryId,
 		parentSubjectId: data.parentSubjectId ?? null,
 	};
 }
@@ -38,6 +44,12 @@ export function validateUpdateSubject(data: any): UpdateSubjectInput {
 		const name = sanitizeString(String(data.name));
 		validateStringLength(name, "name", 2, 200);
 		update.name = name;
+	}
+
+	if (data.categoryId !== undefined) {
+		const categoryId = String(data.categoryId);
+		validateStringLength(categoryId, "categoryId", 1, 200);
+		update.categoryId = categoryId;
 	}
 
 	if (data.parentSubjectId !== undefined) {
