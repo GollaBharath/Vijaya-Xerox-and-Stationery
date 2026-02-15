@@ -2,9 +2,9 @@ import 'package:flutter/material.dart';
 import 'package:flutter_shared/flutter_shared.dart';
 import 'package:go_router/go_router.dart';
 import 'package:provider/provider.dart';
+import 'like_button.dart';
 import 'product_thumbnail.dart';
 import '../../cart/providers/cart_provider.dart';
-import '../../likes/providers/likes_provider.dart';
 
 /// Product card widget for grid display with action buttons
 class ProductCard extends StatelessWidget {
@@ -41,7 +41,7 @@ class ProductCard extends StatelessWidget {
                   Positioned(
                     top: 8,
                     right: 8,
-                    child: _buildLikeButton(context),
+                    child: LikeButton(product: product),
                   ),
                 ],
               ),
@@ -85,58 +85,7 @@ class ProductCard extends StatelessWidget {
     );
   }
 
-  Widget _buildLikeButton(BuildContext context) {
-    final likesProvider = Provider.of<LikesProvider>(context);
-    final isLiked = likesProvider.isLiked(product.id);
-    final likeCount = likesProvider.getLikeCount(product.id);
 
-    return Container(
-      decoration: BoxDecoration(
-        color: Colors.white.withOpacity(0.9),
-        borderRadius: BorderRadius.circular(20),
-        boxShadow: [
-          BoxShadow(
-            color: Colors.black.withOpacity(0.1),
-            blurRadius: 4,
-            offset: const Offset(0, 2),
-          ),
-        ],
-      ),
-      child: Material(
-        color: Colors.transparent,
-        child: InkWell(
-          onTap: () {
-            likesProvider.toggleLike(product);
-          },
-          borderRadius: BorderRadius.circular(20),
-          child: Padding(
-            padding: const EdgeInsets.symmetric(horizontal: 10, vertical: 6),
-            child: Row(
-              mainAxisSize: MainAxisSize.min,
-              children: [
-                Icon(
-                  isLiked ? Icons.favorite : Icons.favorite_border,
-                  size: 18,
-                  color: Colors.red,
-                ),
-                if (likeCount > 0) ...[
-                  const SizedBox(width: 4),
-                  Text(
-                    '$likeCount',
-                    style: const TextStyle(
-                      fontSize: 12,
-                      fontWeight: FontWeight.w600,
-                      color: Colors.black87,
-                    ),
-                  ),
-                ],
-              ],
-            ),
-          ),
-        ),
-      ),
-    );
-  }
 
   Widget _buildAddToCartButton(BuildContext context) {
     final variant = product.variants?.firstOrNull;

@@ -10,6 +10,7 @@ class ApiConfig {
   static const String authMe = '/api/v1/auth/me';
   static const String authRefresh = '/api/v1/auth/refresh';
   static const String authLogout = '/api/v1/auth/logout';
+  static const String fcmToken = '/api/v1/auth/fcm-token';
 
   // Category endpoints
   static const String categoriesHierarchy = '/api/v1/catalog/categories/tree';

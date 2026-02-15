@@ -99,6 +99,22 @@ class CategoryProvider extends ChangeNotifier {
     }
   }
 
+  /// Get path from root to specific category
+  List<Category> getPathToRoot(String categoryId) {
+    final path = <Category>[];
+    String? currentId = categoryId;
+
+    while (currentId != null) {
+      final category = getCategoryById(currentId);
+      if (category == null) break;
+
+      path.insert(0, category); // Add to beginning
+      currentId = category.parentId;
+    }
+
+    return path;
+  }
+
   /// Clear cache
   void clearCache() {
     _lastFetch = null;

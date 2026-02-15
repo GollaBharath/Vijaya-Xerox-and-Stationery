@@ -30,10 +30,30 @@ class _CategoryNavigationState extends State<CategoryNavigation> {
   @override
   void initState() {
     super.initState();
-    // Reconstruct path if initialCategoryId is provided
-    // This is complex because we need to find parents. 
-    // For now, let's start fresh. 
-    // Ideally, CategoryProvider should have a method to get path to root.
+    // Defer initialization to get access to Provider
+    WidgetsBinding.instance.addPostFrameCallback((_) {
+      _initializeSelection();
+    });
+  }
+
+  void _initializeSelection() {
+    if (widget.initialCategoryId != null) {
+      final provider = Provider.of<CategoryProvider>(context, listen: false);
+      final path = provider.getPathToRoot(widget.initialCategoryId!);
+      
+      setState(() {
+        _selectedCategoryIds = path.map((c) => c.id).toList();
+        _selectedSubjectId = widget.initialSubjectId;
+      });
+    } else if (widget.initialSubjectId != null) {
+        // If only subject provided, try to find its category path?
+        // Usually subject filtering happens within a category. 
+        // If strict, we might need to find the subject's category.
+        // For now, let's assume category ID is always passed if subject is passed.
+        setState(() {
+          _selectedSubjectId = widget.initialSubjectId;
+        });
+    }
   }
   
   // Method to handle category selection at a specific depth
@@ -193,7 +213,7 @@ class _CategoryNavigationState extends State<CategoryNavigation> {
                      onSelected: (sub) {
                        _onSubjectSelected(sub);
                      },
-                    style: FilterStyle.underline,
+                    style: FilterStyle.chip,
                   )
                 );
              }

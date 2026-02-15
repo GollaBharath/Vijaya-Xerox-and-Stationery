@@ -29,6 +29,8 @@ export interface Product {
 	isActive: boolean;
 	createdAt: string;
 	updatedAt: string;
+	likeCount?: number;
+	isLikedByUser?: boolean;
 }
 
 export interface ProductVariant {

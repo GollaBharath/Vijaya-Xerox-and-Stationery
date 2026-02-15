@@ -25,12 +25,21 @@ function toProduct(entity: any): Product {
 		isActive: entity.isActive,
 		createdAt: entity.createdAt.toISOString(),
 		updatedAt: entity.updatedAt.toISOString(),
+		likeCount: entity._count?.likes ?? 0,
+		isLikedByUser: false, // Handled separately or by checking specific user relation if needed
 	};
 }
 
 export async function findProductById(id: string): Promise<Product | null> {
 	const product = await prisma.product.findUnique({
 		where: { id },
+		include: {
+			_count: {
+				select: {
+					likes: true,
+				},
+			},
+		},
 	});
 	return product ? toProduct(product) : null;
 }
@@ -44,7 +53,14 @@ export async function findProductsByCategory(
 			isActive: true,
 			categories: { some: { categoryId } },
 		},
-		include: { variants: true },
+		include: {
+			variants: true,
+			_count: {
+				select: {
+					likes: true,
+				},
+			},
+		},
 		skip: pagination.skip,
 		take: pagination.take,
 		orderBy: { createdAt: "desc" },
@@ -71,7 +87,14 @@ export async function findProductsBySubject(
 ): Promise<ProductWithVariants[]> {
 	const products = await prisma.product.findMany({
 		where: { isActive: true, subjectId },
-		include: { variants: true },
+		include: {
+			variants: true,
+			_count: {
+				select: {
+					likes: true,
+				},
+			},
+		},
 		skip: pagination.skip,
 		take: pagination.take,
 		orderBy: { createdAt: "desc" },
@@ -116,7 +139,14 @@ export async function findAllProducts(
 
 	const products = await prisma.product.findMany({
 		where: whereClause,
-		include: { variants: true },
+		include: {
+			variants: true,
+			_count: {
+				select: {
+					likes: true,
+				},
+			},
+		},
 		skip: pagination.skip,
 		take: pagination.take,
 		orderBy: { createdAt: "desc" },
@@ -235,6 +265,13 @@ export async function updateProduct(
 				}
 				: undefined,
 		},
+		include: {
+			_count: {
+				select: {
+					likes: true,
+				},
+			},
+		},
 	});
 
 	return toProduct(product);
@@ -242,7 +279,16 @@ export async function updateProduct(
 
 export async function deleteProduct(id: string): Promise<Product> {
 	// Get product before deleting to return it
-	const product = await prisma.product.findUnique({ where: { id } });
+	const product = await prisma.product.findUnique({
+		where: { id },
+		include: {
+			_count: {
+				select: {
+					likes: true,
+				},
+			},
+		},
+	});
 
 	if (!product) {
 		throw new Error("Product not found");
@@ -264,7 +310,14 @@ export async function getProductWithVariants(
 ): Promise<ProductWithVariants | null> {
 	const product = await prisma.product.findUnique({
 		where: { id },
-		include: { variants: true },
+		include: {
+			variants: true,
+			_count: {
+				select: {
+					likes: true,
+				},
+			},
+		},
 	});
 
 	if (!product) return null;

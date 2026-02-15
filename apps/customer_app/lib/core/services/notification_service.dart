@@ -4,6 +4,7 @@ import 'package:http/http.dart' as http;
 import 'dart:convert';
 import 'package:flutter_shared/auth/token_manager.dart';
 import '../config/env.dart';
+import '../config/api_config.dart';
 
 /// Background message handler (top-level function required)
 @pragma('vm:entry-point')
@@ -96,7 +97,7 @@ class NotificationService {
       }
 
       final response = await http.put(
-        Uri.parse('${Environment.apiBaseUrl}/auth/fcm-token'),
+        Uri.parse(ApiConfig.buildUrl(ApiConfig.fcmToken)),
         headers: {
           'Content-Type': 'application/json',
           'Authorization': 'Bearer $accessToken',

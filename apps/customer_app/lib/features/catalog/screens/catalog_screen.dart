@@ -171,189 +171,99 @@ class _CatalogScreenState extends State<CatalogScreen>
       shape: const RoundedRectangleBorder(
         borderRadius: BorderRadius.vertical(top: Radius.circular(20)),
       ),
-      builder: (context) => StatefulBuilder(
-        builder: (context, setModalState) {
-          return DraggableScrollableSheet(
-            initialChildSize: 0.7,
-            minChildSize: 0.5,
-            maxChildSize: 0.95,
-            expand: false,
-            builder: (context, scrollController) {
-              return Column(
-                children: [
-                  // Handle bar
-                  Container(
-                    margin: const EdgeInsets.only(top: 8, bottom: 16),
-                    width: 40,
-                    height: 4,
-                    decoration: BoxDecoration(
-                      color: Colors.grey[300],
-                      borderRadius: BorderRadius.circular(2),
+      builder: (context) => DraggableScrollableSheet(
+        initialChildSize: 0.7,
+        minChildSize: 0.5,
+        maxChildSize: 0.95,
+        expand: false,
+        builder: (context, scrollController) {
+          return Column(
+            children: [
+              // Handle bar
+              Container(
+                margin: const EdgeInsets.only(top: 8, bottom: 16),
+                width: 40,
+                height: 4,
+                decoration: BoxDecoration(
+                  color: Colors.grey[300],
+                  borderRadius: BorderRadius.circular(2),
+                ),
+              ),
+              // Header
+              Padding(
+                padding: const EdgeInsets.symmetric(horizontal: 16),
+                child: Row(
+                  mainAxisAlignment: MainAxisAlignment.spaceBetween,
+                  children: [
+                    const Text(
+                      'Filter Products',
+                      style: TextStyle(
+                        fontSize: 20,
+                        fontWeight: FontWeight.bold,
+                      ),
                     ),
+                    TextButton(
+                      onPressed: () {
+                        // We can't easily clear state inside CategoryNavigation from here
+                        // without a controller. But standard 'Clear' usually just 
+                        // resets the main screen state.
+                        Navigator.pop(context);
+                        _clearFilters();
+                      },
+                      child: const Text('Clear All'),
+                    ),
+                  ],
+                ),
+              ),
+              const Divider(),
+              // Filter content
+              Expanded(
+                child: SingleChildScrollView(
+                  controller: scrollController,
+                  padding: const EdgeInsets.all(16),
+                  child: CategoryNavigation(
+                    initialCategoryId: _selectedCategoryId,
+                    initialSubjectId: _selectedSubjectId,
+                    onSelectionChanged: (categoryId, subjectId) {
+                      tempCategoryId = categoryId;
+                      tempSubjectId = subjectId;
+                    },
                   ),
-                  // Header
-                  Padding(
-                    padding: const EdgeInsets.symmetric(horizontal: 16),
-                    child: Row(
-                      mainAxisAlignment: MainAxisAlignment.spaceBetween,
-                      children: [
-                        const Text(
-                          'Filter Products',
-                          style: TextStyle(
-                            fontSize: 20,
-                            fontWeight: FontWeight.bold,
-                          ),
-                        ),
-                        TextButton(
-                          onPressed: () {
-                            setModalState(() {
-                              tempCategoryId = null;
-                              tempSubjectId = null;
-                            });
-                          },
-                          child: const Text('Clear All'),
-                        ),
-                      ],
+                ),
+              ),
+              // Apply button
+              Container(
+                padding: const EdgeInsets.all(16),
+                decoration: BoxDecoration(
+                  color: Colors.white,
+                  boxShadow: [
+                    BoxShadow(
+                      color: Colors.black.withOpacity(0.05),
+                      blurRadius: 10,
+                      offset: const Offset(0, -5),
                     ),
-                  ),
-                  const Divider(),
-                  // Filter content
-                  Expanded(
-                    child: ListView(
-                      controller: scrollController,
-                      padding: const EdgeInsets.all(16),
-                      children: [
-                        // Categories section
-                        const Text(
-                          'Categories',
-                          style: TextStyle(
-                            fontSize: 16,
-                            fontWeight: FontWeight.bold,
-                          ),
-                        ),
-                        const SizedBox(height: 12),
-                        Consumer<CategoryProvider>(
-                          builder: (context, categoryProvider, child) {
-                            if (categoryProvider.isLoading) {
-                              return const Center(
-                                child: CircularProgressIndicator(),
-                              );
-                            }
-
-                            if (categoryProvider.error != null) {
-                              return Padding(
-                                padding: const EdgeInsets.all(8.0),
-                                child: Text(
-                                  categoryProvider.error!,
-                                  style: const TextStyle(color: Colors.red),
-                                ),
-                              );
-                            }
-
-                            if (categoryProvider.categories.isEmpty) {
-                              return const Padding(
-                                padding: EdgeInsets.all(8.0),
-                                child: Text('No categories available'),
-                              );
-                            }
-
-                            return _buildCategoryTree(
-                              categoryProvider.categories,
-                              tempCategoryId,
-                              (categoryId) {
-                                setModalState(() {
-                                  tempCategoryId = categoryId;
-                                  tempSubjectId = null;
-                                });
-                              },
-                            );
-                          },
-                        ),
-                        const SizedBox(height: 24),
-                        // Subjects section
-                        const Text(
-                          'Subjects',
-                          style: TextStyle(
-                            fontSize: 16,
-                            fontWeight: FontWeight.bold,
-                          ),
-                        ),
-                        const SizedBox(height: 12),
-                        Consumer<SubjectProvider>(
-                          builder: (context, subjectProvider, child) {
-                            if (subjectProvider.isLoading) {
-                              return const Center(
-                                child: CircularProgressIndicator(),
-                              );
-                            }
-
-                            if (subjectProvider.error != null) {
-                              return Padding(
-                                padding: const EdgeInsets.all(8.0),
-                                child: Text(
-                                  subjectProvider.error!,
-                                  style: const TextStyle(color: Colors.red),
-                                ),
-                              );
-                            }
-
-                            if (subjectProvider.subjects.isEmpty) {
-                              return const Padding(
-                                padding: EdgeInsets.all(8.0),
-                                child: Text('No subjects available'),
-                              );
-                            }
-
-                            return _buildSubjectTree(
-                              subjectProvider.subjects,
-                              tempSubjectId,
-                              (subjectId) {
-                                setModalState(() {
-                                  tempSubjectId = subjectId;
-                                  tempCategoryId = null;
-                                });
-                              },
-                            );
-                          },
-                        ),
-                      ],
-                    ),
-                  ),
-                  // Apply button
-                  Container(
-                    padding: const EdgeInsets.all(16),
-                    decoration: BoxDecoration(
-                      color: Colors.white,
-                      boxShadow: [
-                        BoxShadow(
-                          color: Colors.black.withOpacity(0.05),
-                          blurRadius: 10,
-                          offset: const Offset(0, -5),
-                        ),
-                      ],
-                    ),
-                    child: SafeArea(
-                      child: SizedBox(
-                        width: double.infinity,
-                        child: ElevatedButton(
-                          onPressed: () {
-                            Navigator.pop(context);
-                            _applyFilters(tempCategoryId, tempSubjectId);
-                          },
-                          style: ElevatedButton.styleFrom(
-                            padding: const EdgeInsets.symmetric(vertical: 16),
-                          ),
-                          child: const Text(
-                            'Apply Filters',
-                            style: TextStyle(fontSize: 16),
-                          ),
-                        ),
+                  ],
+                ),
+                child: SafeArea(
+                  child: SizedBox(
+                    width: double.infinity,
+                    child: ElevatedButton(
+                      onPressed: () {
+                        Navigator.pop(context);
+                        _applyFilters(tempCategoryId, tempSubjectId);
+                      },
+                      style: ElevatedButton.styleFrom(
+                        padding: const EdgeInsets.symmetric(vertical: 16),
+                      ),
+                      child: const Text(
+                        'Apply Filters',
+                        style: TextStyle(fontSize: 16),
                       ),
                     ),
                   ),
-                ],
-              );
-            },
+                ),
+              ),
+            ],
           );
         },
       ),
@@ -432,12 +342,22 @@ class _CatalogScreenState extends State<CatalogScreen>
                               ),
                         ),
                         const Spacer(),
-                        Icon(
-                          Icons.mic, // Or filter icon? Design has filter icon on right? 
-                          // Design screenshot has search icon on right? NO, left.
-                          // It has a magnifier on the right actually.
-                          // Let's stick to standard search look.
-                          color: Theme.of(context).hintColor,
+                        InkWell(
+                          onTap: _showFilterBottomSheet,
+                          borderRadius: BorderRadius.circular(20),
+                          child: Padding(
+                            padding: const EdgeInsets.all(8.0),
+                            child: Badge(
+                              isLabelVisible: _selectedCategoryId != null ||
+                                  _selectedSubjectId != null,
+                              label: const Text('!'),
+                              smallSize: 8,
+                              child: Icon(
+                                Icons.tune,
+                                color: Theme.of(context).hintColor,
+                              ),
+                            ),
+                          ),
                         ),
                       ],
                     ),
@@ -446,26 +366,54 @@ class _CatalogScreenState extends State<CatalogScreen>
               ),
             ),
 
-            // Category and Subject Navigation
-            SliverToBoxAdapter(
-              child: CategoryNavigation(
-                onSelectionChanged: (categoryId, subjectId) {
-                  setState(() {
-                    _selectedCategoryId = categoryId;
-                    _selectedSubjectId = subjectId;
-                  });
-                  final productProvider = Provider.of<ProductProvider>(
-                    context,
-                    listen: false,
-                  );
-                  productProvider.fetchProducts(
-                    categoryId: categoryId,
-                    subjectId: subjectId,
-                    reset: true,
-                  );
-                },
+            // Active Filters
+            if (_selectedCategoryId != null || _selectedSubjectId != null)
+              SliverToBoxAdapter(
+                child: SingleChildScrollView(
+                  scrollDirection: Axis.horizontal,
+                  padding: const EdgeInsets.symmetric(horizontal: 16),
+                  child: Row(
+                    children: [
+                      if (_selectedCategoryId != null)
+                        Padding(
+                          padding: const EdgeInsets.only(right: 8),
+                          child: Consumer<CategoryProvider>(
+                            builder: (context, provider, _) {
+                              final category = provider
+                                  .getCategoryById(_selectedCategoryId!);
+                              if (category == null) return const SizedBox();
+                              return InputChip(
+                                label: Text(category.name),
+                                onDeleted: () => _onCategorySelected(null),
+                                deleteIcon: const Icon(Icons.close, size: 18),
+                              );
+                            },
+                          ),
+                        ),
+                      if (_selectedSubjectId != null)
+                        Padding(
+                          padding: const EdgeInsets.only(right: 8),
+                          child: Consumer<SubjectProvider>(
+                            builder: (context, provider, _) {
+                              final subject =
+                                  provider.getSubjectById(_selectedSubjectId!);
+                              if (subject == null) return const SizedBox();
+                              return InputChip(
+                                label: Text(subject.name),
+                                onDeleted: () => _onSubjectSelected(null),
+                                deleteIcon: const Icon(Icons.close, size: 18),
+                              );
+                            },
+                          ),
+                        ),
+                      TextButton(
+                        onPressed: _clearFilters,
+                        child: const Text('Clear All'),
+                      ),
+                    ],
+                  ),
+                ),
               ),
-            ),
 
             // Products grid
             _buildProductsGrid(),
