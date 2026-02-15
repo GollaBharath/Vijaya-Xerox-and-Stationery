@@ -38,14 +38,20 @@ class SubjectProvider extends ChangeNotifier {
     try {
       final response = await _apiClient.get(ApiEndpoints.subjects);
 
-      if (response is Map<String, dynamic> &&
-          response['data'] is Map<String, dynamic>) {
-        final data = response['data'] as Map<String, dynamic>;
-
-        if (data['subjects'] is List) {
-          _subjects = (data['subjects'] as List)
+      if (response is Map<String, dynamic>) {
+        if (response['data'] is List) {
+          // Case 1: data is a list of subjects
+          _subjects = (response['data'] as List)
               .map((json) => Subject.fromJson(json as Map<String, dynamic>))
               .toList();
+        } else if (response['data'] is Map<String, dynamic>) {
+          // Case 2: data is a map containing subjects key
+          final data = response['data'] as Map<String, dynamic>;
+          if (data['subjects'] is List) {
+            _subjects = (data['subjects'] as List)
+                .map((json) => Subject.fromJson(json as Map<String, dynamic>))
+                .toList();
+          }
         }
       } else if (response is List) {
         // Fallback if API returns list directly
@@ -75,6 +81,17 @@ class SubjectProvider extends ChangeNotifier {
   /// Get child subjects by parent ID
   List<Subject> getChildSubjects(String parentId) {
     return _subjects.where((subj) => subj.parentSubjectId == parentId).toList();
+  }
+
+  /// Get subjects by category ID (top-level subjects for a category)
+  List<Subject> getSubjectsByCategoryId(String categoryId) {
+    return _subjects
+        .where(
+          (subj) =>
+              subj.categoryId == categoryId &&
+              subj.parentSubjectId == null,
+        )
+        .toList();
   }
 
   /// Get subject by ID

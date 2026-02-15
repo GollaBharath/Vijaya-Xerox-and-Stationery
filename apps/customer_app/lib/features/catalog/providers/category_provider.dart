@@ -38,14 +38,20 @@ class CategoryProvider extends ChangeNotifier {
     try {
       final response = await _apiClient.get(ApiEndpoints.categories);
 
-      if (response is Map<String, dynamic> &&
-          response['data'] is Map<String, dynamic>) {
-        final data = response['data'] as Map<String, dynamic>;
-
-        if (data['categories'] is List) {
-          _categories = (data['categories'] as List)
+      if (response is Map<String, dynamic>) {
+        if (response['data'] is List) {
+          // Case 1: data is a list of categories
+          _categories = (response['data'] as List)
               .map((json) => Category.fromJson(json as Map<String, dynamic>))
               .toList();
+        } else if (response['data'] is Map<String, dynamic>) {
+          // Case 2: data is a map containing categories key
+          final data = response['data'] as Map<String, dynamic>;
+          if (data['categories'] is List) {
+            _categories = (data['categories'] as List)
+                .map((json) => Category.fromJson(json as Map<String, dynamic>))
+                .toList();
+          }
         }
       } else if (response is List) {
         // Fallback if API returns list directly

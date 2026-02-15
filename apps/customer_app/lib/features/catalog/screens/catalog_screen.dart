@@ -8,6 +8,7 @@ import '../providers/product_provider.dart';
 import '../../likes/providers/likes_provider.dart';
 import '../widgets/product_card.dart';
 import '../widgets/category_chip.dart';
+import '../widgets/category_navigation.dart';
 import '../../../routing/route_names.dart';
 
 /// Main catalog screen with category/subject filters and product list
@@ -410,11 +411,79 @@ class _CatalogScreenState extends State<CatalogScreen>
         child: CustomScrollView(
           controller: _scrollController,
           slivers: [
-            // Category filters
-            SliverToBoxAdapter(child: _buildCategoryFilters()),
+            // Search Bar
+            SliverToBoxAdapter(
+              child: Padding(
+                padding: const EdgeInsets.all(16.0),
+                child: InkWell(
+                  onTap: () async {
+                    await context.push(RouteNames.search);
+                    // Force reload when returning from search
+                    _needsRefresh = true;
+                    _loadInitialData();
+                  },
+                  borderRadius: BorderRadius.circular(30),
+                  child: Container(
+                    padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 12),
+                    decoration: BoxDecoration(
+                      color: Theme.of(context).brightness == Brightness.dark
+                          ? Colors.grey[800]
+                          : Colors.grey[200], // Adjust color as needed for design
+                      borderRadius: BorderRadius.circular(30),
+                      border: Border.all(
+                        color: Theme.of(context).brightness == Brightness.dark
+                            ? Colors.grey[700]!
+                            : Colors.grey[300]!, // Green border for search bar in design? Maybe green border
+                      ),
+                    ),
+                    child: Row(
+                      children: [
+                        Icon(
+                          Icons.search,
+                          color: Theme.of(context).hintColor,
+                        ),
+                        const SizedBox(width: 8),
+                        Text(
+                          'Search products',
+                          style: Theme.of(context).textTheme.bodyMedium?.copyWith(
+                                color: Theme.of(context).hintColor,
+                              ),
+                        ),
+                        const Spacer(),
+                        Icon(
+                          Icons.mic, // Or filter icon? Design has filter icon on right? 
+                          // Design screenshot has search icon on right? NO, left.
+                          // It has a magnifier on the right actually.
+                          // Let's stick to standard search look.
+                          color: Theme.of(context).hintColor,
+                        ),
+                      ],
+                    ),
+                  ),
+                ),
+              ),
+            ),
 
-            // Subject filters
-            SliverToBoxAdapter(child: _buildSubjectFilters()),
+            // Category and Subject Navigation
+            SliverToBoxAdapter(
+              child: CategoryNavigation(
+                onSelectionChanged: (categoryId, subjectId) {
+                  setState(() {
+                    _selectedCategoryId = categoryId;
+                    _selectedSubjectId = subjectId;
+                  });
+                  final productProvider = Provider.of<ProductProvider>(
+                    context,
+                    listen: false,
+                  );
+                  productProvider.fetchProducts(
+                    categoryId: categoryId,
+                    subjectId: subjectId,
+                    reset: true,
+                  );
+                },
+              ),
+            ),
 
             // Products grid
             _buildProductsGrid(),
@@ -427,106 +496,8 @@ class _CatalogScreenState extends State<CatalogScreen>
     );
   }
 
-  Widget _buildCategoryFilters() {
-    return Consumer<CategoryProvider>(
-      builder: (context, categoryProvider, child) {
-        if (categoryProvider.isLoading && !categoryProvider.hasCategories) {
-          return const Padding(
-            padding: EdgeInsets.all(16.0),
-            child: Center(child: CircularProgressIndicator()),
-          );
-        }
+  // Old filter methods removed
 
-        if (categoryProvider.error != null) {
-          return Padding(
-            padding: const EdgeInsets.all(16.0),
-            child: Text(
-              'Error loading categories: ${categoryProvider.error}',
-              style: const TextStyle(color: Colors.red),
-            ),
-          );
-        }
-
-        final categories = categoryProvider.rootCategories;
-        if (categories.isEmpty) {
-          return const SizedBox.shrink();
-        }
-
-        return Container(
-          height: 60,
-          padding: const EdgeInsets.symmetric(vertical: 8),
-          child: ListView(
-            scrollDirection: Axis.horizontal,
-            padding: const EdgeInsets.symmetric(horizontal: 16),
-            children: [
-              CategoryChip(
-                label: 'All Categories',
-                isSelected: _selectedCategoryId == null,
-                onSelected: () => _onCategorySelected(null),
-              ),
-              const SizedBox(width: 8),
-              ...categories.map(
-                (category) => Padding(
-                  padding: const EdgeInsets.only(right: 8),
-                  child: CategoryChip(
-                    label: category.name,
-                    isSelected: _selectedCategoryId == category.id,
-                    onSelected: () => _onCategorySelected(category.id),
-                  ),
-                ),
-              ),
-            ],
-          ),
-        );
-      },
-    );
-  }
-
-  Widget _buildSubjectFilters() {
-    return Consumer<SubjectProvider>(
-      builder: (context, subjectProvider, child) {
-        if (subjectProvider.isLoading && !subjectProvider.hasSubjects) {
-          return const SizedBox.shrink();
-        }
-
-        if (subjectProvider.error != null) {
-          return const SizedBox.shrink();
-        }
-
-        final subjects = subjectProvider.rootSubjects;
-        if (subjects.isEmpty) {
-          return const SizedBox.shrink();
-        }
-
-        return Container(
-          height: 60,
-          padding: const EdgeInsets.symmetric(vertical: 8),
-          child: ListView(
-            scrollDirection: Axis.horizontal,
-            padding: const EdgeInsets.symmetric(horizontal: 16),
-            children: [
-              CategoryChip(
-                label: 'All Subjects',
-                isSelected: _selectedSubjectId == null,
-                onSelected: () => _onSubjectSelected(null),
-              ),
-              const SizedBox(width: 8),
-              ...subjects.map(
-                (subject) => Padding(
-                  padding: const EdgeInsets.only(right: 8),
-                  child: CategoryChip(
-                    label: subject.name,
-                    isSelected: _selectedSubjectId == subject.id,
-                    onSelected: () => _onSubjectSelected(subject.id),
-                  ),
-                ),
-              ),
-            ],
-          ),
-        );
-      },
-    );
-  }
 
   Widget _buildProductsGrid() {
     return Consumer<ProductProvider>(
