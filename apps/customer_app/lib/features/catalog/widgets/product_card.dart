@@ -27,6 +27,7 @@ class ProductCard extends StatelessWidget {
           children: [
             // Product image with wishlist button overlay
             Expanded(
+              flex: 2,
               child: Stack(
                 children: [
                   // Thumbnail
@@ -71,10 +72,6 @@ class ProductCard extends StatelessWidget {
                       fontWeight: FontWeight.bold,
                     ),
                   ),
-                  const SizedBox(height: 6),
-
-                  // Stock indicator
-                  _buildStockIndicator(context),
                   const SizedBox(height: 8),
 
                   // Add to cart button

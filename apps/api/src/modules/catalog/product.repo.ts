@@ -20,6 +20,7 @@ function toProduct(entity: any): Product {
 		subjectId: entity.subjectId,
 		imageUrl: entity.imageUrl ?? null,
 		pdfUrl: entity.pdfUrl ?? null,
+		previewUrl: entity.previewUrl ?? null,
 		fileType: entity.fileType ?? "NONE",
 		isActive: entity.isActive,
 		createdAt: entity.createdAt.toISOString(),
@@ -153,6 +154,7 @@ export async function createProduct(data: {
 	subjectId: string;
 	imageUrl?: string | null;
 	pdfUrl?: string | null;
+	previewUrl?: string | null;
 	fileType?: "IMAGE" | "PDF" | "NONE";
 	categoryIds?: string[];
 }): Promise<Product> {
@@ -165,15 +167,16 @@ export async function createProduct(data: {
 			subjectId: data.subjectId,
 			imageUrl: data.imageUrl ?? null,
 			pdfUrl: data.pdfUrl ?? null,
+			previewUrl: data.previewUrl ?? null,
 			fileType: data.fileType ?? "NONE",
 			categories: data.categoryIds?.length
 				? {
-						createMany: {
-							data: data.categoryIds.map((categoryId) => ({
-								categoryId,
-							})),
-						},
-					}
+					createMany: {
+						data: data.categoryIds.map((categoryId) => ({
+							categoryId,
+						})),
+					},
+				}
 				: undefined,
 		},
 	});
@@ -202,6 +205,7 @@ export async function updateProduct(
 		subjectId?: string;
 		imageUrl?: string | null;
 		pdfUrl?: string | null;
+		previewUrl?: string | null;
 		fileType?: "IMAGE" | "PDF" | "NONE";
 		isActive?: boolean;
 		categoryIds?: string[];
@@ -217,17 +221,18 @@ export async function updateProduct(
 			subjectId: data.subjectId,
 			imageUrl: data.imageUrl ?? undefined,
 			pdfUrl: data.pdfUrl ?? undefined,
+			previewUrl: data.previewUrl ?? undefined,
 			fileType: data.fileType ?? undefined,
 			isActive: data.isActive,
 			categories: data.categoryIds
 				? {
-						deleteMany: {},
-						createMany: {
-							data: data.categoryIds.map((categoryId) => ({
-								categoryId,
-							})),
-						},
-					}
+					deleteMany: {},
+					createMany: {
+						data: data.categoryIds.map((categoryId) => ({
+							categoryId,
+						})),
+					},
+				}
 				: undefined,
 		},
 	});
@@ -283,7 +288,7 @@ export async function deleteProductFiles(id: string): Promise<boolean> {
 	try {
 		const product = await prisma.product.findUnique({
 			where: { id },
-			select: { imageUrl: true, pdfUrl: true },
+			select: { imageUrl: true, pdfUrl: true, previewUrl: true },
 		});
 
 		if (!product) return false;
@@ -296,12 +301,17 @@ export async function deleteProductFiles(id: string): Promise<boolean> {
 			deleteFile(product.pdfUrl);
 		}
 
+		if (product.previewUrl) {
+			deleteFile(product.previewUrl);
+		}
+
 		// Clear file URLs from database
 		await prisma.product.update({
 			where: { id },
 			data: {
 				imageUrl: null,
 				pdfUrl: null,
+				previewUrl: null,
 				fileType: "NONE",
 			},
 		});

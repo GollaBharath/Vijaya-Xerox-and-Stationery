@@ -1,7 +1,8 @@
 import { NextRequest, NextResponse } from "next/server";
 import { requireAdmin } from "@/middleware/admin.middleware";
-import { deleteFile, savePDFFile } from "@/lib/file_storage";
+import { deleteFile, savePDFFile, savePreviewImage } from "@/lib/file_storage";
 import * as productRepo from "@/modules/catalog/product.repo";
+import pdf2img from "pdf-img-convert";
 
 export async function POST(request: NextRequest) {
 	try {
@@ -56,17 +57,41 @@ export async function POST(request: NextRequest) {
 			);
 		}
 
-		// Remove old PDF if present
+		// Remove old PDF and Preview if present
 		if (product.pdfUrl) {
 			deleteFile(product.pdfUrl);
+		}
+		if (product.previewUrl) {
+			deleteFile(product.previewUrl);
 		}
 
 		// Save PDF file
 		const pdfUrl = await savePDFFile(file.name, bufferData);
 
-		// Update product with PDF URL
+		// Generate Preview (First page)
+		let previewUrl: string | null = null;
+		try {
+			// Convert first page to image
+			// pdf-img-convert returns an array of Uint8Array (buffers)
+			const outputImages = await pdf2img.convert(bufferData, {
+				page_numbers: [1],
+				base64: false,
+				scale: 2.0 // Better quality
+			});
+
+			if (outputImages.length > 0) {
+				const imageBuffer = Buffer.from(outputImages[0]);
+				previewUrl = await savePreviewImage(file.name, imageBuffer);
+			}
+		} catch (conversionError) {
+			console.error("Error generating PDF preview:", conversionError);
+			// We continue even if preview generation fails, just log it
+		}
+
+		// Update product with PDF URL and Preview URL
 		await productRepo.updateProduct(productId, {
 			pdfUrl,
+			previewUrl,
 			fileType: "PDF",
 		});
 
@@ -74,6 +99,7 @@ export async function POST(request: NextRequest) {
 			{
 				success: true,
 				pdfUrl,
+				previewUrl,
 				message: "PDF uploaded successfully",
 			},
 			{ status: 200 },

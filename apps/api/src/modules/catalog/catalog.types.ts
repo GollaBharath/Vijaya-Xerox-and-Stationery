@@ -24,6 +24,7 @@ export interface Product {
 	subjectId: string;
 	imageUrl?: string | null;
 	pdfUrl?: string | null;
+	previewUrl?: string | null;
 	fileType: "IMAGE" | "PDF" | "NONE";
 	isActive: boolean;
 	createdAt: string;

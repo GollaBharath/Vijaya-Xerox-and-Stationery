@@ -142,7 +142,31 @@ export async function savePDFFile(
 
 	fs.writeFileSync(filepath, buffer);
 
+
 	return `/api/v1/files/pdfs/books/${uniqueFilename}`;
+}
+
+/**
+ * Save Preview Image file
+ */
+export async function savePreviewImage(
+	filename: string,
+	buffer: Buffer,
+): Promise<string> {
+	initializeUploadDirs();
+
+	// Ensure filename ends with .png (or desired format)
+	const baseName = path.basename(filename, path.extname(filename));
+	const uniqueFilename = `${baseName}-${Date.now()}-preview.png`;
+	const filepath = path.join(PDFS_DIR, uniqueFilename); // Saving in PDF dir for now to keep related files together, or could be IMAGES_DIR
+
+	// Or better, save in IMAGES_DIR but maybe a subdirectory?
+	// Let's save in IMAGES_DIR as it is an image
+	const imagePreviewPath = path.join(IMAGES_DIR, uniqueFilename);
+
+	fs.writeFileSync(imagePreviewPath, buffer);
+
+	return `/api/v1/files/images/products/${uniqueFilename}`;
 }
 
 /**

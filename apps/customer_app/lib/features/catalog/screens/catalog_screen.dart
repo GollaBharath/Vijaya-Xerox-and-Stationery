@@ -388,24 +388,6 @@ class _CatalogScreenState extends State<CatalogScreen>
   @override
   Widget build(BuildContext context) {
     return Scaffold(
-      appBar: AppBar(
-        title: const Text('Catalog'),
-        actions: [
-          IconButton(
-            icon: const Icon(Icons.filter_list),
-            onPressed: () => _showFilterBottomSheet(),
-          ),
-          IconButton(
-            icon: const Icon(Icons.search),
-            onPressed: () async {
-              await context.push(RouteNames.search);
-              // Force reload when returning from search
-              _needsRefresh = true;
-              _loadInitialData();
-            },
-          ),
-        ],
-      ),
       body: RefreshIndicator(
         onRefresh: _onRefresh,
         child: CustomScrollView(
@@ -414,7 +396,7 @@ class _CatalogScreenState extends State<CatalogScreen>
             // Search Bar
             SliverToBoxAdapter(
               child: Padding(
-                padding: const EdgeInsets.all(16.0),
+                padding: const EdgeInsets.fromLTRB(16.0, 48.0, 16.0, 16.0),
                 child: InkWell(
                   onTap: () async {
                     await context.push(RouteNames.search);

@@ -10,6 +10,7 @@ class Product {
   final String subjectId;
   final String? imageUrl; // For stationery products
   final String? pdfUrl; // For book products
+  final String? previewUrl; // Preview image for book products
   final String fileType; // 'IMAGE', 'PDF', or 'NONE'
   final bool isActive;
   final DateTime createdAt;
@@ -26,6 +27,7 @@ class Product {
     required this.subjectId,
     this.imageUrl,
     this.pdfUrl,
+    this.previewUrl,
     required this.fileType,
     required this.isActive,
     required this.createdAt,
@@ -62,6 +64,7 @@ class Product {
       'subject_id': subjectId,
       'image_url': imageUrl,
       'pdf_url': pdfUrl,
+      'preview_url': previewUrl,
       'file_type': fileType,
       'is_active': isActive,
       'created_at': createdAt.toIso8601String(),
@@ -83,6 +86,7 @@ class Product {
       subjectId: (json['subjectId'] ?? json['subject_id'] as String?) ?? '',
       imageUrl: (json['imageUrl'] ?? json['image_url']) as String?,
       pdfUrl: (json['pdfUrl'] ?? json['pdf_url']) as String?,
+      previewUrl: (json['previewUrl'] ?? json['preview_url']) as String?,
       fileType: (json['fileType'] ?? json['file_type'] as String?) ?? 'NONE',
       isActive: (json['isActive'] ?? json['is_active'] as bool?) ?? true,
       createdAt: DateTime.parse(
@@ -108,6 +112,7 @@ class Product {
     String? subjectId,
     String? imageUrl,
     String? pdfUrl,
+    String? previewUrl,
     String? fileType,
     bool? isActive,
     DateTime? createdAt,
@@ -124,6 +129,7 @@ class Product {
       subjectId: subjectId ?? this.subjectId,
       imageUrl: imageUrl ?? this.imageUrl,
       pdfUrl: pdfUrl ?? this.pdfUrl,
+      previewUrl: previewUrl ?? this.previewUrl,
       fileType: fileType ?? this.fileType,
       isActive: isActive ?? this.isActive,
       createdAt: createdAt ?? this.createdAt,
