@@ -58,9 +58,12 @@ class _CategoryNavigationState extends State<CategoryNavigation> {
   // Actually, FilterRow usually enforces selection if we tap a different one.
   // We can add logic to toggle off if needed, but typically tabs switch.
 
-  void _onSubjectSelected(Subject subject) {
+  void _onSubjectSelected(Subject? subject) {
     setState(() {
-      if (_selectedSubjectId == subject.id) {
+      if (subject == null) {
+        // 'All' was selected - clear subject filter
+        _selectedSubjectId = null;
+      } else if (_selectedSubjectId == subject.id) {
         _selectedSubjectId = null; // Toggle off
       } else {
         _selectedSubjectId = subject.id;
@@ -156,9 +159,7 @@ class _CategoryNavigationState extends State<CategoryNavigation> {
                    onSelected: (cat) {
                       if (cat != null) _onCategorySelected(cat, i + 1);
                    },
-                   style: i == 0 ? FilterStyle.text : FilterStyle.chip, // Second row text? Others chips?
-                   // Design: Row 2 (NEET UG) text/tab. Row 3 (Marrow) Chip.
-                   // Let's try: Level 1 -> Text (or secondaryTab). Level 2+ -> Chip.
+                    style: FilterStyle.chip, // All intermediate levels use chip style
                  )
                );
             }
@@ -189,11 +190,10 @@ class _CategoryNavigationState extends State<CategoryNavigation> {
                     items: subjects,
                     labelBuilder: (s) => s.name,
                     selectedItem: selectedSubject,
-                    onSelected: (sub) {
-                      if (sub != null) _onSubjectSelected(sub);
-                    },
+                     onSelected: (sub) {
+                       _onSubjectSelected(sub);
+                     },
                     style: FilterStyle.underline,
-                    allLabel: "All", // Option to see all products in category
                   )
                 );
              }

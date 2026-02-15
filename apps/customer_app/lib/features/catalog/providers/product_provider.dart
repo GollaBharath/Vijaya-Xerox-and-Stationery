@@ -94,6 +94,8 @@ class ProductProvider extends ChangeNotifier {
           } else {
             _products.addAll(newProducts);
           }
+          
+
 
           // Handle pagination metadata
           if (data['pagination'] is Map<String, dynamic>) {
