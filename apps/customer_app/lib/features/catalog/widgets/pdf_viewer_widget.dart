@@ -1,9 +1,10 @@
 import 'package:flutter/material.dart';
 import 'package:http/http.dart' as http;
+import 'package:pdfx/pdfx.dart';
 import 'dart:typed_data';
 import '../../../core/config/env.dart';
 
-/// Widget for viewing PDF files
+/// Widget for viewing PDF files with inline PDF viewer
 class PdfViewerWidget extends StatefulWidget {
   final String pdfUrl;
 
@@ -17,12 +18,18 @@ class _PdfViewerWidgetState extends State<PdfViewerWidget> {
   bool _isLoading = true;
   bool _hasError = false;
   String? _errorMessage;
-  Uint8List? _pdfBytes;
+  PdfController? _pdfController;
 
   @override
   void initState() {
     super.initState();
     _loadPdf();
+  }
+
+  @override
+  void dispose() {
+    _pdfController?.dispose();
+    super.dispose();
   }
 
   Future<void> _loadPdf() async {
@@ -37,8 +44,12 @@ class _PdfViewerWidgetState extends State<PdfViewerWidget> {
       final response = await http.get(Uri.parse(resolvedUrl));
 
       if (response.statusCode == 200) {
+        final document = await PdfDocument.openData(response.bodyBytes);
+        
         setState(() {
-          _pdfBytes = response.bodyBytes;
+          _pdfController = PdfController(
+            document: Future.value(document),
+          );
           _isLoading = false;
         });
       } else {
@@ -65,13 +76,16 @@ class _PdfViewerWidgetState extends State<PdfViewerWidget> {
   Widget build(BuildContext context) {
     return Scaffold(
       appBar: AppBar(
-        title: const Text('PDF Preview'),
+        title: const Text('PDF Viewer'),
         actions: [
-          IconButton(
-            icon: const Icon(Icons.download),
-            onPressed: _pdfBytes != null ? _downloadPdf : null,
-            tooltip: 'Download PDF',
-          ),
+          if (_pdfController != null)
+            IconButton(
+              icon: const Icon(Icons.zoom_in),
+              onPressed: () {
+                // Zoom functionality is handled by PdfView gestures
+              },
+              tooltip: 'Pinch to zoom',
+            ),
         ],
       ),
       body: _buildBody(),
@@ -111,53 +125,36 @@ class _PdfViewerWidgetState extends State<PdfViewerWidget> {
       );
     }
 
-    // Note: This is a placeholder. For full PDF viewing, you would need to integrate
-    // a PDF viewer package like flutter_pdfview or syncfusion_flutter_pdfviewer
-    return Center(
-      child: Column(
-        mainAxisAlignment: MainAxisAlignment.center,
-        children: [
-          const Icon(Icons.picture_as_pdf, size: 100, color: Colors.red),
-          const SizedBox(height: 16),
-          const Text(
-            'PDF Preview Available',
-            style: TextStyle(fontSize: 18, fontWeight: FontWeight.bold),
-          ),
-          const SizedBox(height: 8),
-          Text(
-            'File size: ${(_pdfBytes!.length / 1024).toStringAsFixed(2)} KB',
-          ),
-          const SizedBox(height: 24),
-          ElevatedButton.icon(
-            onPressed: _downloadPdf,
-            icon: const Icon(Icons.download),
-            label: const Text('Download PDF'),
-          ),
-          const SizedBox(height: 16),
-          const Padding(
-            padding: EdgeInsets.symmetric(horizontal: 32),
-            child: Text(
-              'Note: Full PDF preview requires additional packages. You can download the PDF to view it.',
-              textAlign: TextAlign.center,
-              style: TextStyle(color: Colors.grey, fontSize: 12),
-            ),
-          ),
-        ],
-      ),
-    );
-  }
+    if (_pdfController == null) {
+      return const Center(
+        child: Text('PDF not loaded'),
+      );
+    }
 
-  void _downloadPdf() {
-    // TODO: Implement actual PDF download functionality
-    // This would typically involve using packages like:
-    // - path_provider for getting download directory
-    // - permission_handler for storage permissions
-    // - file I/O operations to save the PDF
-
-    ScaffoldMessenger.of(context).showSnackBar(
-      const SnackBar(
-        content: Text('PDF download functionality coming soon'),
-        backgroundColor: Colors.orange,
+    // Display PDF with pdfx viewer
+    return PdfView(
+      controller: _pdfController!,
+      scrollDirection: Axis.vertical,
+      onDocumentLoaded: (document) {
+        debugPrint('PDF loaded: ${document.pagesCount} pages');
+      },
+      onPageChanged: (page) {
+        debugPrint('Page changed: $page');
+      },
+      builders: PdfViewBuilders<DefaultBuilderOptions>(
+        options: const DefaultBuilderOptions(),
+        documentLoaderBuilder: (_) => const Center(
+          child: CircularProgressIndicator(),
+        ),
+        pageLoaderBuilder: (_) => const Center(
+          child: CircularProgressIndicator(),
+        ),
+        errorBuilder: (_, error) => Center(
+          child: Text(
+            'Error: $error',
+            style: const TextStyle(color: Colors.red),
+          ),
+        ),
       ),
     );
   }
