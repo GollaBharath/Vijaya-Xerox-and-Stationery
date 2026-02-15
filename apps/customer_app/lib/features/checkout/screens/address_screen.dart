@@ -3,6 +3,7 @@ import 'package:flutter/services.dart';
 import 'package:provider/provider.dart';
 import 'package:go_router/go_router.dart';
 import 'package:flutter_shared/models/order.dart';
+import '../../profile/providers/profile_provider.dart';
 import '../providers/checkout_provider.dart';
 import '../../../routing/route_names.dart';
 
@@ -45,6 +46,53 @@ class _AddressScreenState extends State<AddressScreen> {
       _cityController.text = savedAddress.city;
       _stateController.text = savedAddress.state;
       _pincodeController.text = savedAddress.pincode;
+    } else {
+      // Auto-fill from profile if no saved address in checkout state
+      _loadProfileData();
+    }
+  }
+
+  Future<void> _loadProfileData() async {
+    // Wait for frame to ensure context is available and providers are ready
+    await Future.delayed(Duration.zero);
+    if (!mounted) return;
+
+    final profileProvider = Provider.of<ProfileProvider>(
+      context,
+      listen: false,
+    );
+    
+    // Ensure profile is loaded
+    if (profileProvider.profile == null) {
+      await profileProvider.fetchProfile();
+    }
+    
+    if (!mounted) return;
+
+    final profile = profileProvider.profile;
+    if (profile != null) {
+      setState(() {
+        if (_nameController.text.isEmpty) _nameController.text = profile.name;
+        if (_phoneController.text.isEmpty && profile.phone != null) {
+          _phoneController.text = profile.phone!;
+        }
+        if (_line1Controller.text.isEmpty && profile.address != null) {
+          _line1Controller.text = profile.address!;
+        }
+        // Map landmark to line 2 if available
+        if (_line2Controller.text.isEmpty && profile.landmark != null) {
+          _line2Controller.text = profile.landmark!;
+        }
+        if (_cityController.text.isEmpty && profile.city != null) {
+          _cityController.text = profile.city!;
+        }
+        if (_stateController.text.isEmpty && profile.state != null) {
+          _stateController.text = profile.state!;
+        }
+        if (_pincodeController.text.isEmpty && profile.pincode != null) {
+          _pincodeController.text = profile.pincode!;
+        }
+      });
     }
   }
 
@@ -145,8 +193,18 @@ class _AddressScreenState extends State<AddressScreen> {
         return;
       }
 
+      // ---------------------------------------------------------
+      // AUTO-SAVE: Update profile with new address details
+      // ---------------------------------------------------------
+      _updateProfileIfChanged();
+
       // Save address to checkout provider
       checkoutProvider.setDeliveryAddress(address);
+
+      // ---------------------------------------------------------
+      // AUTO-SAVE: Update profile with new address details
+      // ---------------------------------------------------------
+      _updateProfileIfChanged();
 
       // Place order
       final success = await checkoutProvider.placeOrder(address: address);
@@ -162,6 +220,78 @@ class _AddressScreenState extends State<AddressScreen> {
           ),
         );
       }
+    }
+  }
+
+  Future<void> _updateProfileIfChanged() async {
+    final profileProvider = Provider.of<ProfileProvider>(context, listen: false);
+    final profile = profileProvider.profile;
+    
+    // If profile is not loaded, we can't compare, so we skip update or maybe fetch it?
+    // Safer to skip if null to avoid overwriting with potentially empty data if fetch failed?
+    // Or should we try to update anyway if we have valid data?
+    // Let's only update if we have a profile to compare against.
+    if (profile == null) return;
+
+    final newName = _nameController.text.trim();
+    final newPhone = _phoneController.text.trim();
+    final newAddress = _line1Controller.text.trim();
+    final newLandmark = _line2Controller.text.trim(); // Map line2 to landmark
+    final newCity = _cityController.text.trim();
+    final newState = _stateController.text.trim();
+    final newPincode = _pincodeController.text.trim();
+
+    bool needsUpdate = false;
+    final Map<String, String> updates = {};
+
+    // Check for changes or missing data
+    // Note: We don't update name as that's identity, but address details we do.
+    
+    if (profile.phone == null || profile.phone != newPhone) {
+      updates['phone'] = newPhone;
+      needsUpdate = true;
+    }
+    if (profile.address == null || profile.address != newAddress) {
+      updates['address'] = newAddress;
+      needsUpdate = true;
+    }
+    if (profile.city == null || profile.city != newCity) {
+      updates['city'] = newCity;
+      needsUpdate = true;
+    }
+    if (profile.state == null || profile.state != newState) {
+      updates['state'] = newState;
+      needsUpdate = true;
+    }
+    if (profile.pincode == null || profile.pincode != newPincode) {
+      updates['pincode'] = newPincode;
+      needsUpdate = true;
+    }
+    
+    final currentLandmark = profile.landmark ?? '';
+    // Only update if changed
+    if (currentLandmark != newLandmark) {
+      updates['landmark'] = newLandmark;
+      needsUpdate = true;
+    }
+
+    if (needsUpdate) {
+      debugPrint('Updating user profile with new address details: $updates');
+      // Fire and forget - don't block checkout flow for profile update
+      profileProvider.updateProfile(
+        phone: updates['phone'],
+        address: updates['address'],
+        city: updates['city'],
+        state: updates['state'],
+        pincode: updates['pincode'],
+        landmark: updates['landmark'],
+      ).then((success) {
+        if (success) {
+           debugPrint('User profile updated successfully via checkout.');
+        } else {
+           debugPrint('Failed to update user profile via checkout.');
+        }
+      });
     }
   }
 

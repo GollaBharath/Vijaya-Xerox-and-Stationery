@@ -127,7 +127,7 @@ class _CategoryNavigationState extends State<CategoryNavigation> {
                onSelected: (cat) {
                  if (cat != null) _onCategorySelected(cat, 0);
                },
-               style: FilterStyle.largeTab,
+               style: FilterStyle.underline,
              )
            );
         }
