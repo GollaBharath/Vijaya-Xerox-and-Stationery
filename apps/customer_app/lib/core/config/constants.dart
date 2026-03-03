@@ -1,12 +1,13 @@
 /// Application-wide constants
 class AppConstants {
   // App metadata
-  static const String appName = 'Vijaya Store';
+  static const String appName = 'Company Name';
   static const String appVersion = '1.0.0';
 
   // API configuration
-  static const String apiBaseUrl =
-      'http://192.168.0.7:3000'; // Android emulator uses 10.0.2.2 for localhost
+  // For Android emulator: 10.0.2.2 is the host machine
+  // For iOS simulator or physical device: use your machine's local IP
+  static const String apiBaseUrl = 'http://192.168.0.7:3000';
 
   // Time constants (in milliseconds)
   static const int connectionTimeout = 30000;

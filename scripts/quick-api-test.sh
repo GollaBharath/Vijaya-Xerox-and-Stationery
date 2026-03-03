@@ -14,7 +14,7 @@ echo ""
 # 2. Admin Login
 echo "2. Admin Login:"
 LOGIN_RESPONSE=$(curl -s -X POST -H "Content-Type: application/json" \
-  -d '{"email":"admin@vijaya.local","password":"Admin@12345"}' \
+  -d '{"email":"admin@company.local","password":"Admin@12345"}' \
   "$API_BASE/auth/login")
 echo "$LOGIN_RESPONSE" | jq '.'
 

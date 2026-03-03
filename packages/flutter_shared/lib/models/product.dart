@@ -1,6 +1,6 @@
 import 'product_variant.dart';
 
-/// Product model for stationery and books
+/// Product model for the E-Commerce system
 class Product {
   final String id;
   final String title;

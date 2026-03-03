@@ -4,6 +4,7 @@ import { z } from "zod";
 
 export const updateSupportInfoSchema = z.object({
 	shopName: z.string().optional().nullable(),
+	shopTagline: z.string().optional().nullable(),
 	shopPhone: z.string().optional().nullable(),
 	shopEmail: z
 		.union([z.string().email(), z.literal("")])

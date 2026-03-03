@@ -1,6 +1,6 @@
-# Vijaya Xerox and Stationery E-Commerce System
+# E-Commerce Platform
 
-A domain-specific e-commerce platform for a local bookstore and stationery business, specializing in academic and medical books.
+A general-purpose e-commerce platform for businesses of all types.
 
 ## Architecture
 
@@ -42,4 +42,4 @@ All project documentation is located in the `/docs` directory:
 
 ## License
 
-Private - Vijaya Xerox and Stationery
+Private - Company Name

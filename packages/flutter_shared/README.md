@@ -1,6 +1,6 @@
 # Flutter Shared Package
 
-Shared models, utilities, and services for Vijaya Xerox Flutter applications (Admin and Customer apps).
+Shared models, utilities, and services for E-Commerce Flutter applications (Admin and Customer apps).
 
 ## Structure
 

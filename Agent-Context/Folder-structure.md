@@ -1,7 +1,7 @@
 # 0) Monorepo Root Structure
 
 ```
-bookstore-system/
+ecommerce-system/
 │
 ├── apps/
 ├── packages/

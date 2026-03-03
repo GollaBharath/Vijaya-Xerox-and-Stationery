@@ -7,7 +7,7 @@ This project uses a **single global `.env` file** in the root directory for all 
 ## File Structure
 
 ```
-Vijaya-Xerox-and-Stationery/
+EcommerceMobileApp/
 ├── .env                 ← Active configuration (GIT-IGNORED) ✓
 ├── .env.example         ← Template for new developers (TRACKED)
 ├── .gitignore           ← Includes .env and .env.docker
@@ -54,7 +54,7 @@ These files ARE committed to version control:
 ```env
 # Use your external PostgreSQL connection URL
 # Format: postgresql://username:password@host:port/database?schema=public
-DATABASE_URL="postgresql://user:password@your-postgres-host:5432/vijaya_bookstore?schema=public"
+DATABASE_URL="postgresql://user:password@your-postgres-host:5432/ecommerce_db?schema=public"
 ```
 
 **Options for PostgreSQL:**
@@ -100,7 +100,7 @@ CORS_ORIGINS="http://localhost:3001,http://localhost:8080"
 ### Docker Compose
 
 ```env
-COMPOSE_PROJECT_NAME="vijaya"
+COMPOSE_PROJECT_NAME="ecommerce"
 ```
 
 ## How Each Service Reads the Env
@@ -132,11 +132,11 @@ Prisma reads from the same `.env` file via the `DATABASE_URL` variable.
 ### First Time Setup
 
 ```bash
-cd Vijaya-Xerox-and-Stationery
+cd EcommerceMobileApp
 cp .env.example .env
 
 # Edit .env with your database credentials
-# For Docker: use vijaya_postgres as host
+# For Docker: use ecommerce_postgres as host
 # For local: use localhost
 
 docker compose up -d postgres redis
@@ -229,10 +229,10 @@ Check `DATABASE_URL` format:
 
 ```bash
 # Should work in Docker
-DATABASE_URL="postgresql://vijaya_user:vijaya_password@vijaya_postgres:5432/vijaya_bookstore"
+DATABASE_URL="postgresql://app_user:app_password@ecommerce_postgres:5432/ecommerce_db"
 
 # For local PostgreSQL
-DATABASE_URL="postgresql://vijaya_user:vijaya_password@localhost:5432/vijaya_bookstore"
+DATABASE_URL="postgresql://app_user:app_password@localhost:5432/ecommerce_db"
 ```
 
 ## Environment Variables Reference

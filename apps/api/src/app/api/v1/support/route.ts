@@ -7,7 +7,7 @@ import { ApiResponse } from "@/types/global";
 
 const supportService = new SupportService();
 
-export const GET = errorHandler(async (req: NextRequest) => {
+export const GET = errorHandler(async (_req: NextRequest) => {
 	const supportInfo = await supportService.getSupportInfo();
 
 	const response: ApiResponse<typeof supportInfo> = {

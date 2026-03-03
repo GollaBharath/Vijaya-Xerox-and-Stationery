@@ -1,13 +1,13 @@
 #!/bin/bash
 
-# Fly.io Deployment Script for Vijaya Bookstore API
+# Fly.io Deployment Script for E-Commerce API
 # This script automates the deployment process to Fly.io
 
 set -e
 
 PROJECT_DIR="$(cd "$(dirname "${BASH_SOURCE[0]}")" && pwd)"
 API_DIR="$PROJECT_DIR/apps/api"
-APP_NAME="vijaya-api"
+APP_NAME="ecommerce-api"
 REGION="sin"
 
 # Color codes for output
@@ -241,7 +241,7 @@ verify_deployment() {
 
 # Main execution
 main() {
-    print_header "Vijaya Bookstore - Fly.io Deployment"
+    print_header "E-Commerce Platform - Fly.io Deployment"
     
     check_flyctl
     check_auth

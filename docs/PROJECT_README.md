@@ -1,6 +1,6 @@
-# Vijaya Xerox and Stationery - E-Commerce Platform
+# Company Name - E-Commerce Platform
 
-A comprehensive e-commerce system for a local bookstore and stationery business specializing in academic and medical books.
+A comprehensive e-commerce system for businesses of all types.
 
 ## 🏗️ Architecture Overview
 
@@ -16,7 +16,7 @@ This is a monorepo containing:
 ## 📁 Project Structure
 
 ```
-bookstore-system/
+ecommerce-system/
 ├── apps/                    # Applications
 │   ├── customer_app/        # Flutter customer app
 │   ├── admin_app/           # Flutter admin app
@@ -52,7 +52,7 @@ bookstore-system/
 
    ```bash
    git clone <repository-url>
-   cd Vijaya-Xerox-and-Stationery
+   cd EcommerceMobileApp
    ```
 
 2. **Configure environment**
@@ -192,7 +192,7 @@ Core entities:
 - **Users** - Customer and admin accounts
 - **Categories** - Flexible hierarchy for courses, companies, note types
 - **Subjects** - Academic subjects (e.g., Anatomy → Upper Limb)
-- **Products** - Books and stationery items
+- **Products** - Products and items
 - **Product Variants** - Color/B&W versions with stock
 - **Orders** - Customer orders with payment tracking
 - **Cart Items** - Shopping cart state
@@ -271,13 +271,13 @@ Detailed documentation available in the `docs/` directory:
 
 ## 📝 License
 
-Proprietary - All rights reserved by Vijaya Xerox and Stationery
+Proprietary - All rights reserved by Company Name
 
 ## 📞 Support
 
 For issues and questions:
 
-- Email: support@vijayaxerox.com
+- Email: support@company.com
 - Phone: +91 98765 43210
 
 ## 🎯 Roadmap
@@ -290,4 +290,4 @@ For issues and questions:
 
 ---
 
-**Built with ❤️ for Vijaya Xerox and Stationery**
+**Built with ❤️ for Company Name**

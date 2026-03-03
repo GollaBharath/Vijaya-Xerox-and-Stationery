@@ -4,7 +4,9 @@ import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';
 import 'package:url_launcher/url_launcher.dart';
 import 'package:flutter_shared/flutter_shared.dart';
+import 'package:provider/provider.dart';
 import '../../../core/config/constants.dart';
+import '../../../core/providers/branding_provider.dart';
 
 class HelpSupportScreen extends StatefulWidget {
   const HelpSupportScreen({super.key});
@@ -202,9 +204,14 @@ class _HelpSupportScreenState extends State<HelpSupportScreen> {
                             icon: Icons.email,
                             label: 'Email',
                             value: _supportInfo!.developerEmail!,
-                            onTap: () => _launchUrl(
-                              'mailto:${_supportInfo!.developerEmail}?subject=Bug Report - Vijaya Xerox App',
-                            ),
+                            onTap: () {
+                              final name = context
+                                  .read<BrandingProvider>()
+                                  .companyName;
+                              _launchUrl(
+                                'mailto:${_supportInfo!.developerEmail}?subject=Bug Report - $name App',
+                              );
+                            },
                             onLongPress: () => _copyToClipboard(
                               _supportInfo!.developerEmail!,
                               'Developer email',
@@ -215,9 +222,14 @@ class _HelpSupportScreenState extends State<HelpSupportScreen> {
                             icon: Icons.chat,
                             label: 'WhatsApp',
                             value: _supportInfo!.developerWhatsapp!,
-                            onTap: () => _launchUrl(
-                              'https://wa.me/${_supportInfo!.developerWhatsapp!.replaceAll(RegExp(r'[^\d]'), '')}?text=Bug Report - Vijaya Xerox App',
-                            ),
+                            onTap: () {
+                              final name = context
+                                  .read<BrandingProvider>()
+                                  .companyName;
+                              _launchUrl(
+                                'https://wa.me/${_supportInfo!.developerWhatsapp!.replaceAll(RegExp(r'[^\d]'), '')}?text=Bug Report - $name App',
+                              );
+                            },
                             onLongPress: () => _copyToClipboard(
                               _supportInfo!.developerWhatsapp!,
                               'Developer WhatsApp',

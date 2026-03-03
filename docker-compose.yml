@@ -8,7 +8,7 @@ services:
     build:
       context: ./apps/api
       dockerfile: ../../infrastructure/docker/api.Dockerfile
-    container_name: vijaya_api
+    container_name: ecommerce_api
     restart: unless-stopped
     environment:
       NODE_ENV: production
@@ -21,7 +21,7 @@ services:
     ports:
       - "3000:3000"
     networks:
-      - vijaya_network
+      - ecommerce_network
     volumes:
       - ./apps/api/uploads:/app/uploads
 
@@ -30,7 +30,7 @@ services:
   # ================================
   nginx:
     image: nginx:alpine
-    container_name: vijaya_nginx
+    container_name: ecommerce_nginx
     restart: unless-stopped
     ports:
       - "80:80"
@@ -42,12 +42,12 @@ services:
     depends_on:
       - api
     networks:
-      - vijaya_network
+      - ecommerce_network
 
 # ================================
 # Networks
 # ================================
 networks:
-  vijaya_network:
+  ecommerce_network:
     driver: bridge
-    name: vijaya_network
+    name: ecommerce_network

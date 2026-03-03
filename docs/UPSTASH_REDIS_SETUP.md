@@ -22,7 +22,7 @@ This application is configured to work with **Upstash Redis**, a serverless Redi
 
 1. In the Upstash Console, click **"Create Database"**
 2. Choose your configuration:
-   - **Name**: `vijaya-redis` (or any name you prefer)
+   - **Name**: `ecommerce-redis` (or any name you prefer)
    - **Region**: Select the region closest to your application
    - **Type**: Choose based on your needs:
      - **Regional**: Single region, lower latency

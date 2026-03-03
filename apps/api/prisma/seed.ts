@@ -9,6 +9,8 @@
 
 const { PrismaClient } = require("@prisma/client");
 const bcrypt = require("bcrypt");
+const path = require("path");
+require("dotenv").config({ path: path.resolve(__dirname, "../.env") });
 
 const prisma = new PrismaClient();
 
@@ -20,22 +22,31 @@ async function main() {
 	// ============================================
 	console.log("\n👤 Creating admin user...");
 
-	const adminEmail = "vijaya@admin.com";
-	const adminPassword = "admin14321";
+	const adminEmail = process.env.ADMIN_EMAIL || "admin@admin.com";
+	const adminPhone = process.env.ADMIN_PHONE || "+919876543210";
+	const adminPassword = process.env.ADMIN_PASSWORD || "pass123";
 	const passwordHash = await bcrypt.hash(adminPassword, 10);
 
-	const admin = await prisma.user.upsert({
-		where: { email: adminEmail },
-		update: {
+	console.log(`\n📧 Admin Email from env: ${process.env.ADMIN_EMAIL}`);
+	console.log(`🔒 Admin Password from env: ${process.env.ADMIN_PASSWORD}`);
+	console.log(`📱 Admin Phone from env: ${process.env.ADMIN_PHONE}`);
+
+	// Delete any existing admin with the same phone or email to avoid unique constraint issues
+	try {
+		await prisma.user.deleteMany({
+			where: {
+				OR: [{ phone: adminPhone }, { email: adminEmail }],
+			},
+		});
+		console.log("✓ Cleared existing admin records");
+	} catch (error) {
+		console.log("ℹ️ No existing admin records to clear");
+	}
+
+	const admin = await prisma.user.create({
+		data: {
 			name: "Admin",
-			phone: "9999999999",
-			passwordHash,
-			role: "ADMIN",
-			isActive: true,
-		},
-		create: {
-			name: "Admin",
-			phone: "9999999999",
+			phone: adminPhone,
 			email: adminEmail,
 			passwordHash,
 			role: "ADMIN",

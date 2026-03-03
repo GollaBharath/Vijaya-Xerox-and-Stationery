@@ -2,7 +2,7 @@ import { NextRequest, NextResponse } from "next/server";
 import { requireAdmin } from "@/middleware/admin.middleware";
 import { deleteFile, savePDFFile, savePreviewImage } from "@/lib/file_storage";
 import * as productRepo from "@/modules/catalog/product.repo";
-import pdf2img from "pdf-img-convert";
+import * as pdf2img from "pdf-img-convert";
 
 export async function POST(request: NextRequest) {
 	try {
@@ -76,7 +76,7 @@ export async function POST(request: NextRequest) {
 			const outputImages = await pdf2img.convert(bufferData, {
 				page_numbers: [1],
 				base64: false,
-				scale: 2.0 // Better quality
+				scale: 2.0, // Better quality
 			});
 
 			if (outputImages.length > 0) {

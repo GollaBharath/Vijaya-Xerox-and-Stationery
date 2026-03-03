@@ -2,7 +2,7 @@ import 'package:http/http.dart' as http;
 import 'dart:convert';
 import '../auth/token_manager.dart';
 
-/// API client for communicating with Vijaya Xerox backend
+/// API client for communicating with the E-Commerce backend
 class ApiClient {
   final String baseUrl;
   final TokenManager tokenManager;

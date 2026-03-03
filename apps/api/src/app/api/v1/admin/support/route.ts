@@ -36,7 +36,7 @@ export const PATCH = errorHandler(async (req: NextRequest) => {
 			{
 				success: false,
 				error: "Validation failed",
-				details: validationResult.error.errors,
+				details: validationResult.error.issues,
 			},
 			{ status: 400 },
 		);

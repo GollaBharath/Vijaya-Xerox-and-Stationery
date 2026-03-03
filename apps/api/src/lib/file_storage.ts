@@ -142,7 +142,6 @@ export async function savePDFFile(
 
 	fs.writeFileSync(filepath, buffer);
 
-
 	return `/api/v1/files/pdfs/books/${uniqueFilename}`;
 }
 
@@ -158,7 +157,7 @@ export async function savePreviewImage(
 	// Ensure filename ends with .png (or desired format)
 	const baseName = path.basename(filename, path.extname(filename));
 	const uniqueFilename = `${baseName}-${Date.now()}-preview.png`;
-	const filepath = path.join(PDFS_DIR, uniqueFilename); // Saving in PDF dir for now to keep related files together, or could be IMAGES_DIR
+	const _filepath = path.join(PDFS_DIR, uniqueFilename); // Saving in PDF dir for now to keep related files together, or could be IMAGES_DIR
 
 	// Or better, save in IMAGES_DIR but maybe a subdirectory?
 	// Let's save in IMAGES_DIR as it is an image

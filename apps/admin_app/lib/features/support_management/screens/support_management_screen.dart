@@ -20,6 +20,7 @@ class _SupportManagementScreenState extends State<SupportManagementScreen> {
 
   // Controllers for shop information
   final _shopNameController = TextEditingController();
+  final _shopTaglineController = TextEditingController();
   final _shopPhoneController = TextEditingController();
   final _shopEmailController = TextEditingController();
   final _shopWhatsappController = TextEditingController();
@@ -45,6 +46,7 @@ class _SupportManagementScreenState extends State<SupportManagementScreen> {
   @override
   void dispose() {
     _shopNameController.dispose();
+    _shopTaglineController.dispose();
     _shopPhoneController.dispose();
     _shopEmailController.dispose();
     _shopWhatsappController.dispose();
@@ -64,6 +66,7 @@ class _SupportManagementScreenState extends State<SupportManagementScreen> {
     if (mounted && provider.supportInfo != null) {
       final info = provider.supportInfo!;
       _shopNameController.text = info.shopName ?? '';
+      _shopTaglineController.text = info.shopTagline ?? '';
       _shopPhoneController.text = info.shopPhone ?? '';
       _shopEmailController.text = info.shopEmail ?? '';
       _shopWhatsappController.text = info.shopWhatsapp ?? '';
@@ -87,6 +90,9 @@ class _SupportManagementScreenState extends State<SupportManagementScreen> {
       'shopName': _shopNameController.text.trim().isEmpty
           ? null
           : _shopNameController.text.trim(),
+      'shopTagline': _shopTaglineController.text.trim().isEmpty
+          ? null
+          : _shopTaglineController.text.trim(),
       'shopPhone': _shopPhoneController.text.trim().isEmpty
           ? null
           : _shopPhoneController.text.trim(),
@@ -198,6 +204,17 @@ class _SupportManagementScreenState extends State<SupportManagementScreen> {
                       labelText: 'Shop Name',
                       border: OutlineInputBorder(),
                       prefixIcon: Icon(Icons.store),
+                    ),
+                  ),
+                  const SizedBox(height: 16),
+
+                  TextFormField(
+                    controller: _shopTaglineController,
+                    decoration: const InputDecoration(
+                      labelText: 'Shop Tagline',
+                      border: OutlineInputBorder(),
+                      prefixIcon: Icon(Icons.short_text),
+                      hintText: 'Your One-Stop Shop',
                     ),
                   ),
                   const SizedBox(height: 16),

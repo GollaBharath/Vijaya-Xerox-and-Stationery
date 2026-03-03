@@ -12,17 +12,15 @@ const updateProfileSchema = z.object({
 	phone: z
 		.string()
 		.regex(/^\+?[1-9]\d{1,14}$/)
-		.optional()
-		.nullable(),
-	address: z.string().min(1).max(500).optional().nullable(),
-	city: z.string().min(1).max(100).optional().nullable(),
-	state: z.string().min(1).max(100).optional().nullable(),
+		.optional(),
+	address: z.string().min(1).max(500).optional(),
+	city: z.string().min(1).max(100).optional(),
+	state: z.string().min(1).max(100).optional(),
 	pincode: z
 		.string()
 		.regex(/^[0-9]{6}$/)
-		.optional()
-		.nullable(),
-	landmark: z.string().max(200).optional().nullable(),
+		.optional(),
+	landmark: z.string().max(200).optional(),
 });
 
 export function validateUpdateProfile(data: unknown): UpdateProfileRequest {
@@ -30,7 +28,7 @@ export function validateUpdateProfile(data: unknown): UpdateProfileRequest {
 	if (!result.success) {
 		throw new AppError(
 			ErrorCode.VALIDATION_ERROR,
-			result.error.errors[0]?.message || "Invalid profile data",
+			result.error.issues[0]?.message || "Invalid profile data",
 			400,
 		);
 	}

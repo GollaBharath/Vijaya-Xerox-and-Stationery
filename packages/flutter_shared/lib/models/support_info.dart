@@ -3,6 +3,7 @@
 class SupportInfo {
   final String id;
   final String? shopName;
+  final String? shopTagline;
   final String? shopPhone;
   final String? shopEmail;
   final String? shopWhatsapp;
@@ -18,6 +19,7 @@ class SupportInfo {
   SupportInfo({
     required this.id,
     this.shopName,
+    this.shopTagline,
     this.shopPhone,
     this.shopEmail,
     this.shopWhatsapp,
@@ -35,6 +37,7 @@ class SupportInfo {
     return SupportInfo(
       id: json['id'] as String,
       shopName: json['shopName'] as String?,
+      shopTagline: json['shopTagline'] as String?,
       shopPhone: json['shopPhone'] as String?,
       shopEmail: json['shopEmail'] as String?,
       shopWhatsapp: json['shopWhatsapp'] as String?,
@@ -53,6 +56,7 @@ class SupportInfo {
     return {
       'id': id,
       'shopName': shopName,
+      'shopTagline': shopTagline,
       'shopPhone': shopPhone,
       'shopEmail': shopEmail,
       'shopWhatsapp': shopWhatsapp,

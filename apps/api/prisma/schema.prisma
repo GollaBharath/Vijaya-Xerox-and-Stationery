@@ -298,6 +298,7 @@ model SupportInfo {
   
   // Shop Contact Information
   shopName         String?    @map("shop_name")
+  shopTagline      String?    @map("shop_tagline")
   shopPhone        String?    @map("shop_phone")
   shopEmail        String?    @map("shop_email")
   shopWhatsapp     String?    @map("shop_whatsapp")

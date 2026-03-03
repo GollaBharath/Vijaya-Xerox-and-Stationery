@@ -45,7 +45,7 @@ nano .env
 
 ```env
 # PostgreSQL - Use your external database URL
-DATABASE_URL="postgresql://user:password@host:5432/vijaya_bookstore?schema=public"
+DATABASE_URL="postgresql://user:password@host:5432/ecommerce_db?schema=public"
 
 # Upstash Redis - Use your Upstash connection URL
 REDIS_URL="rediss://default:your-password@your-endpoint.upstash.io:6379"
@@ -123,7 +123,7 @@ If you prefer to run the API in Docker:
 docker compose up -d api
 
 # View logs
-docker logs -f vijaya_api
+docker logs -f ecommerce_api
 ````
 
 **Note**: Even with Docker, you still need external PostgreSQL and Upstash Redis.
@@ -133,13 +133,13 @@ docker logs -f vijaya_api
 ### Access PostgreSQL
 
 ```bash
-docker exec -it vijaya_postgres psql -U vijaya_user -d vijaya_bookstore
+docker exec -it ecommerce_postgres psql -U app_user -d ecommerce_db
 ```
 
 ### View all tables
 
 ```bash
-docker exec vijaya_postgres psql -U vijaya_user -d vijaya_bookstore -c "\dt"
+docker exec ecommerce_postgres psql -U app_user -d ecommerce_db -c "\dt"
 ```
 
 ### Run Prisma commands
@@ -168,7 +168,7 @@ npx prisma migrate deploy
 | Database Schema | `/apps/api/prisma/schema.prisma`     |
 | Migrations      | `/apps/api/prisma/migrations/`       |
 | Config Files    | `.env.example`, `docker-compose.yml` |
-| Docker Network  | `vijaya_network`                     |
+| Docker Network  | `ecommerce_network`                  |
 
 ## Environment Variables
 
@@ -245,14 +245,14 @@ curl http://localhost:3000/api/v1/health
 # List all networks
 docker network ls
 
-# Check vijaya_network
-docker network inspect vijaya_network
+# Check ecommerce_network
+docker network inspect ecommerce_network
 ```
 
 ## Network Details
 
-- **Network Name**: `vijaya_network`
-- **Database Host**: `vijaya_postgres` (inside Docker network)
+- **Network Name**: `ecommerce_network`
+- **Database Host**: `ecommerce_postgres` (inside Docker network)
 - **Database Host**: `localhost` or `127.0.0.1` (from host machine)
 
 ## Next Steps

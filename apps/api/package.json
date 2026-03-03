@@ -1,7 +1,7 @@
 {
-	"name": "@vijaya/api",
+	"name": "@company/api",
 	"version": "1.0.0",
-	"description": "Vijaya Xerox and Stationery E-Commerce API",
+	"description": "E-Commerce Platform API",
 	"private": true,
 	"scripts": {
 		"dev": "next dev",

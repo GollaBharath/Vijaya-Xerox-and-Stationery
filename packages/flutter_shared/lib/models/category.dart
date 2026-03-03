@@ -1,4 +1,4 @@
-/// Category model for stationery products
+/// Category model for product categories
 class Category {
   final String id;
   final String name;

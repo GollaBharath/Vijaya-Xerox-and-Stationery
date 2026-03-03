@@ -15,6 +15,7 @@ import 'features/notifications/providers/notification_provider.dart';
 import 'features/likes/providers/likes_provider.dart';
 import 'features/feedback/providers/feedback_provider.dart';
 import 'features/profile/providers/profile_provider.dart';
+import 'core/providers/branding_provider.dart';
 import 'routing/app_router.dart';
 
 void main() async {
@@ -37,6 +38,10 @@ void main() async {
   final authProvider = FirebaseAuthProvider(apiClient: apiClient);
   await authProvider.initialize();
 
+  // Create and initialize branding provider
+  final brandingProvider = BrandingProvider(apiClient: apiClient);
+  await brandingProvider.initialize();
+
   // Create notification provider and initialize
   final notificationProvider = NotificationProvider();
   // Initialize notifications after auth is ready
@@ -52,6 +57,7 @@ void main() async {
       authProvider: authProvider,
       apiClient: apiClient,
       notificationProvider: notificationProvider,
+      brandingProvider: brandingProvider,
     ),
   );
 }
@@ -61,6 +67,7 @@ class MainApp extends StatelessWidget {
   final FirebaseAuthProvider authProvider;
   final ApiClient apiClient;
   final NotificationProvider notificationProvider;
+  final BrandingProvider brandingProvider;
 
   const MainApp({
     super.key,
@@ -68,6 +75,7 @@ class MainApp extends StatelessWidget {
     required this.authProvider,
     required this.apiClient,
     required this.notificationProvider,
+    required this.brandingProvider,
   });
 
   @override
@@ -76,6 +84,7 @@ class MainApp extends StatelessWidget {
       providers: [
         ChangeNotifierProvider.value(value: authProvider),
         ChangeNotifierProvider.value(value: notificationProvider),
+        ChangeNotifierProvider.value(value: brandingProvider),
         ChangeNotifierProvider(create: (_) => CategoryProvider(apiClient)),
         ChangeNotifierProvider(create: (_) => SubjectProvider(apiClient)),
         ChangeNotifierProvider(create: (_) => ProductProvider(apiClient)),
@@ -90,8 +99,8 @@ class MainApp extends StatelessWidget {
           create: (_) => ProfileProvider(apiClient: apiClient),
         ),
       ],
-      child: Consumer<FirebaseAuthProvider>(
-        builder: (context, authProvider, _) {
+      child: Consumer2<FirebaseAuthProvider, BrandingProvider>(
+        builder: (context, authProvider, branding, _) {
           // Fetch likes when user authenticates
           if (authProvider.isAuthenticated) {
             WidgetsBinding.instance.addPostFrameCallback((_) {
@@ -109,7 +118,7 @@ class MainApp extends StatelessWidget {
             key: ValueKey(
               'router_${authProvider.isAuthenticated}_${authProvider.isSplashComplete}',
             ),
-            title: AppConstants.appName,
+            title: branding.companyName,
             theme: AppTheme.lightTheme,
             darkTheme: AppTheme.darkTheme,
             themeMode: ThemeMode.system,

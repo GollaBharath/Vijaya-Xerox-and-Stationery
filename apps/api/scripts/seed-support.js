@@ -2,16 +2,16 @@
 const apiUrl = "http://192.168.0.7:3000/api/v1/admin/support";
 
 const supportData = {
-	shopName: "Vijaya Xerox & Stationery",
+	shopName: "Company Name",
 	shopPhone: "+91 1234567890",
-	shopEmail: "vijayaxerox@example.com",
+	shopEmail: "contact@company.com",
 	shopWhatsapp: "+911234567890",
 	shopAddress: "123 Main Street, City Name, State - 123456",
 	developerName: "Developer Team",
 	developerEmail: "developer@example.com",
 	developerWhatsapp: "+919876543210",
 	workingHours: "Monday to Saturday: 9:00 AM - 7:00 PM\nSunday: Closed",
-	websiteUrl: "https://vijayaxerox.com",
+	websiteUrl: "https://company.com",
 };
 
 // Get admin token from Firebase login first

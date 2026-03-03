@@ -1,7 +1,7 @@
 #!/bin/bash
 
 # ========================================
-# Vijaya Xerox & Stationery API Test Suite
+# E-Commerce Platform API Test Suite
 # ========================================
 
 # set -e  # Commented out to see all errors
@@ -23,7 +23,7 @@ CART_ITEM_ID=""
 ORDER_ID=""
 
 echo -e "${YELLOW}=====================================${NC}"
-echo -e "${YELLOW}Vijaya API Comprehensive Test Suite${NC}"
+echo -e "${YELLOW}E-Commerce API Comprehensive Test Suite${NC}"
 echo -e "${YELLOW}=====================================${NC}\n"
 
 # ========================================
@@ -102,7 +102,7 @@ sleep 1
 
 # Login with admin credentials (seeded in database)
 login_data='{
-  "email": "admin@vijaya.local",
+  "email": "admin@company.local",
   "password": "Admin@12345"
 }'
 response=$(test_endpoint "Admin Login" "POST" "/auth/login" "$login_data" "")
@@ -362,7 +362,7 @@ echo -e "${GREEN}✓ Authorization checks functional${NC}\n"
 
 echo -e "${YELLOW}Key IDs for manual testing:${NC}"
 echo -e "Access Token: ${ACCESS_TOKEN:0:50}..."
-echo -e "Admin Email: admin@vijaya.local"
+echo -e "Admin Email: admin@company.local"
 echo -e "Customer Email: $CUSTOMER_EMAIL"
 echo -e "Category ID (Medical Books): $CATEGORY_ID"
 echo -e "Subject ID (Anatomy): $ANATOMY_SUBJECT_ID"

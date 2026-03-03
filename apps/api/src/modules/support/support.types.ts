@@ -3,6 +3,7 @@
 export interface SupportInfo {
 	id: string;
 	shopName: string | null;
+	shopTagline: string | null;
 	shopPhone: string | null;
 	shopEmail: string | null;
 	shopWhatsapp: string | null;
@@ -18,6 +19,7 @@ export interface SupportInfo {
 
 export interface UpdateSupportInfoDto {
 	shopName?: string | null;
+	shopTagline?: string | null;
 	shopPhone?: string | null;
 	shopEmail?: string | null;
 	shopWhatsapp?: string | null;

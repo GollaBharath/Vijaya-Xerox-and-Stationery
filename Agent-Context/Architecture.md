@@ -1,12 +1,12 @@
 # Architecture.md
 
-## Local Bookstore & Stationery E-Commerce System - for Vijaya Xerox and Stationery
+## General-Purpose E-Commerce Platform
 
 ---
 
 # 1. Overview
 
-This system is a domain-specific e-commerce platform for a local bookstore and stationery business focused on academic and medical books. It consists of:
+This system is a general-purpose e-commerce platform for businesses of all types. It consists of:
 
 - **Customer App (Flutter)** – browsing, cart, checkout
 - **Admin App (Flutter)** – catalog & order management

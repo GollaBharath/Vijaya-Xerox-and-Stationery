@@ -26,7 +26,7 @@
 
 ```
 👤 Admin User:
-   Email: admin@vijaya.local
+   Email: admin@company.local
    Password: Admin@12345
    Phone: 9999999999
 
@@ -145,7 +145,7 @@ npm run prisma:seed
 ### To Access Admin Dashboard
 
 - Navigate to the admin app
-- Email: `admin@vijaya.local`
+- Email: `admin@company.local`
 - Password: `Admin@12345`
 
 ---

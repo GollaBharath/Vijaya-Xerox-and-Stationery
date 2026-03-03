@@ -108,8 +108,8 @@ Created `/lib/features/auth/` with the following subdirectories:
 **UI Elements**:
 
 - Branded logo/icon (VX)
-- App name (Vijaya Store)
-- Tagline (Books & Stationery)
+- App name (Company Name)
+- Tagline (Your One-Stop Shop)
 - Loading indicator
 
 **Features**:

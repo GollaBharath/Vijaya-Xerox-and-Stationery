@@ -29,7 +29,7 @@ POST /auth/login
 Content-Type: application/json
 
 {
-  "email": "admin@vijaya.local",
+  "email": "admin@company.local",
   "password": "Admin@12345"
 }
 ```
@@ -469,7 +469,7 @@ All successful responses follow this structure:
 
 ### Admin
 
-- **Email**: `admin@vijaya.local`
+- **Email**: `admin@company.local`
 - **Password**: `Admin@12345`
 
 ### Test Customer (if you registered during testing)

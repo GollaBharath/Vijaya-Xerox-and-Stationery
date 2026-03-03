@@ -6,6 +6,7 @@ import '../../../core/config/constants.dart';
 import '../../../core/theme/colors.dart';
 import '../../../core/theme/typography.dart';
 import '../../../routing/route_names.dart';
+import '../../../core/providers/branding_provider.dart';
 import '../providers/firebase_auth_provider.dart';
 
 /// Splash screen that checks authentication and redirects
@@ -46,6 +47,7 @@ class _SplashScreenState extends State<SplashScreen> {
 
   @override
   Widget build(BuildContext context) {
+    final branding = context.watch<BrandingProvider>();
     return Scaffold(
       body: Center(
         child: Column(
@@ -59,10 +61,10 @@ class _SplashScreenState extends State<SplashScreen> {
                 color: AppColors.primary,
                 borderRadius: BorderRadius.circular(20),
               ),
-              child: const Center(
+              child: Center(
                 child: Text(
-                  'VX',
-                  style: TextStyle(
+                  _getInitials(branding.companyName),
+                  style: const TextStyle(
                     color: Colors.white,
                     fontSize: 40,
                     fontWeight: FontWeight.bold,
@@ -73,12 +75,12 @@ class _SplashScreenState extends State<SplashScreen> {
             const SizedBox(height: 24),
 
             // App name
-            Text(AppConstants.appName, style: AppTypography.heading2),
+            Text(branding.companyName, style: AppTypography.heading2),
             const SizedBox(height: 8),
 
             // Tagline
             Text(
-              'Books & Stationery',
+              branding.tagline,
               style: AppTypography.body2.copyWith(color: AppColors.hintText),
             ),
             const SizedBox(height: 40),
@@ -91,5 +93,15 @@ class _SplashScreenState extends State<SplashScreen> {
         ),
       ),
     );
+  }
+
+  /// Generate up to 2-character initials from a name
+  String _getInitials(String name) {
+    final words = name.trim().split(RegExp(r'\s+'));
+    if (words.isEmpty) return 'CN';
+    if (words.length == 1) {
+      return words[0].substring(0, words[0].length >= 2 ? 2 : 1).toUpperCase();
+    }
+    return '${words[0][0]}${words[1][0]}'.toUpperCase();
   }
 }

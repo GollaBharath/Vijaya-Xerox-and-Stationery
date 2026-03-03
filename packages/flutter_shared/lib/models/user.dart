@@ -1,4 +1,4 @@
-/// User model representing a user in the Vijaya Xerox system
+/// User model representing a user in the E-Commerce system
 class User {
   final String id;
   final String name;

@@ -1,4 +1,4 @@
-/// API endpoint constants for Vijaya Xerox API
+/// API endpoint constants for the E-Commerce API
 class ApiEndpoints {
   // Base URL will be configured in ApiClient
 

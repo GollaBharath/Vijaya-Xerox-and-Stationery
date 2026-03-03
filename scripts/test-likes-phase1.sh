@@ -33,7 +33,7 @@ echo ""
 # Test with authentication
 # Note: You need to replace YOUR_TOKEN_HERE with an actual token from login
 echo "4. To test authenticated endpoints, first login:"
-echo "   curl -X POST $API_BASE/auth/login -H 'Content-Type: application/json' -d '{\"email\":\"customer@vijaya.local\",\"password\":\"Customer@123\"}'"
+echo "   curl -X POST $API_BASE/auth/login -H 'Content-Type: application/json' -d '{\"email\":\"customer@company.local\",\"password\":\"Customer@123\"}'"
 echo ""
 echo "   Then use the token to test:"
 echo "   TOKEN=\"your_access_token_here\""

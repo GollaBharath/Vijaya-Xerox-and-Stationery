@@ -18,7 +18,7 @@ Successfully implemented comprehensive file upload support for both stationery p
 
 ### 2. File Storage Infrastructure
 
-**Location**: `/home/dead/freelancing/Vijaya-Xerox-and-Stationery/apps/api/src/lib/file_storage.ts`
+**Location**: `/home/dead/freelancing/EcommerceMobileApp/apps/api/src/lib/file_storage.ts`
 
 Implemented file storage utility with:
 
@@ -34,7 +34,7 @@ Implemented file storage utility with:
 
 ### 3. Product Repository Updates
 
-**Location**: `/home/dead/freelancing/Vijaya-Xerox-and-Stationery/apps/api/src/modules/catalog/product.repo.ts`
+**Location**: `/home/dead/freelancing/EcommerceMobileApp/apps/api/src/modules/catalog/product.repo.ts`
 
 Updated all product operations to support files:
 
@@ -92,7 +92,7 @@ Updated all product operations to support files:
 
 ### 5. Type System Updates
 
-**Location**: `/home/dead/freelancing/Vijaya-Xerox-and-Stationery/apps/api/src/modules/catalog/catalog.types.ts`
+**Location**: `/home/dead/freelancing/EcommerceMobileApp/apps/api/src/modules/catalog/catalog.types.ts`
 
 Updated Product interface:
 
@@ -108,7 +108,7 @@ export interface Product {
 
 ### 6. Validation Updates
 
-**Location**: `/home/dead/freelancing/Vijaya-Xerox-and-Stationery/apps/api/src/modules/catalog/catalog.validator.ts`
+**Location**: `/home/dead/freelancing/EcommerceMobileApp/apps/api/src/modules/catalog/catalog.validator.ts`
 
 - ✅ Updated `UpdateProductInput` interface to include file fields
 - ✅ Added `validateFileUpload(file, fileType)` function for file validation
@@ -117,7 +117,7 @@ export interface Product {
 
 ### 7. Seed Script Updates
 
-**Location**: `/home/dead/freelancing/Vijaya-Xerox-and-Stationery/apps/api/prisma/seed.ts`
+**Location**: `/home/dead/freelancing/EcommerceMobileApp/apps/api/prisma/seed.ts`
 
 - ✅ Added `initializeUploadDirs()` call at start of seed
 - ✅ Upload directories are now created automatically during seeding
@@ -132,7 +132,7 @@ export interface Product {
 ## Directory Structure Created
 
 ```
-/home/dead/freelancing/Vijaya-Xerox-and-Stationery/apps/api/
+/home/dead/freelancing/EcommerceMobileApp/apps/api/
 ├── uploads/                          (created by seed)
 │   ├── images/
 │   │   └── products/                 (for stationery images)

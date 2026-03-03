@@ -1,7 +1,7 @@
 /// Application-wide constants
 class AppConstants {
   // App Info
-  static const String appName = 'Vijaya Admin';
+  static const String appName = 'Admin Panel';
   static const String appVersion = '1.0.0';
 
   // Pagination

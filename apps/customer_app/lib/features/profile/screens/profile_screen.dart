@@ -3,6 +3,7 @@ import 'package:provider/provider.dart';
 import 'package:go_router/go_router.dart';
 import '../../auth/providers/firebase_auth_provider.dart';
 import '../../../routing/route_names.dart';
+import '../../../core/providers/branding_provider.dart';
 import '../providers/profile_provider.dart';
 import 'edit_profile_screen.dart';
 import 'help_support_screen.dart';
@@ -228,12 +229,12 @@ class _ProfileScreenState extends State<ProfileScreen> {
                       title: 'About',
                       subtitle: 'App version and information',
                       onTap: () {
+                        final branding = context.read<BrandingProvider>();
                         showAboutDialog(
                           context: context,
-                          applicationName: 'Vijaya Xerox & Stationery',
+                          applicationName: branding.companyName,
                           applicationVersion: '1.0.0',
-                          applicationLegalese:
-                              '© 2026 Vijaya Xerox & Stationery',
+                          applicationLegalese: branding.copyright,
                         );
                       },
                     ),

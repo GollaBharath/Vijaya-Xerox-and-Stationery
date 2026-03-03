@@ -15,9 +15,9 @@ INSERT INTO support_info (
   updated_at
 ) VALUES (
   'default_support_info',
-  'Vijaya Xerox & Stationery',
+  'Company Name',
   '+91 1234567890',
-  'vijayaxerox@example.com',
+  'contact@company.com',
   '+911234567890',
   '123 Main Street, City Name, State - 123456',
   'Developer Team',
@@ -25,7 +25,7 @@ INSERT INTO support_info (
   '+919876543210',
   'Monday to Saturday: 9:00 AM - 7:00 PM
 Sunday: Closed',
-  'https://vijayaxerox.com',
+  'https://company.com',
   NOW(),
   NOW()
 ) ON CONFLICT (id) DO NOTHING;

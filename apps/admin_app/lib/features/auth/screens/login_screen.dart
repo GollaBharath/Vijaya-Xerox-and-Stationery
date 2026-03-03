@@ -156,7 +156,7 @@ class _LoginScreenState extends State<LoginScreen> {
                             enabled: !_isLoading,
                             decoration: const InputDecoration(
                               labelText: 'Email',
-                              hintText: 'admin@vijaya.local',
+                              hintText: 'admin@company.local',
                               prefixIcon: Icon(Icons.email_outlined),
                             ),
                             validator: (value) {

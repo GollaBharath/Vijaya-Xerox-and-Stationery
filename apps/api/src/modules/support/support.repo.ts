@@ -14,7 +14,8 @@ export class SupportRepository {
 		if (!supportInfo) {
 			supportInfo = await prisma.supportInfo.create({
 				data: {
-					shopName: "Vijaya Xerox & Stationery",
+					shopName: "Company Name",
+					shopTagline: "Your One-Stop Shop",
 					shopPhone: null,
 					shopEmail: null,
 					shopWhatsapp: null,

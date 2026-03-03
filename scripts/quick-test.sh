@@ -5,7 +5,7 @@ set -e
 
 API_BASE="http://localhost:3000/api/v1"
 
-echo "===== VIJAYA API TESTING ====="
+echo "===== E-COMMERCE API TESTING ====="
 echo ""
 
 # 1. Health Check
@@ -17,7 +17,7 @@ echo ""
 echo "2. Testing Admin Login..."
 LOGIN_RESPONSE=$(curl -s -X POST "$API_BASE/auth/login" \
   -H "Content-Type: application/json" \
-  -d '{"email":"admin@vijaya.local","password":"Admin@12345"}')
+  -d '{"email":"admin@company.local","password":"Admin@12345"}')
 
 echo "$LOGIN_RESPONSE" | jq '.'
 TOKEN=$(echo "$LOGIN_RESPONSE" | jq -r '.data.tokens.accessToken')

@@ -1,9 +1,9 @@
 name: flutter_shared
-description: Shared models, utilities, and services for Vijaya Xerox Flutter apps.
+description: Shared models, utilities, and services for E-Commerce Flutter apps.
 version: 0.1.0
 
 environment:
-  sdk: '>=3.0.0 <4.0.0'
+  sdk: ">=3.0.0 <4.0.0"
   flutter: ">=3.0.0"
 
 dependencies:

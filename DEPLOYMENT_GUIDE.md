@@ -20,7 +20,7 @@ JWT_REFRESH_SECRET="your-refresh-secret-here"
 
 # API Configuration
 NODE_ENV="production"
-API_BASE_URL="https://vijaya-api.fly.dev"
+API_BASE_URL="https://ecommerce-api.fly.dev"
 CORS_ORIGINS="https://your-frontend-domain.com"
 
 # File Upload
@@ -42,7 +42,7 @@ flyctl secrets set DATABASE_URL="your-database-url"
 flyctl secrets set REDIS_URL="your-redis-url"
 flyctl secrets set JWT_SECRET="your-jwt-secret"
 flyctl secrets set JWT_REFRESH_SECRET="your-refresh-secret"
-flyctl secrets set API_BASE_URL="https://vijaya-api.fly.dev"
+flyctl secrets set API_BASE_URL="https://ecommerce-api.fly.dev"
 ```
 
 ### Step 2: Create and Deploy the App
@@ -51,7 +51,7 @@ flyctl secrets set API_BASE_URL="https://vijaya-api.fly.dev"
 cd apps/api
 
 # If app doesn't exist, create it after adding payment method
-flyctl launch --name vijaya-api --region sin
+flyctl launch --name ecommerce-api --region sin
 
 # Or if app already exists, deploy directly
 flyctl deploy
@@ -78,7 +78,7 @@ flyctl status
 flyctl logs
 
 # Test health endpoint
-curl https://vijaya-api.fly.dev/api/health
+curl https://ecommerce-api.fly.dev/api/health
 ```
 
 ## Storage Configuration
@@ -99,18 +99,21 @@ curl https://vijaya-api.fly.dev/api/health
 ## Troubleshooting
 
 ### Database Connection Errors
+
 ```bash
 flyctl secrets set DATABASE_URL="new-url"
 flyctl deploy --strategy rolling
 ```
 
 ### Out of Memory
+
 ```bash
 # Increase machine size
 flyctl machine update --memory 512 [machine-id]
 ```
 
 ### Upload Directory Issues
+
 ```bash
 # Verify mount exists
 flyctl ssh console
@@ -119,6 +122,7 @@ exit
 ```
 
 ### View detailed logs
+
 ```bash
 flyctl logs --recent 100
 ```

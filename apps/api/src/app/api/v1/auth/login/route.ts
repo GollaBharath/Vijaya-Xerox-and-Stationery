@@ -15,9 +15,16 @@ import { LoginResponse } from "@/modules/auth/auth.types";
 import { logger } from "@/lib/logger";
 
 export const POST = errorHandler(async (request: NextRequest) => {
-	// Rate limiting (stricter for login)
+	// Parse request body
+	const body = await request.json();
+
+	// Validate request
+	const validatedData = validateLogin(body);
+
+	// Rate limiting (stricter for login): scope by IP + email
 	const clientIp = getClientIp(request.headers);
-	const rateLimitResult = await authRateLimiter.checkLimit(clientIp);
+	const rateLimitKey = `${clientIp}:${validatedData.email.toLowerCase()}`;
+	const rateLimitResult = await authRateLimiter.checkLimit(rateLimitKey);
 
 	if (!rateLimitResult.allowed) {
 		const error: ApiError = {
@@ -36,14 +43,11 @@ export const POST = errorHandler(async (request: NextRequest) => {
 		});
 	}
 
-	// Parse request body
-	const body = await request.json();
-
-	// Validate request
-	const validatedData = validateLogin(body);
-
 	// Login user
 	const result = await login(validatedData);
+
+	// Clear login rate-limit bucket after successful authentication
+	await authRateLimiter.reset(rateLimitKey);
 
 	logger.info("User login successful", {
 		userId: result.user.id,

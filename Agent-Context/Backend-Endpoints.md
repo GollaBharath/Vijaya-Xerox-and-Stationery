@@ -33,7 +33,7 @@ All endpoints are versioned under `/api/v1` to support future API versions witho
 
 ```json
 {
-	"email": "admin@vijaya.local",
+	"email": "admin@company.local",
 	"password": "Admin@12345"
 }
 ```
@@ -493,7 +493,7 @@ Rate limiting gracefully fails open if Redis is unavailable.
 
 **Admin Account**:
 
-- Email: `admin@vijaya.local`
+- Email: `admin@company.local`
 - Password: `Admin@12345`
 
 ---
